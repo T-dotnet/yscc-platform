@@ -1,0 +1,2027 @@
+{
+  "version": "Executive edition 1.2",
+  "date": "15 September 2026",
+  "status": "Working proposal; mandatory new-patient intake confirmed under U1/D-25",
+  "documents": [
+    {
+      "id": "01",
+      "slug": "product-framing",
+      "title": "Product framing",
+      "source": "01-product-framing.md",
+      "pages": [
+        {
+          "title": "One connected care journey.",
+          "subtitle": "YSCC can connect assessment, participation and follow-up, then build towards a wider learning system.",
+          "label": "THE PRODUCT IN ONE MINUTE",
+          "blocks": [
+            {
+              "type": "statement",
+              "text": "Make it clear what is needed, who contributes, what has happened and who acts next."
+            },
+            {
+              "type": "path",
+              "items": [
+                {
+                  "title": "Care delivery",
+                  "body": "Collect and review useful person-level information."
+                },
+                {
+                  "title": "Service improvement",
+                  "body": "Resolve quality issues and turn evidence into action."
+                },
+                {
+                  "title": "System evidence",
+                  "body": "Use governed outputs for oversight and research."
+                }
+              ],
+              "note": "The wider learning cycle is an ambition: findings must return to services, not stop at reporting."
+            },
+            {
+              "type": "cards",
+              "columns": 2,
+              "items": [
+                {
+                  "tag": "FOR PEOPLE",
+                  "title": "Understand and contribute",
+                  "body": "Eligible person and family tasks, clear visibility, suitable support and reliable confirmation."
+                },
+                {
+                  "tag": "FOR TEAMS",
+                  "title": "Know the next action",
+                  "body": "The right episode, interpretable evidence, outstanding work and accountable handover."
+                }
+              ]
+            },
+            {
+              "type": "note",
+              "title": "What this is not",
+              "body": "Not an autonomous clinical decision-maker, an assumed EMR replacement or an unrestricted participant portal. Wider care and reporting capabilities still need scope approval."
+            }
+          ],
+          "decision": {
+            "title": "LEADERSHIP TAKEAWAY",
+            "text": "Align on the care-collection foundation and approve wider capabilities separately. The proposal is ready for review, not production authorisation."
+          },
+          "basis": "Detailed brief 01, sections 1-6. S1/S2 and CMDCS persona draft (CP1)."
+        },
+        {
+          "title": "Choose the launch boundary.",
+          "subtitle": "Keep reported capabilities, proposed delivery scope and broader ambitions visibly separate.",
+          "label": "SCOPE AND EXECUTIVE DECISIONS",
+          "blocks": [
+            {
+              "type": "scope",
+              "items": [
+                {
+                  "tag": "PROPOSED BASELINE",
+                  "title": "A complete collection loop",
+                  "body": "Mandatory intake for every new patient, then assessment and repeat measures; eligible collection; permissions, correction, queues and owned referral follow-through."
+                },
+                {
+                  "tag": "CONDITIONAL",
+                  "title": "Four explicit scope choices",
+                  "body": "Satisfaction surveys, service logging, detailed discharge content and historical migration/export. Decide included, later or excluded for each."
+                },
+                {
+                  "tag": "CANDIDATE EXPANSION",
+                  "title": "The broader CMDCS ambition",
+                  "body": "Ongoing care records, personal progress, centre dashboards, implementation learning, governed reporting, exchange and research. Phase and access remain open."
+                }
+              ]
+            },
+            {
+              "type": "alert",
+              "title": "Resolve the MVP / Stage 2 conflict",
+              "body": "Oli's captured Slack message reports direct person/family collection in MVP. The persona PDF places direct self-report in Stage 2 and a person dashboard in MVP. Neither conflict is resolved by this executive edition. D-21."
+            },
+            {
+              "type": "rows",
+              "headers": [
+                "DECISION",
+                "OWNER NEEDED"
+              ],
+              "rows": [
+                [
+                  "Confirm core assessment and clinical rules",
+                  "Caroline + clinical/content leads"
+                ],
+                [
+                  "Approve permission, access and retention policy",
+                  "Clinical + legal/privacy + data governance"
+                ],
+                [
+                  "Choose scope, phases and named delivery owners",
+                  "Product + programme leadership"
+                ]
+              ]
+            }
+          ],
+          "decision": {
+            "title": "ASK AT THE NEXT REVIEW",
+            "text": "Resolve D-21, choose the D-15 scope items, and name accountable owners for the production decisions. Do not convert a persona ambition into a launch promise."
+          },
+          "basis": "Detailed brief 01, sections 5-8; U1/D-25 confirms intake; D-26/D-27 remain open."
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "slug": "value-proposition-canvas",
+      "title": "Value Proposition Canvas",
+      "source": "02-value-proposition-canvas.md",
+      "pages": [
+        {
+          "title": "Value starts at the point of care.",
+          "subtitle": "A simpler contribution process is valuable only when it remains understandable, appropriate and trustworthy.",
+          "label": "CUSTOMER JOBS TO PRODUCT VALUE",
+          "blocks": [
+            {
+              "type": "value",
+              "items": [
+                {
+                  "name": "Kai / person",
+                  "job": "Share how I am doing and understand the next step.",
+                  "pain": "Repetition, unclear visibility and uncertainty about receipt.",
+                  "response": "Eligible self-report, plain explanations, support and confirmed submission.",
+                  "gain": "A clearer, more manageable contribution to care."
+                },
+                {
+                  "name": "Deb / family carer",
+                  "job": "Provide useful context and understand how to help.",
+                  "pain": "Feeling excluded or overloaded; unclear role boundaries.",
+                  "response": "A separate appropriate task, clear visibility and distinct authority checks.",
+                  "gain": "Involvement without assuming access to another person's answers."
+                },
+                {
+                  "name": "Jess / treating clinician",
+                  "job": "Collect, interpret and act on the right information.",
+                  "pain": "Duplicate entry, fragmented context and ambiguous status.",
+                  "response": "An episode-centred plan, eligible channels and separate review/handover actions.",
+                  "gain": "Less avoidable coordination effort and clearer clinical context."
+                }
+              ]
+            },
+            {
+              "type": "note",
+              "title": "Scope distinction",
+              "body": "Kai's personal dashboard and Jess's full ongoing-care record are candidate capabilities. The current assessment/collection baseline does not deliver them by implication."
+            }
+          ],
+          "decision": {
+            "title": "TEST THE VALUE",
+            "text": "Can people explain purpose and visibility, complete an appropriate task, and understand what happened? Can staff identify what remains? Completion rate alone is not proof of fit."
+          },
+          "basis": "Detailed brief 02, canvases A-C; CP1 pp. 4-6; CR-01/CR-02 and D-21."
+        },
+        {
+          "title": "Turn reliable data into useful action.",
+          "subtitle": "Different evidence users need different products. A single dashboard is not the value proposition for everyone.",
+          "label": "SERVICE AND SYSTEM VALUE",
+          "blocks": [
+            {
+              "type": "value",
+              "items": [
+                {
+                  "name": "Rachel, Tom and Ananya",
+                  "job": "Run the service and maintain reliable, comparable records.",
+                  "pain": "Manual follow-up, unclear definitions and fragmented reporting.",
+                  "response": "Owned quality work, verified-source correction and, if adopted, governed metrics and releases.",
+                  "gain": "More interpretable operations and accountable resolution."
+                },
+                {
+                  "name": "Sam / implementation scientist",
+                  "job": "Understand fidelity and help centres improve.",
+                  "pain": "Data without local context; findings that do not reach practice.",
+                  "response": "Candidate implementation views linked to centre context and improvement actions.",
+                  "gain": "Evidence that leads to practical support and follow-up."
+                },
+                {
+                  "name": "Priya, David, Maya and Helen",
+                  "job": "Commission, oversee, exchange or research for approved purposes.",
+                  "pain": "Inconsistent data, weak comparisons and unclear access processes.",
+                  "response": "Candidate governed reports, exchange contracts and study-specific request/release pathways.",
+                  "gain": "Defensible interpretation and controlled use, not unrestricted care access."
+                }
+              ]
+            },
+            {
+              "type": "note",
+              "title": "Evidence discipline",
+              "body": "These pains and gains are hypotheses. No verified savings, clinical impact, missing-data baseline or research-turnaround improvement has been established."
+            }
+          ],
+          "decision": {
+            "title": "INVESTMENT QUESTION",
+            "text": "Which user decision will each data product improve, and how will we test that? Require an owner, a defined output and an approval boundary before adding scope."
+          },
+          "basis": "Detailed brief 02, canvases D and expanded canvas; CP1 pp. 8-16; CR-03 to CR-08."
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "slug": "personas",
+      "title": "Personas",
+      "source": "03-personas.md",
+      "pages": [
+        {
+          "title": "Care Delivery",
+          "subtitle": "The people whose trust, time and contributions make the care record useful.",
+          "label": "11 DRAFT PERSONAS / GROUP 1 OF 3",
+          "blocks": [
+            {
+              "type": "personas",
+              "items": [
+                {
+                  "name": "Jess Tran",
+                  "role": "Treating Clinician",
+                  "id": "P-04",
+                  "need": "Record care once, see the whole picture and connect local and specialist input.",
+                  "friction": "Administrative effort, fragmented evidence and disconnected advice.",
+                  "design": "Clear episode context, interpretable progress and safe handover. Full care planning and medication/event workflows remain candidate scope."
+                },
+                {
+                  "name": "Kai",
+                  "role": "Person",
+                  "id": "P-01",
+                  "need": "Be heard, understand progress and take part in care decisions.",
+                  "friction": "Retelling the story, unclear visibility and unsuitable digital contexts.",
+                  "design": "Plain explanations, eligible contribution and suitable support. Personal progress views and launch phasing need an explicit decision."
+                },
+                {
+                  "name": "Deb",
+                  "role": "Family Carer",
+                  "id": "P-02",
+                  "need": "Give useful context and understand how to support the person.",
+                  "friction": "Feeling excluded or overloaded; uncertainty about involvement.",
+                  "design": "Separate tasks and clear visibility. Family relationship is not guardian authority or automatic access to Kai's answers."
+                }
+              ]
+            },
+            {
+              "type": "note",
+              "title": "Research must reflect real contexts",
+              "body": "Co-design with Aboriginal and Torres Strait Islander people and diverse lived experiences. Test shared devices, assistance and accessibility; do not assume every person is digitally confident."
+            }
+          ],
+          "decision": {
+            "title": "EXECUTIVE IMPLICATION",
+            "text": "Protect informed participation and clinician time together. Validate the Engagement Team and specialist contexts separately; do not treat one persona as the whole service."
+          },
+          "basis": "Detailed brief 03; CMDCS Persona Draft v2 (CP1), pp. 4-6. All profiles are hypotheses, not interview findings."
+        },
+        {
+          "title": "Service Improvement",
+          "subtitle": "The people who turn data capture into service quality, operational understanding and shared learning.",
+          "label": "11 DRAFT PERSONAS / GROUP 2 OF 3",
+          "blocks": [
+            {
+              "type": "personas",
+              "compact": true,
+              "items": [
+                {
+                  "name": "Rachel Nguyen",
+                  "role": "Centre Leader",
+                  "id": "P-08",
+                  "need": "Understand caseload, workforce, performance and model fidelity.",
+                  "friction": "Manual reporting, inconsistent data and change pressure.",
+                  "design": "Scoped oversight and action ownership. Operations and clinical leadership may need different access."
+                },
+                {
+                  "name": "Tom Fletcher",
+                  "role": "Data Officer",
+                  "id": "P-06",
+                  "need": "Support accurate registration and close completeness gaps.",
+                  "friction": "Chasing staff and maintaining parallel quality workflows.",
+                  "design": "Embedded checks, clear owners and verified-source correction; otherwise request clinician input."
+                },
+                {
+                  "name": "Ananya Rao",
+                  "role": "Data Manager",
+                  "id": "P-07",
+                  "need": "Maintain comparable records, definitions and governed outputs across sites.",
+                  "friction": "Mapping complexity, inconsistent records and manual extracts.",
+                  "design": "Centre-supported resolution and traceable definitions/releases. Reporting contracts and broader grants need approval."
+                },
+                {
+                  "name": "Dr Sam Okafor",
+                  "role": "Implementation Scientist",
+                  "id": "P-10",
+                  "need": "Understand implementation and turn fidelity evidence into practical support.",
+                  "friction": "Late or context-free evidence and weak feedback to services.",
+                  "design": "Connect site context, findings and improvement actions. Person-level access is not automatically granted."
+                }
+              ]
+            }
+          ],
+          "decision": {
+            "title": "EXECUTIVE IMPLICATION",
+            "text": "Confirm who owns each quality and improvement action. Treat wider dashboards, fidelity and reporting as candidate scope with explicit definitions and access controls."
+          },
+          "basis": "Detailed brief 03; CP1 pp. 8-11. Source roles and pain points remain unvalidated hypotheses."
+        },
+        {
+          "title": "System Evidence",
+          "subtitle": "The people who use governed evidence beyond day-to-day care. They do not automatically need the care interface.",
+          "label": "11 DRAFT PERSONAS / GROUP 3 OF 3",
+          "blocks": [
+            {
+              "type": "personas",
+              "compact": true,
+              "items": [
+                {
+                  "name": "Priya Sharma",
+                  "role": "PHN Commissioner",
+                  "id": "P-11",
+                  "need": "Evaluate and commission services using fair comparisons.",
+                  "friction": "Inconsistent, late or non-comparable reporting.",
+                  "design": "Approved aggregate products with cohort, denominator, quality and comparison limits."
+                },
+                {
+                  "name": "David Thompson",
+                  "role": "Policy Lead",
+                  "id": "P-12",
+                  "need": "Understand accountability, governance and system value.",
+                  "friction": "Fragmented evidence and unclear responsibilities.",
+                  "design": "Evidence linked to definitions, owners and exceptions. The draft's stewardship claims need confirmation."
+                },
+                {
+                  "name": "Maya Brooks",
+                  "role": "AIHW Lead",
+                  "id": "P-13",
+                  "need": "Support consistent national exchange, alignment and approved linkage.",
+                  "friction": "Fragile integrations and inconsistent definitions.",
+                  "design": "Agreed schemas, mappings and release manifests; a governed output may be enough without a portal."
+                },
+                {
+                  "name": "Dr Helen Marsh",
+                  "role": "Researcher",
+                  "id": "P-14",
+                  "need": "Use approved, appropriately authorised data and return findings to care.",
+                  "friction": "Unclear access processes and weak care/research integration.",
+                  "design": "Study-specific request, approval, release and closure. Future trial operations are not assumed."
+                }
+              ]
+            }
+          ],
+          "decision": {
+            "title": "ACCESS IS A DECISION, NOT A PERSONA TRAIT",
+            "text": "Approve purpose, minimum data, recipients and responsibilities first. Guardian, tablet-facilitator and administrator roles remain supporting capabilities, not extra source personas."
+          },
+          "basis": "Detailed brief 03; CP1 pp. 13-16; D-23/D-24. No legal ownership, access or research authority is established here."
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "slug": "user-journey",
+      "title": "Full user journey",
+      "source": "04-full-user-journey.md",
+      "pages": [
+        {
+          "title": "From first contact to a clear next step.",
+          "subtitle": "A care episode holds the whole period of engagement. An individual response is only one contribution within it.",
+          "label": "THE CARE JOURNEY",
+          "blocks": [
+            {
+              "type": "journey",
+              "items": [
+                [
+                  "01",
+                  "Intake and triage",
+                  "Every new patient completes intake; record triage outcome and owner before assessment."
+                ],
+                [
+                  "02",
+                  "Explain participation",
+                  "Check purpose, authority, visibility and suitable contact."
+                ],
+                [
+                  "03",
+                  "Plan the assessment",
+                  "Use the proposed shared core and clinically eligible modules."
+                ],
+                [
+                  "04",
+                  "Choose respondent and mode",
+                  "Confirm who answers, who records, assistance and channel eligibility."
+                ],
+                [
+                  "05",
+                  "Complete and submit",
+                  "Save truthfully; confirm the accepted response for this assignment."
+                ],
+                [
+                  "06",
+                  "Review the evidence",
+                  "Keep missing work visible; add further eligible modules if needed."
+                ],
+                [
+                  "07",
+                  "Decide and hand over",
+                  "Track referral sending, receipt, acceptance/decline and handover; keep follow-up owned."
+                ],
+                [
+                  "08",
+                  "Continue care and review",
+                  "Create distinct repeat collections inside the same episode."
+                ],
+                [
+                  "09",
+                  "Close or transition",
+                  "Record next care action and reconcile pending requests and reminders."
+                ]
+              ]
+            },
+            {
+              "type": "note",
+              "title": "The journey includes loops and exits",
+              "body": "More evidence returns to steps 2-5. A pause or incomplete exit records reason, owner and next action. Only continuing care enters recurring collection; one refusal does not automatically close care."
+            }
+          ],
+          "decision": {
+            "title": "WHAT LEADERSHIP MUST VALIDATE",
+            "text": "Mandatory new-patient intake is confirmed (D-25). Finalise intake fields/triage and external handover rules (D-26/D-27). Repeated reviews stay in the same episode."
+          },
+          "basis": "Detailed brief 04, J-01 to J-09; U1/D-25 confirms intake. Clinical/service detail remains D-26/D-27."
+        },
+        {
+          "title": "Close the learning loop.",
+          "subtitle": "The CMDCS ambition extends beyond collection: evidence should produce accountable action and return to services.",
+          "label": "SERVICE IMPROVEMENT AND SYSTEM EVIDENCE",
+          "blocks": [
+            {
+              "type": "lanes",
+              "items": [
+                {
+                  "title": "Service Improvement",
+                  "tag": "RACHEL / TOM / ANANYA / SAM",
+                  "steps": [
+                    [
+                      "Establish",
+                      "Agree readiness, definitions, roles and configuration."
+                    ],
+                    [
+                      "Capture and check",
+                      "Resolve quality issues with evidence and clear ownership."
+                    ],
+                    [
+                      "Understand",
+                      "Interpret performance using cohort, quality and local context."
+                    ],
+                    [
+                      "Improve",
+                      "Agree an action and follow-up; assess what changed."
+                    ]
+                  ]
+                },
+                {
+                  "title": "System Evidence",
+                  "tag": "PRIYA / DAVID / MAYA / HELEN",
+                  "steps": [
+                    [
+                      "Define the request",
+                      "Specify purpose, product, recipient and authority."
+                    ],
+                    [
+                      "Review and prepare",
+                      "Validate data, permissions, disclosure and release conditions."
+                    ],
+                    [
+                      "Receive and interpret",
+                      "Use only the approved report, exchange or study release."
+                    ],
+                    [
+                      "Return findings",
+                      "Assign service or governance action; close use under policy."
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "statement",
+              "text": "A report is not the end of the journey. The next action, owner and feedback to care must be visible."
+            },
+            {
+              "type": "note",
+              "title": "Across the lifecycle",
+              "body": "Support, permission changes, corrections and handover apply whenever needed. Services and satisfaction are conditional. Wider care plans and personal progress remain candidate capabilities."
+            }
+          ],
+          "decision": {
+            "title": "APPROVE THE HANDOFFS",
+            "text": "For each wider data product, confirm who requests it, who approves release, who acts on the finding and how learning returns. Do not grant care-record access simply to close a reporting loop."
+          },
+          "basis": "Detailed brief 04, SJ-01 to SJ-08; CP1; CR-01 to CR-08. Wider workflows require D-22 to D-24."
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "slug": "requirements-and-logic",
+      "title": "Requirements and logic",
+      "source": "05-requirements-and-logic.md",
+      "pages": [
+        {
+          "title": "Six commitments behind the specification.",
+          "subtitle": "An executive view of 46 detailed requirements. This summary does not replace their wording or acceptance tests.",
+          "label": "THE PROPOSED BASELINE",
+          "blocks": [
+            {
+              "type": "cards",
+              "columns": 2,
+              "items": [
+                {
+                  "tag": "01 / CARE CONTEXT",
+                  "title": "Use the right record",
+                  "body": "Every new patient completes intake before core assessment. Registration is not intake completion or admission. Reviews stay in the relevant episode."
+                },
+                {
+                  "tag": "02 / APPROPRIATE COLLECTION",
+                  "title": "Choose eligible modes",
+                  "body": "Reuse approved instrument versions across permitted respondent, assistance and delivery modes. Not every measure permits self-report."
+                },
+                {
+                  "tag": "03 / INFORMED ACCESS",
+                  "title": "Check each purpose",
+                  "body": "Separate relationship, authority, permission and answer visibility. Do not make care depend on unrelated research agreement."
+                },
+                {
+                  "tag": "04 / RECORD INTEGRITY",
+                  "title": "Preserve what happened",
+                  "body": "Pin the version presented. Keep source, dates and corrections traceable. Preserve valid zero; do not score missing or invalid codes."
+                },
+                {
+                  "tag": "05 / OPERATIONAL CONTINUITY",
+                  "title": "Leave a next action",
+                  "body": "Own intake waits and referral follow-up. Track sending, receipt and receiving decisions separately; reconcile pending work at closure."
+                },
+                {
+                  "tag": "06 / RELIABLE EXPERIENCE",
+                  "title": "Make outcomes clear",
+                  "body": "Accessible mobile/tablet/staff use; safe reset; truthful saving and submission; recovery without duplicate fulfilment."
+                }
+              ]
+            },
+            {
+              "type": "note",
+              "title": "Scope stays explicit",
+              "body": "Mandatory new-patient intake is confirmed (D-25). Operational details remain proposed. Satisfaction, services and the eight CR capabilities need separate scope decisions."
+            }
+          ],
+          "decision": {
+            "title": "APPROVAL STANDARD",
+            "text": "Approve clinical content, permissions, operational rules and in-scope tests before enabling production workflows. A working prototype is not proof of security, persistence, scoring or delivery."
+          },
+          "basis": "Detailed brief 05: FR-01 to FR-46, L-01 to L-29 and AC-01 to AC-29; U1/D-25."
+        },
+        {
+          "title": "One status cannot tell the whole story.",
+          "subtitle": "The interface must distinguish requested work, access, responses and clinical decisions.",
+          "label": "LOGIC THAT PREVENTS MISUNDERSTANDING",
+          "blocks": [
+            {
+              "type": "state",
+              "items": [
+                {
+                  "title": "Assignment",
+                  "value": "Active + overdue",
+                  "body": "The requested work is still outstanding."
+                },
+                {
+                  "title": "SMS link",
+                  "value": "Expired",
+                  "body": "This access route is no longer usable."
+                },
+                {
+                  "title": "Response",
+                  "value": "Saved draft",
+                  "body": "A draft may still exist under policy."
+                }
+              ],
+              "note": "All three can be true together. Next action: use the approved reissue/resume pathway; preserve history and prevent duplicate fulfilment."
+            },
+            {
+              "type": "rows",
+              "headers": [
+                "DO NOT CONFUSE",
+                "WHAT IT MEANS"
+              ],
+              "rows": [
+                [
+                  "Sent / submitted / reviewed",
+                  "Delivery, accepted response and clinical review are different events."
+                ],
+                [
+                  "Assessment / admission / referral",
+                  "Completion, clinical disposition and onward referral are separate decisions."
+                ],
+                [
+                  "Correction / new collection",
+                  "Correcting a submitted record does not restart ordinary reminders."
+                ],
+                [
+                  "Missing / invalid / not applicable",
+                  "Legacy 998 is invalid/out-of-standard data, not not applicable. Preserve source meaning."
+                ]
+              ]
+            },
+            {
+              "type": "note",
+              "title": "Policy-dependent, not hard-coded assumptions",
+              "body": "Guardian pathways, withdrawal/retention, review cadence, episode boundaries and draft/concurrent-attempt handling remain open decisions. No new age rule, reminder interval or scoring threshold is invented here."
+            }
+          ],
+          "decision": {
+            "title": "TEST THE EDGE CASES",
+            "text": "Require evidence for partial assessments, expired links, uncertain saves, competing submissions, corrections, scope restrictions and closure failures - not just a successful form submission."
+          },
+          "basis": "Detailed brief 05, status model and acceptance catalogue; D-04 to D-14/D-18. Codebook CB1 mapping."
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "slug": "ux-strategy",
+      "title": "UX strategy",
+      "source": "06-ux-strategy.md",
+      "pages": [
+        {
+          "title": "Optimise for understanding, not just speed.",
+          "subtitle": "Reduce avoidable effort while keeping participation informed, records trustworthy and the next action clear.",
+          "label": "EXPERIENCE PRIORITIES",
+          "blocks": [
+            {
+              "type": "path",
+              "items": [
+                {
+                  "title": "1. Safe participation",
+                  "body": "Correct context, suitable access, clear visibility and support."
+                },
+                {
+                  "title": "2. Complete operations",
+                  "body": "Review, exits, correction, ownership and handover."
+                },
+                {
+                  "title": "3. Useful continuity",
+                  "body": "Approved follow-up, interpretable history and learning."
+                }
+              ],
+              "note": "This orders design risk; it does not remove proposed baseline requirements or silently defer candidate scope."
+            },
+            {
+              "type": "cards",
+              "columns": 2,
+              "items": [
+                {
+                  "tag": "BE CLEAR",
+                  "title": "Name the actual action",
+                  "body": "Use distinct language for save, submit, review, disposition and closure. Explain why extra work is requested."
+                },
+                {
+                  "tag": "BE TRUSTWORTHY",
+                  "title": "Show the real state",
+                  "body": "Visible source, version, owner and save outcome. No false confirmation or unsupported score comparison."
+                },
+                {
+                  "tag": "BE INCLUSIVE",
+                  "title": "Design for real contexts",
+                  "body": "Mobile, shared devices, assistance, accessibility and culturally safe co-design. Avoid a digital-native default."
+                },
+                {
+                  "tag": "BE RECOVERABLE",
+                  "title": "Support interruption",
+                  "body": "Clear blockers and next steps, safe tablet reset and approved resume. Do not promise persistence the system cannot deliver."
+                }
+              ]
+            }
+          ],
+          "decision": {
+            "title": "QUALITY BAR",
+            "text": "A shorter flow is not better if it hides permissions, loses source context or makes incomplete work appear finished. Validate understanding and task accuracy together."
+          },
+          "basis": "Detailed brief 06, principles, priorities, content and accessibility; FR-41 proposes WCAG 2.2 AA as a target."
+        },
+        {
+          "title": "Validate, then commit.",
+          "subtitle": "Progress through evidence gates rather than treating visual polish as launch readiness.",
+          "label": "DELIVERY AND MEASUREMENT",
+          "blocks": [
+            {
+              "type": "journey",
+              "items": [
+                [
+                  "01",
+                  "Align",
+                  "Confirm scope, core journey, persona assumptions and accountable decision owners."
+                ],
+                [
+                  "02",
+                  "Structure",
+                  "Test labels, record relationships, navigation and high-risk rules."
+                ],
+                [
+                  "03",
+                  "Prototype",
+                  "Exercise clinician, SMS/tablet, family, recovery and operational handoffs."
+                ],
+                [
+                  "04",
+                  "Specify and implement",
+                  "Replace sample policy with approved content/rules; build traceable tests."
+                ],
+                [
+                  "05",
+                  "Verify release",
+                  "Test real access, persistence, delivery, accessibility and operational support."
+                ]
+              ]
+            },
+            {
+              "type": "rows",
+              "headers": [
+                "MEASURE",
+                "INTERPRET RESPONSIBLY"
+              ],
+              "rows": [
+                [
+                  "Participation and understanding",
+                  "Baseline/follow-up fulfilment, teach-back and assistance; distinguish permitted skips, pauses and declines."
+                ],
+                [
+                  "Effort and continuity",
+                  "Comparable staff task time, intake-to-core completion and owned next actions; report open/incomplete work."
+                ],
+                [
+                  "Integrity and recovery",
+                  "Complete correction audit and recovery without loss, false success, duplicate fulfilment or access leakage."
+                ]
+              ]
+            },
+            {
+              "type": "note",
+              "title": "No invented targets or timeline",
+              "body": "Set denominators, periods, missingness handling and measured baselines before targets. Source pain-point percentages/delays are unverified. No delivery dates, costs or improvement claims are committed."
+            }
+          ],
+          "decision": {
+            "title": "FUND THE VALIDATION WORK",
+            "text": "Nominate clinical, participant-research, operational, privacy/security and data owners. Resolve the phase conflict and required policies before production; test the wider evidence roles if their capabilities are adopted."
+          },
+          "basis": "Detailed brief 06, research, delivery sequence, M-01 to M-08 and quality gates."
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "slug": "user-flows",
+      "title": "User flows",
+      "source": "07-user-flows.md",
+      "pages": [
+        {
+          "title": "From intake to next care.",
+          "subtitle": "Clinical team | Boxes = actions; diamonds = decisions.",
+          "label": "FLOW 1 / THE CARE PATHWAY",
+          "blocks": [
+            {
+              "type": "diagram",
+              "height": 516,
+              "nodes": [
+                {
+                  "id": "intake",
+                  "x": 0,
+                  "y": 0,
+                  "w": 270,
+                  "h": 40,
+                  "title": "New patient: complete intake",
+                  "body": "Register, check information and record triage.",
+                  "kind": "action"
+                },
+                {
+                  "id": "proceed",
+                  "x": 0,
+                  "y": 56,
+                  "w": 270,
+                  "h": 56,
+                  "title": "Intake complete\nand proceed?",
+                  "kind": "decision"
+                },
+                {
+                  "id": "pause",
+                  "x": 330,
+                  "y": 53,
+                  "w": 179,
+                  "h": 76,
+                  "title": "Wait or exit",
+                  "body": "Keep owner, reason and next review. Resume intake or track the referral.",
+                  "kind": "pause"
+                },
+                {
+                  "id": "plan",
+                  "x": 0,
+                  "y": 132,
+                  "w": 270,
+                  "h": 40,
+                  "title": "Plan the assessment",
+                  "body": "Assign core + eligible additional measures.",
+                  "kind": "action"
+                },
+                {
+                  "id": "collect",
+                  "x": 0,
+                  "y": 188,
+                  "w": 270,
+                  "h": 40,
+                  "title": "Collect the assigned responses",
+                  "body": "Use an eligible channel - see Flow 2.",
+                  "kind": "action"
+                },
+                {
+                  "id": "review",
+                  "x": 0,
+                  "y": 244,
+                  "w": 270,
+                  "h": 40,
+                  "title": "Review evidence + unfinished work",
+                  "body": "Check completion criteria separately.",
+                  "kind": "action"
+                },
+                {
+                  "id": "ready",
+                  "x": 0,
+                  "y": 300,
+                  "w": 270,
+                  "h": 56,
+                  "title": "Ready for a\ncare decision?",
+                  "kind": "decision"
+                },
+                {
+                  "id": "more",
+                  "x": 330,
+                  "y": 291,
+                  "w": 179,
+                  "h": 66,
+                  "title": "More evidence needed",
+                  "body": "Identify missing evidence; add eligible measures.",
+                  "kind": "pause"
+                },
+                {
+                  "id": "decision",
+                  "x": 0,
+                  "y": 376,
+                  "w": 270,
+                  "h": 40,
+                  "title": "Record the clinical decision",
+                  "body": "Record admission, referral and handover.",
+                  "kind": "action"
+                },
+                {
+                  "id": "continue",
+                  "x": 0,
+                  "y": 464,
+                  "w": 240,
+                  "h": 52,
+                  "title": "Continue care",
+                  "body": "Plan the next review in the same episode.",
+                  "kind": "outcome"
+                },
+                {
+                  "id": "leave",
+                  "x": 269,
+                  "y": 464,
+                  "w": 240,
+                  "h": 52,
+                  "title": "Agree the next care action",
+                  "body": "Close the episode only if appropriate.",
+                  "kind": "outcome"
+                }
+              ],
+              "edges": [
+                {
+                  "from": "intake",
+                  "to": "proceed",
+                  "points": [
+                    [
+                      135,
+                      40
+                    ],
+                    [
+                      135,
+                      56
+                    ]
+                  ]
+                },
+                {
+                  "from": "proceed",
+                  "to": "pause",
+                  "points": [
+                    [
+                      270,
+                      84
+                    ],
+                    [
+                      330,
+                      84
+                    ]
+                  ],
+                  "exception": true,
+                  "label": "No"
+                },
+                {
+                  "from": "proceed",
+                  "to": "plan",
+                  "points": [
+                    [
+                      135,
+                      112
+                    ],
+                    [
+                      135,
+                      132
+                    ]
+                  ],
+                  "label": "Yes"
+                },
+                {
+                  "from": "plan",
+                  "to": "collect",
+                  "points": [
+                    [
+                      135,
+                      172
+                    ],
+                    [
+                      135,
+                      188
+                    ]
+                  ]
+                },
+                {
+                  "from": "collect",
+                  "to": "review",
+                  "points": [
+                    [
+                      135,
+                      228
+                    ],
+                    [
+                      135,
+                      244
+                    ]
+                  ]
+                },
+                {
+                  "from": "review",
+                  "to": "ready",
+                  "points": [
+                    [
+                      135,
+                      284
+                    ],
+                    [
+                      135,
+                      300
+                    ]
+                  ]
+                },
+                {
+                  "from": "ready",
+                  "to": "more",
+                  "points": [
+                    [
+                      270,
+                      328
+                    ],
+                    [
+                      330,
+                      328
+                    ]
+                  ],
+                  "exception": true,
+                  "label": "No"
+                },
+                {
+                  "from": "more",
+                  "to": "plan",
+                  "points": [
+                    [
+                      419,
+                      291
+                    ],
+                    [
+                      419,
+                      152
+                    ],
+                    [
+                      270,
+                      152
+                    ]
+                  ],
+                  "exception": true,
+                  "label": "Return to planning"
+                },
+                {
+                  "from": "ready",
+                  "to": "decision",
+                  "points": [
+                    [
+                      135,
+                      356
+                    ],
+                    [
+                      135,
+                      376
+                    ]
+                  ],
+                  "label": "Yes"
+                },
+                {
+                  "from": "decision",
+                  "to": "continue",
+                  "points": [
+                    [
+                      135,
+                      416
+                    ],
+                    [
+                      135,
+                      432
+                    ],
+                    [
+                      120,
+                      432
+                    ],
+                    [
+                      120,
+                      464
+                    ]
+                  ],
+                  "label": "Continuing here"
+                },
+                {
+                  "from": "decision",
+                  "to": "leave",
+                  "points": [
+                    [
+                      135,
+                      416
+                    ],
+                    [
+                      135,
+                      432
+                    ],
+                    [
+                      389,
+                      432
+                    ],
+                    [
+                      389,
+                      464
+                    ]
+                  ],
+                  "label": "Not continuing here"
+                }
+              ],
+              "labels": [
+                {
+                  "text": "No",
+                  "x": 288,
+                  "y": 70,
+                  "w": 30,
+                  "exception": true
+                },
+                {
+                  "text": "Yes",
+                  "x": 146,
+                  "y": 115,
+                  "w": 32
+                },
+                {
+                  "text": "No",
+                  "x": 288,
+                  "y": 314,
+                  "w": 30,
+                  "exception": true
+                },
+                {
+                  "text": "Return to planning",
+                  "x": 313,
+                  "y": 164,
+                  "w": 94,
+                  "exception": true
+                },
+                {
+                  "text": "Yes",
+                  "x": 146,
+                  "y": 359,
+                  "w": 32
+                },
+                {
+                  "text": "Continuing here",
+                  "x": 0,
+                  "y": 444,
+                  "w": 240,
+                  "center": true
+                },
+                {
+                  "text": "Not continuing here",
+                  "x": 269,
+                  "y": 444,
+                  "w": 240,
+                  "center": true
+                }
+              ]
+            }
+          ],
+          "decision": {
+            "title": "MANDATORY INTAKE AND NEXT STEPS",
+            "text": "Every new patient goes through intake (D-25); registration is not completion. Waiting and non-proceeding intakes retain an owner and next action. Clinical admission remains separate."
+          },
+          "basis": "F-01/F-02/F-05/F-08/F-09/F-17; U1/D-25. Intake detail D-26/D-27 remains proposed."
+        },
+        {
+          "title": "Three channels. One response.",
+          "subtitle": "Staff set up the task; the eligible respondent or clinician completes it.",
+          "label": "FLOW 2 / COLLECTION AND CONFIRMATION",
+          "blocks": [
+            {
+              "type": "diagram",
+              "height": 510,
+              "nodes": [
+                {
+                  "id": "setup",
+                  "x": 0,
+                  "y": 0,
+                  "w": 300,
+                  "h": 40,
+                  "title": "Confirm the assignment",
+                  "body": "Person, version, respondent, support and owner.",
+                  "kind": "action"
+                },
+                {
+                  "id": "permission",
+                  "x": 0,
+                  "y": 55,
+                  "w": 300,
+                  "h": 60,
+                  "title": "Permissions and\nchannel checks pass?",
+                  "kind": "decision"
+                },
+                {
+                  "id": "blocker",
+                  "x": 349,
+                  "y": 44,
+                  "w": 160,
+                  "h": 80,
+                  "title": "Resolve the blocker",
+                  "body": "Name the owner and next action; then return to setup.",
+                  "kind": "pause"
+                },
+                {
+                  "id": "entry",
+                  "x": 0,
+                  "y": 168,
+                  "w": 159,
+                  "h": 98,
+                  "title": "Clinician entry",
+                  "body": "Record a clinician rating or transcribed answers; retain who supplied them.",
+                  "kind": "action"
+                },
+                {
+                  "id": "sms",
+                  "x": 175,
+                  "y": 168,
+                  "w": 159,
+                  "h": 98,
+                  "title": "SMS link",
+                  "body": "Send an expiring, account-free link. Check recipient; explain purpose and visibility.",
+                  "kind": "action"
+                },
+                {
+                  "id": "tablet",
+                  "x": 350,
+                  "y": 168,
+                  "w": 159,
+                  "h": 98,
+                  "title": "Clinic tablet",
+                  "body": "Start an isolated session. Explain purpose, visibility and permitted assistance.",
+                  "kind": "action"
+                },
+                {
+                  "id": "submit",
+                  "x": 0,
+                  "y": 288,
+                  "w": 509,
+                  "h": 42,
+                  "title": "Answer, then submit",
+                  "body": "Use pinned item rules; re-check current permission when submitting.",
+                  "kind": "action"
+                },
+                {
+                  "id": "accepted",
+                  "x": 0,
+                  "y": 346,
+                  "w": 300,
+                  "h": 64,
+                  "title": "Response accepted\nand saved?",
+                  "kind": "decision"
+                },
+                {
+                  "id": "recover",
+                  "x": 349,
+                  "y": 343,
+                  "w": 160,
+                  "h": 82,
+                  "title": "Check the outcome",
+                  "body": "Return to this decision. Retry only when safe; never create a duplicate.",
+                  "kind": "pause"
+                },
+                {
+                  "id": "fulfilled",
+                  "x": 0,
+                  "y": 450,
+                  "w": 300,
+                  "h": 52,
+                  "title": "This assignment is fulfilled",
+                  "body": "Clinical review is a separate step.",
+                  "kind": "outcome"
+                },
+                {
+                  "id": "reset",
+                  "x": 349,
+                  "y": 442,
+                  "w": 160,
+                  "h": 68,
+                  "title": "Tablet only",
+                  "body": "End and reset; staff re-authenticate to return.",
+                  "kind": "action"
+                }
+              ],
+              "edges": [
+                {
+                  "from": "setup",
+                  "to": "permission",
+                  "points": [
+                    [
+                      150,
+                      40
+                    ],
+                    [
+                      150,
+                      55
+                    ]
+                  ]
+                },
+                {
+                  "from": "permission",
+                  "to": "blocker",
+                  "points": [
+                    [
+                      300,
+                      85
+                    ],
+                    [
+                      349,
+                      85
+                    ]
+                  ],
+                  "exception": true,
+                  "label": "No"
+                },
+                {
+                  "from": "blocker",
+                  "to": "setup",
+                  "points": [
+                    [
+                      429,
+                      44
+                    ],
+                    [
+                      429,
+                      20
+                    ],
+                    [
+                      300,
+                      20
+                    ]
+                  ],
+                  "exception": true,
+                  "label": "After resolution"
+                },
+                {
+                  "from": "permission",
+                  "to": "entry",
+                  "points": [
+                    [
+                      150,
+                      115
+                    ],
+                    [
+                      150,
+                      148
+                    ],
+                    [
+                      79.5,
+                      148
+                    ],
+                    [
+                      79.5,
+                      168
+                    ]
+                  ],
+                  "label": "Yes - eligible clinician entry"
+                },
+                {
+                  "from": "permission",
+                  "to": "sms",
+                  "points": [
+                    [
+                      150,
+                      115
+                    ],
+                    [
+                      150,
+                      148
+                    ],
+                    [
+                      254.5,
+                      148
+                    ],
+                    [
+                      254.5,
+                      168
+                    ]
+                  ],
+                  "label": "Yes - eligible SMS"
+                },
+                {
+                  "from": "permission",
+                  "to": "tablet",
+                  "points": [
+                    [
+                      150,
+                      115
+                    ],
+                    [
+                      150,
+                      148
+                    ],
+                    [
+                      429.5,
+                      148
+                    ],
+                    [
+                      429.5,
+                      168
+                    ]
+                  ],
+                  "label": "Yes - eligible tablet"
+                },
+                {
+                  "from": "entry",
+                  "to": "submit",
+                  "points": [
+                    [
+                      79.5,
+                      266
+                    ],
+                    [
+                      79.5,
+                      277
+                    ],
+                    [
+                      254.5,
+                      277
+                    ],
+                    [
+                      254.5,
+                      288
+                    ]
+                  ]
+                },
+                {
+                  "from": "sms",
+                  "to": "submit",
+                  "points": [
+                    [
+                      254.5,
+                      266
+                    ],
+                    [
+                      254.5,
+                      288
+                    ]
+                  ]
+                },
+                {
+                  "from": "tablet",
+                  "to": "submit",
+                  "points": [
+                    [
+                      429.5,
+                      266
+                    ],
+                    [
+                      429.5,
+                      277
+                    ],
+                    [
+                      254.5,
+                      277
+                    ],
+                    [
+                      254.5,
+                      288
+                    ]
+                  ]
+                },
+                {
+                  "from": "submit",
+                  "to": "accepted",
+                  "points": [
+                    [
+                      150,
+                      330
+                    ],
+                    [
+                      150,
+                      346
+                    ]
+                  ]
+                },
+                {
+                  "from": "accepted",
+                  "to": "recover",
+                  "points": [
+                    [
+                      300,
+                      378
+                    ],
+                    [
+                      349,
+                      378
+                    ]
+                  ],
+                  "exception": true,
+                  "label": "No or not known"
+                },
+                {
+                  "from": "recover",
+                  "to": "accepted",
+                  "points": [
+                    [
+                      429,
+                      343
+                    ],
+                    [
+                      429,
+                      337
+                    ],
+                    [
+                      150,
+                      337
+                    ],
+                    [
+                      150,
+                      346
+                    ]
+                  ],
+                  "exception": true,
+                  "label": "Re-check outcome"
+                },
+                {
+                  "from": "accepted",
+                  "to": "fulfilled",
+                  "points": [
+                    [
+                      150,
+                      410
+                    ],
+                    [
+                      150,
+                      450
+                    ]
+                  ],
+                  "label": "Yes"
+                },
+                {
+                  "from": "fulfilled",
+                  "to": "reset",
+                  "points": [
+                    [
+                      300,
+                      476
+                    ],
+                    [
+                      349,
+                      476
+                    ]
+                  ],
+                  "label": "Tablet only"
+                }
+              ],
+              "labels": [
+                {
+                  "text": "No",
+                  "x": 308,
+                  "y": 71,
+                  "w": 28,
+                  "exception": true
+                },
+                {
+                  "text": "After resolution",
+                  "x": 322,
+                  "y": 1,
+                  "w": 172,
+                  "exception": true,
+                  "center": true
+                },
+                {
+                  "text": "Yes - choose an eligible channel",
+                  "x": 165,
+                  "y": 123,
+                  "w": 300
+                },
+                {
+                  "text": "No / not\nknown",
+                  "x": 303,
+                  "y": 350,
+                  "w": 45,
+                  "exception": true,
+                  "size": 8
+                },
+                {
+                  "text": "Yes",
+                  "x": 162,
+                  "y": 420,
+                  "w": 32
+                }
+              ]
+            }
+          ],
+          "decision": {
+            "title": "PARTICIPATION AND INTERRUPTION",
+            "text": "Family contribution does not grant guardian authority or access to another person's answers. A draft is not submitted. Tablet cancel/timeout clears local context under approved policy."
+          },
+          "basis": "F-02/F-03/F-04/F-10. Eligibility, recovery and storage policies remain open; phase conflict D-21 remains."
+        },
+        {
+          "title": "Correct, or ask the clinician?",
+          "subtitle": "Tom, Data Officer | Jess, authorised clinician | Different responsibilities.",
+          "label": "FLOW 3 / CORRECTING AN EXISTING RESPONSE",
+          "blocks": [
+            {
+              "type": "diagram",
+              "height": 506,
+              "nodes": [
+                {
+                  "id": "issue",
+                  "x": 105,
+                  "y": 0,
+                  "w": 300,
+                  "h": 46,
+                  "title": "Tom opens the issue",
+                  "body": "Confirm scope, field, revision and source.",
+                  "kind": "action"
+                },
+                {
+                  "id": "source",
+                  "x": 105,
+                  "y": 67,
+                  "w": 300,
+                  "h": 66,
+                  "title": "Approved verified\nsource available?",
+                  "kind": "decision"
+                },
+                {
+                  "id": "direct",
+                  "x": 0,
+                  "y": 174,
+                  "w": 240,
+                  "h": 68,
+                  "title": "Tom prepares a correction",
+                  "body": "Check authority; record the new value, source and reason.",
+                  "kind": "action"
+                },
+                {
+                  "id": "request",
+                  "x": 269,
+                  "y": 174,
+                  "w": 240,
+                  "h": 68,
+                  "title": "Tom requests clinician input",
+                  "body": "Assign Jess an issue with context, evidence reference and next action.",
+                  "kind": "action"
+                },
+                {
+                  "id": "commit",
+                  "x": 0,
+                  "y": 267,
+                  "w": 240,
+                  "h": 87,
+                  "title": "Review and save the change",
+                  "body": "Check the latest revision. If it changed, review again before saving.",
+                  "kind": "action"
+                },
+                {
+                  "id": "clinician",
+                  "x": 269,
+                  "y": 267,
+                  "w": 240,
+                  "h": 87,
+                  "title": "Jess investigates and responds",
+                  "body": "Any change uses the audited correction route; otherwise record another resolution.",
+                  "kind": "action"
+                },
+                {
+                  "id": "audit",
+                  "x": 0,
+                  "y": 380,
+                  "w": 240,
+                  "h": 65,
+                  "title": "Confirm the correction + audit",
+                  "body": "Retain prior/new value, source, actor, time and reason.",
+                  "kind": "action"
+                },
+                {
+                  "id": "resolution",
+                  "x": 269,
+                  "y": 380,
+                  "w": 240,
+                  "h": 65,
+                  "title": "Record the request outcome",
+                  "body": "Keep the issue open until the responsible clinician resolves it.",
+                  "kind": "action"
+                },
+                {
+                  "id": "closed",
+                  "x": 105,
+                  "y": 470,
+                  "w": 300,
+                  "h": 36,
+                  "title": "Close the resolved issue",
+                  "kind": "outcome"
+                }
+              ],
+              "edges": [
+                {
+                  "from": "issue",
+                  "to": "source",
+                  "points": [
+                    [
+                      255,
+                      46
+                    ],
+                    [
+                      255,
+                      67
+                    ]
+                  ]
+                },
+                {
+                  "from": "source",
+                  "to": "direct",
+                  "points": [
+                    [
+                      105,
+                      100
+                    ],
+                    [
+                      70,
+                      100
+                    ],
+                    [
+                      70,
+                      174
+                    ]
+                  ],
+                  "label": "Yes - direct correction"
+                },
+                {
+                  "from": "source",
+                  "to": "request",
+                  "points": [
+                    [
+                      405,
+                      100
+                    ],
+                    [
+                      439,
+                      100
+                    ],
+                    [
+                      439,
+                      174
+                    ]
+                  ],
+                  "exception": true,
+                  "label": "No - request clinician input"
+                },
+                {
+                  "from": "direct",
+                  "to": "commit",
+                  "points": [
+                    [
+                      120,
+                      242
+                    ],
+                    [
+                      120,
+                      267
+                    ]
+                  ]
+                },
+                {
+                  "from": "request",
+                  "to": "clinician",
+                  "points": [
+                    [
+                      389,
+                      242
+                    ],
+                    [
+                      389,
+                      267
+                    ]
+                  ]
+                },
+                {
+                  "from": "commit",
+                  "to": "audit",
+                  "points": [
+                    [
+                      120,
+                      354
+                    ],
+                    [
+                      120,
+                      380
+                    ]
+                  ]
+                },
+                {
+                  "from": "clinician",
+                  "to": "resolution",
+                  "points": [
+                    [
+                      389,
+                      354
+                    ],
+                    [
+                      389,
+                      380
+                    ]
+                  ]
+                },
+                {
+                  "from": "audit",
+                  "to": "closed",
+                  "points": [
+                    [
+                      120,
+                      445
+                    ],
+                    [
+                      120,
+                      458
+                    ],
+                    [
+                      255,
+                      458
+                    ],
+                    [
+                      255,
+                      470
+                    ]
+                  ]
+                },
+                {
+                  "from": "resolution",
+                  "to": "closed",
+                  "points": [
+                    [
+                      389,
+                      445
+                    ],
+                    [
+                      389,
+                      458
+                    ],
+                    [
+                      255,
+                      458
+                    ],
+                    [
+                      255,
+                      470
+                    ]
+                  ]
+                }
+              ],
+              "labels": [
+                {
+                  "text": "Yes",
+                  "x": 83,
+                  "y": 143,
+                  "w": 55
+                },
+                {
+                  "text": "No",
+                  "x": 382,
+                  "y": 143,
+                  "w": 49,
+                  "exception": true
+                },
+                {
+                  "text": "DIRECT CORRECTION",
+                  "x": 0,
+                  "y": 156,
+                  "w": 240,
+                  "center": true,
+                  "size": 8
+                },
+                {
+                  "text": "REQUEST - NOT A CORRECTION",
+                  "x": 269,
+                  "y": 156,
+                  "w": 240,
+                  "center": true,
+                  "size": 8,
+                  "exception": true
+                }
+              ]
+            }
+          ],
+          "decision": {
+            "title": "CORRECTION IS NOT A NEW SUBMISSION",
+            "text": "Keep the original response submitted and preserve provenance. Do not reissue an invitation or restart ordinary reminders. Source eligibility, re-scoring and re-review still need D-13 approval."
+          },
+          "basis": "F-06 / L-20 / AC-05 / AC-18. Cancel leaves the record unchanged. Only authorised actions are permitted."
+        },
+        {
+          "title": "Other workflows at a glance.",
+          "subtitle": "Supporting processes stay separate from assessment collection.",
+          "label": "SUPPORTING FLOWS / SCOPE AND GOVERNANCE",
+          "blocks": [
+            {
+              "type": "scope",
+              "items": [
+                {
+                  "tag": "BASELINE / RECORD RESOLUTION",
+                  "title": "Preview before committing",
+                  "body": "Ananya investigates duplicates or misalignment, records required centre support, previews impact and performs only approved recoverable actions. Suspicion is not identity proof."
+                },
+                {
+                  "tag": "BASELINE / CONFIGURATION AND CLOSURE",
+                  "title": "Separate intention from success",
+                  "body": "Configure approved versions. At closure, reconcile pending work and onward referrals. Failed, unanswered or declined referrals retain a YSCC follow-up owner."
+                },
+                {
+                  "tag": "CANDIDATE / EVIDENCE USE",
+                  "title": "Request, approve, release, learn",
+                  "body": "Reporting, exchange and research specify purpose and minimum scope, obtain approval, validate and release, then return findings and close use. A request is not an access grant."
+                }
+              ]
+            },
+            {
+              "type": "note",
+              "title": "Collection recovery remains part of the design",
+              "body": "Expired or wrong-recipient links lead to safe support, not exposed answers. Reissue preserves attempt history. Tablet reset does not decide server-draft retention. Resolve uncertain saves before treating work as submitted."
+            }
+          ],
+          "decision": {
+            "title": "GOVERNANCE QUESTION",
+            "text": "Who can act, on what evidence, within which scope, and how is the result verified? Require answers before implementing shortcuts or external data access."
+          },
+          "basis": "F-07/F-09/F-11 and candidate F-14 to F-16. These summaries do not replace the detailed F-01 to F-17 catalogue."
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "slug": "information-architecture",
+      "title": "Information architecture",
+      "source": "08-information-architecture.md",
+      "pages": [
+        {
+          "title": "Organise around the work, not the org chart.",
+          "subtitle": "Staff need a stable place to find people, understand the current episode and take the next authorised action.",
+          "label": "THE PROPOSED STAFF STRUCTURE",
+          "blocks": [
+            {
+              "type": "nav",
+              "items": [
+                {
+                  "title": "My work",
+                  "body": "Owned intake waits, referral follow-up and due work."
+                },
+                {
+                  "title": "People",
+                  "body": "Register new patients into intake; then select care context."
+                },
+                {
+                  "title": "Data quality",
+                  "body": "Corrections and record resolution."
+                },
+                {
+                  "title": "Administration",
+                  "body": "Approved roles, versions and rules."
+                }
+              ]
+            },
+            {
+              "type": "hierarchy",
+              "root": "People",
+              "middle": "Person",
+              "leaf": "Selected care episode",
+              "items": [
+                [
+                  "Overview",
+                  "Identity, dates, owner, timeline and next action."
+                ],
+                [
+                  "Assessment",
+                  "Core/modules, progress, evidence review and decision."
+                ],
+                [
+                  "Measures",
+                  "Assignments, delivery attempts, responses and trends."
+                ],
+                [
+                  "Consent and respondents",
+                  "Purpose decisions, relationship, authority and visibility."
+                ]
+              ]
+            },
+            {
+              "type": "note",
+              "title": "Intake and contextual destinations",
+              "body": "Intake (ST-27) and referral detail (ST-28) open from My work or People. Services/Feedback remain conditional; correction/audit stays with its record."
+            }
+          ],
+          "decision": {
+            "title": "FINDABILITY TEST",
+            "text": "Can staff find the right episode, distinguish a response from a reviewed assessment, and return to their work without losing context? Test labels and paths before visual sign-off."
+          },
+          "basis": "Detailed brief 08, ST-00 to ST-28; intake rule U1/D-25. Surfaces are proposed, not implemented routes."
+        },
+        {
+          "title": "Separate spaces. Governed connections.",
+          "subtitle": "A participant invitation, a clinician workspace and a research output must not share the same access assumptions.",
+          "label": "PARTICIPANT ACCESS AND THE WIDER HORIZON",
+          "blocks": [
+            {
+              "type": "path",
+              "items": [
+                {
+                  "title": "Open request",
+                  "body": "Scoped access and approved recipient checks."
+                },
+                {
+                  "title": "Understand + answer",
+                  "body": "Purpose, visibility, support and pinned questions."
+                },
+                {
+                  "title": "Confirm + exit",
+                  "body": "Real receipt, safe recovery and tablet reset."
+                }
+              ],
+              "note": "Participant surfaces expose only permitted tasks. An invitation link is not a credential for an unrestricted progress portal."
+            },
+            {
+              "type": "scope",
+              "items": [
+                {
+                  "tag": "CANDIDATE / CARE",
+                  "title": "Care plans and personal progress",
+                  "body": "Jess's ongoing-care context and Kai's approved progress view. Define clinical content, authentication and sharing; decide phase."
+                },
+                {
+                  "tag": "CANDIDATE / SERVICE",
+                  "title": "Centre and implementation workspaces",
+                  "body": "Rachel, Sam and Ananya need scoped performance, fidelity, definitions and improvement actions - not automatic clinical drill-down."
+                },
+                {
+                  "tag": "CANDIDATE / SYSTEM",
+                  "title": "Governed evidence products",
+                  "body": "Priya, David, Maya and Helen may need reports, exchange contracts or approved releases rather than daily access to the care interface."
+                }
+              ]
+            },
+            {
+              "type": "note",
+              "title": "Access must hold everywhere",
+              "body": "Apply the same scope rules to search, counts, deep links, audit and outputs. Persona groups do not automatically become menus or permission grants."
+            }
+          ],
+          "decision": {
+            "title": "ARCHITECTURE DECISION",
+            "text": "Approve capability and data scope first, then decide the appropriate surface or external output. Keep candidate destinations out of launch navigation until adopted."
+          },
+          "basis": "Detailed brief 08: PT-01 to PT-09 and candidate EX-01 to EX-08; D-12/D-21 to D-24."
+        }
+      ]
+    }
+  ]
+}

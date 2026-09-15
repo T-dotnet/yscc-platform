@@ -1,0 +1,343 @@
+# YSCC Platform — Full information architecture
+
+Version 0.3 · 15 September 2026 · Baseline architecture plus CMDCS candidate extensions  
+[Document index](README.md) · [User flows](07-user-flows.md) · [Requirements and logic](05-requirements-and-logic.md)
+
+## 1. Purpose and architecture boundaries
+
+This IA covers organisation, labels, navigation, search, and the underlying content relationships. It is a proposed logical architecture, not an approved database schema, deployed route map, or access-control configuration.
+
+CP1's three persona groups—Care Delivery, Service Improvement, System Evidence—explain who creates/uses data. They are **not automatically three navigation menus**. Daily care work, scoped operational work, and governed external evidence need different surfaces and access boundaries.
+
+Baseline staff navigation is **My work, People, Data quality, Administration**. Participants use narrowly scoped collection surfaces. Services/Feedback are conditional on D-15. Wider care, progress dashboards, service learning, reporting/exchange, and research are candidate extensions CR-01–CR-08, with phase/governance decisions still open. A governed external output can satisfy a stakeholder need without a new portal.
+
+## 2. Domain and content relationships
+
+```text
+Person
+├── Person-level identity/contact facts (authorised scope; actual history/source)
+├── Intake records [mandatory entry for each new patient; episode link when established]
+│   └── Registration/source, checks, triage outcome, waiting state, owner and history
+├── Onward referrals [linked to intake/episode context; independent follow-up]
+│   └── Preparation, attempts, receipt, decision, external evidence and resolution owner
+├── Respondent relationships and separately established authority
+├── Purpose decisions (person and episode scope where applicable)
+└── Care episodes [one person can have many]
+    ├── Episode identity, dates, referral context, status and ownership
+    ├── Dated stream/team allocations
+    ├── Assessment instances and clinical review records
+    │   └── Core/conditional plan and linked assignments
+    ├── Collection points [baseline and repeated occurrences]
+    │   └── Measure assignments [pinned instrument version and respondent context]
+    │       ├── Delivery attempts and access sessions
+    │       ├── Draft/abandoned response attempts
+    │       └── Accepted submitted response [at most one fulfilment per assignment]
+    ├── Disposition, referral actions, handover and closure
+    ├── Service events [conditional FR-39]
+    └── Separate feedback assignments/responses [conditional FR-15]
+
+Instrument library → approved version → items/options/scoring/eligibility
+                                       ↘ pinned by each assignment
+
+Record corrections → prior/new value, editor, reason, source, time
+Security/configuration audit → actor, scope, action, effective version/event
+Data-quality/resolution cases → referenced records, evidence, owner, approvals
+```
+
+Assignments connect their episode, relevant assessment context, and collection point; the tree is an explanation, not a requirement to duplicate records under two parents. Detailed cardinalities and review-instance boundaries must be finalised with the data/clinical owners. Multiple attempts do not mean multiple accepted fulfilments. A repeated clinical collection requires a distinct assignment/time point, not a resend of the same request.
+
+Purpose decisions and respondent relationships are not automatically restricted to one episode; store their actual approved scope. Correction/audit references can apply to different record types. A family respondent is a separate actor linked to the person, not a second identity for the person.
+
+## 3. Staff sitemap — proposed baseline
+
+```text
+Staff access and utility
+├── Sign in / session recovery / access unavailable                 ST-00
+├── Current organisation/scope context (within granted scopes)
+├── Help and support                                               ST-26
+└── Account/session controls (not clinical content configuration)
+
+My work                                                           ST-01
+├── Intake: received / awaiting information / triage / waiting        ST-27
+├── Referral follow-up: unresolved receipt / decision / handover     ST-28
+├── My assigned work
+├── Permitted team work / unassigned work
+└── Filters: task type, owner, episode context, due state, blocker
+
+People                                                            ST-02
+├── Scoped search / matching / authorised registration
+└── Person                                                        ST-03
+    ├── Identity and suitable contact context
+    ├── Intake and outcome [New person opens required intake]          ST-27
+    ├── Onward referrals / external handover history                   ST-28
+    ├── Care episode list / explicit episode selector
+    └── Selected care episode [persistent context, not repeated clicks]
+        ├── Overview                                              ST-04
+        │   ├── Timeline, ownership and next action
+        │   └── Disposition / handover / pause / closure actions    ST-12
+        ├── Assessment                                            ST-05
+        │   ├── Core and conditional plan
+        │   ├── Assignment setup                                  ST-06
+        │   ├── Clinician entry                                   ST-07
+        │   ├── Collection/delivery setup                          ST-08
+        │   └── Clinical review                                   ST-10
+        ├── Measures                                              ST-09
+        │   ├── Assignment list and detail
+        │   ├── Attempts/sessions and responses
+        │   └── Trends / explicit cross-episode history            ST-13
+        ├── Consent and respondents                               ST-11
+        │   ├── Purpose decisions and history
+        │   ├── Relationships / authority / participation context
+        │   └── Approved contact/visibility status
+        ├── Services [only if adopted]                             ST-24
+        └── Feedback [only if adopted]                             ST-25
+
+Data quality
+├── Correction requests / incomplete-data issues                   ST-14
+├── Duplicate and misalignment cases                               ST-15
+├── Correction editor / request action                             ST-16
+└── Authorised record audit                                        ST-17
+
+Administration                                                    ST-18
+├── Organisations, roles and scopes                                ST-19
+├── Instrument library and versions                                ST-20
+├── Workflow rules and review schedules                            ST-21
+├── Purpose/authority/visibility policy configuration               ST-22
+└── Message templates and delivery configuration                    ST-23
+```
+
+ST-06/ST-07/ST-08/ST-16/ST-17 are contextual work surfaces, not extra top-level navigation items. The same assignment or audit record can be reached from a queue or the person workspace without creating a duplicate information home.
+
+ST-27 and ST-28 are contextual views available from My work and the person record, including before an episode has been established. They are not extra global navigation items. The first core assessment is gated by completed/proceed intake under L-27. A supporter contribution or questionnaire link never completes intake by itself.
+
+## 4. Participant sitemap — scoped collection
+
+```text
+SMS scoped link or authorised tablet session
+└── Entry / access and recipient checks                            PT-01
+    ├── Unavailable / expired / already submitted / wrong recipient PT-06
+    │   └── Appropriate support/recovery                           PT-07
+    └── Request introduction                                      PT-02
+        ├── Purpose/decision surface [only if approved for channel] PT-08
+        └── Questions                                             PT-03
+            ├── Help / supported stop                             PT-07
+            ├── Review before submission [where instrument allows] PT-04
+            └── Confirmed submission                              PT-05
+                └── Tablet neutral end/reset                      PT-09
+```
+
+No staff sidebar, person search, audit trail, or other respondent's answers are part of this IA. SMS remains account-free in the reported collection baseline, with approved recipient verification. The candidate personal progress surface EX-02 is a different access problem; do not stretch an invitation token into an unrestricted portal credential.
+
+PT-08 is a proposed policy-dependent surface, not an assumption that every consent/guardian process occurs online. Use the approved staff-recorded pathway if appropriate. PT-04 may be replaced by a final-submit step where instrument rules do not permit answer review or revision.
+
+## 5. Screen inventory and information priority
+
+### Baseline staff views
+
+| ID / label | Primary information and actions | Entry / return | Access boundary |
+| --- | --- | --- | --- |
+| ST-00 — Sign in and access recovery | Staff authentication/session state, safe error, help/return to permitted destination. | Deep link or staff start; return after authorised session. | Authenticate then authorise; do not reveal protected target details in error. |
+| ST-01 — My work | Task/record context, owner, next action, due window, blocker, independent state dimensions; filter and open task. | Global home; return preserves allowed filters/position. | Only responsibilities and data within role/scope; team view requires grant. |
+| ST-02 — People | Scoped search, discriminating permitted identifiers, result context, matching and authorised create action. | Global nav or queue; results state retained. | No out-of-scope matches, counts, or sensitive query telemetry. |
+| ST-03 — Person | Identity/contact context and source; episode list with dates/status/owner; explicit selection/create under rules. | People result; up to search. | Person/contact edit separate from clinical view; previous history may be incomplete. |
+| ST-04 — Overview | Selected episode header, next action/owner, assessment progress, disposition, outstanding work, dated timeline. | Episode selection, queue, or deep link. | Scope applies to timeline details and counts, not just buttons. |
+| ST-05 — Assessment | Core/conditional plan, module reasons, assignments, progress, outstanding evidence; add eligible module; open review. | Episode local nav or assessment queue. | Clinical task capability; provisional core must be approved before production. |
+| ST-06 — Assignment setup | Instrument/version, respondent, assistance, channel eligibility, purpose checks, collection point, due window, owner. | Assessment/Measures; return to initiating plan/list. | Create/configure assignment grants, not instrument-publication authority. |
+| ST-07 — Clinician entry | Pinned items, source/recorder/assistance, validation, unsaved/saved/submitted state, submit. | Assignment detail; return with actual outcome. | Entry/submit capabilities and eligible instrument mode. |
+| ST-08 — Delivery/session setup | Recipient suitability, verification/expiry, mode, template/version, attempt history; send or launch tablet. | Assignment; return to detail or isolated participant mode. | Send/start capability; no assumption the sender may read all responses. |
+| ST-09 — Measures | Collection points/assignments; separate assignment/link/response/review facts; due filters; attempt and response detail; permitted recovery. | Episode nav/queue; contextual back to same list. | Answers, attempt metadata, reissue, and correction actions each authorised. |
+| ST-10 — Clinical review | Evidence set/revision, submitted answers, recorded review, source/version/corrected status, edit responses and response edit history; record review, add module, proceed to decision. | Assessment → Review responses or Review recorded; edit returns here. View details is limited to collection metadata and delivery information. | Authorised staff can open recorded reviews; clinical-review approval remains a separate capability. Reviewed evidence does not imply full completion. |
+| ST-11 — Consent and respondents | Purpose decisions, current status/history, authority/relationship, visibility/contact constraints; record permitted changes. | Episode nav or action blocker; return to initiating action. | Sensitive authority/evidence details scoped; policy editing lives in ST-22. |
+| ST-12 — Disposition and handover | Assessment progress, disposition, referral action, owner/team/effective date, next care action; pause/closure impact and reconciliation. | Overview/review; return to episode state. | Distinct capabilities for clinical decisions, ownership changes, and closure. |
+| ST-13 — History and trends | Explicit episode/instrument/time filters, version/source/respondent, actual date meanings, gaps, valid comparison indicators. | Measures/timeline; return to selected episode. | Cross-episode access does not widen authorised data scope. |
+| ST-14 — Correction requests | Issue type, record context, evidence availability, owner/status/next action; open/request/assign if permitted. | Data quality or linked task. | Operational metadata and record detail limited independently. |
+| ST-15 — Record resolution | Candidate identities/links, evidence, affected records, centre support, approvals, impact, recoverable action. | Data quality/search issue; return to case. | Orygen role plus actual scope/support/approval, not unrestricted merge. |
+| ST-16 — Correct or request | Current/prior revision, proposed value, source, required reason, before/after review; save edits or request clinician; conflict feedback. | Submitted response/review or ST-14; return to record/case. | Clinicians and Data Managers may edit submitted responses within scope, including reviewed responses. Verified-source procedure remains for Data Officer; no silent concurrent overwrite. |
+| ST-17 — Record audit | Original answers and correction events, target item/revision, prior/new values, editor identity/role/time/reason/source, original respondent/recorder, related review history. | Relevant response, record or case; return to source. | Authorised staff only; every saved edit logged; no participant audit exposure. |
+| ST-18 — Administration | Permitted configuration areas, version/effective status, pending publication/validation. | Global nav. | Admin capability is not broad clinical access. |
+| ST-19 — Organisations and access | Centre/cluster structure, roles/capabilities/scopes, approved memberships and changes. | Administration. | Separate administer/approve rights; audit access changes. |
+| ST-20 — Instruments | Approved/draft/retired definitions, pinned versions, items/options/scoring/eligibility, owner and change history. | Administration. | Content/configure/approve/publish separated; clinical approval required. |
+| ST-21 — Rules and schedules | Core/conditional rules, reasons, cadence/anchors/windows, dependencies and synthetic preview. | Administration. | No invented clinical rules or universal monthly schedule. |
+| ST-22 — Purpose policies | Approved purpose/authority/visibility/withdrawal policy versions and effective time; dependency preview. | Administration. | Entering policy is not authority to decide it. |
+| ST-23 — Messages and delivery | Approved templates/languages, contact/expiry/reminder conditions and version; preview without sending. | Administration. | Preview is synthetic; publication and actual sending are separate actions. |
+| ST-24 — Services | Conditional direct/indirect events, service centre/date/duration/provider and episode linkage. | Episode nav if adopted. | Authorised service recording; not a full care-plan/medication record. |
+| ST-25 — Feedback | Conditional person/family assignments, eligibility, timing, non-sending reasons and permitted responses. | Episode nav if adopted. | Feedback visibility is explicit; not part of clinical assessment completion. |
+| ST-26 — Help | Approved operational help, support routes, accessible guidance, permitted issue reporting. | Utility links and recovery states. | No unapproved clinical promises or sensitive data in support telemetry. |
+| ST-27 — Intake | Registration fields/source, matching, contact/support, permissions, required checks, triage outcome, waiting reason, owner/next review and intake history; save/resume, request information, record authorised outcome. | New person, intake queue, Person or assessment blocker; return to owned intake or proceed to Assessment only after L-27. | Registration does not grant triage authority. Every new patient requires intake; no core-assessment creation/activation bypass. Sensitive intake/referral data remains scoped. |
+| ST-28 — Referral detail | Destination/purpose, permitted information, actual sending attempts, receipt and receiving decision, external evidence, next follow-up/owner and handover/alternative resolution. | Intake, disposition/transfer or referral queue; return to original person/intake/episode or filtered queue. | Sending, sharing and recording externally verified events require their respective grants. No inferred receipt, acceptance, responsibility transfer or automatic integration. |
+
+
+### Participant views
+
+| ID / label | Primary content and action | Important boundary |
+| --- | --- | --- |
+| PT-01 — Open request | Scoped access/recipient checks and safe onward routing. | Token possession alone is not verified identity. |
+| PT-02 — About this request | Who asks, respondent role, purpose, visibility, effort if known, support, save/expiry behaviour; begin. | No unrelated participant/clinical record detail. |
+| PT-03 — Questions | Pinned instrument content, approved progress/validation/nonresponse/assistance; continue, save where supported, help/stop. | Clinical content rules govern requiredness and navigation. |
+| PT-04 — Check and submit | Review permitted answers or approved final-submit step; clear submission intent. | Do not offer answer review/revision if instrument rules disallow it. |
+| PT-05 — Submitted | Confirm actual receipt and appropriate next step. | No assumed score interpretation, live monitoring, or whole-assessment completion. |
+| PT-06 — Request unavailable | Safe explanation for expiry/revocation/wrong recipient/already submitted as disclosure permits; recovery/help. | Never reveal answers or sensitive identity merely to explain failure. |
+| PT-07 — Help or stop | Approved support contact/availability, permitted assistance, safe exit/draft explanation. | No fabricated offline persistence or guaranteed clinical response time. |
+| PT-08 — Purpose decision | Approved purpose information and decision pathway where this digital channel is authorised. | Guardian authority/consent rules remain policy-dependent. |
+| PT-09 — Session ended | Neutral tablet reset and staff-authentication route. | No prior respondent data; browser back cannot reopen the old context. |
+
+## 6. Candidate full-platform expansion
+
+The CMDCS draft makes these jobs visible; the architecture below reserves logical homes without treating them as launch commitments. Final phase, access, and delivery mode require D-20–D-24. Keep candidate UI out of the baseline launch nav until adopted.
+
+```text
+Care workspace expansion
+├── Selected episode → Care plan and care events                   EX-01 / CR-01
+└── Separate approved participant access → My progress             EX-02 / CR-02
+
+Service improvement expansion (authorised staff)
+├── Centre overview / performance / quality context                EX-03 / CR-03
+├── Implementation / fidelity / improvement actions                EX-04 / CR-05
+└── Dictionary / quality rules / reporting definitions             EX-08 / CR-04
+
+Governed evidence products (portal or external output to decide)
+├── Reporting / commissioning / system oversight                   EX-05 / CR-06
+├── Data releases / exchange contracts / linkage exceptions        EX-06 / CR-07
+└── Research requests / approvals / releases / closure              EX-07 / CR-08
+```
+
+| Surface | Primary actors | Proposed content | Boundary and unresolved design |
+| --- | --- | --- | --- |
+| EX-01 — Care plan and events | Jess and authorised local/specialist teams | Plan/context, authored contacts/contributions/approved changes, effective dates, review/handover, amendments. | Full clinical content and authority under D-22; no diagnosis, prescription, or automatic risk workflow inferred. |
+| EX-02 — My progress | Kai; Deb only within separately approved sharing | Understandable approved progress, source/date, care-next-step context, questions for discussion. | Phase conflict D-21; authentication and visibility open. Not unlocked by a questionnaire link; no implied messaging inbox. |
+| EX-03 — Centre overview | Rachel; Ananya as approved | Caseload/workforce/performance/fidelity views, definitions, denominator, period/as-of, quality/context, action owner. | Operations Manager/Clinical Director may need different capabilities; no blanket response drill-down or assumed real-time refresh. |
+| EX-04 — Implementation | Sam with Rachel/Ananya | Readiness, implementation phase, approved fidelity evidence, local context, learning action and follow-up. | Aggregate/person-level boundaries and methods need D-22/D-23. |
+| EX-05 — Reporting and oversight | Priya/David, supported by Ananya | Approved report/cohort/method, source/quality/comparability, release version, permitted decisions/follow-up. | Aggregate/de-identified does not automatically mean safe disclosure; external recipients do not need care nav. |
+| EX-06 — Data exchange | Maya/Ananya and authorised release roles | Contract/schema/version, mappings, manifest, validations, approvals, delivery/acceptance and exceptions. | Could be a governed transfer rather than an app destination; linkage/transport/recipient contract unresolved. |
+| EX-07 — Research access | Helen and approved research/data governance | Catalogue/request criteria, study/purpose, evidence/approval conditions, release/expiry, findings/closure. | Request submission ≠ data access; National Research Office process and future trial scope need D-24. |
+| EX-08 — Data definitions | Ananya; Tom/Sam for approved use | Data dictionary, field/rule versions, lineage, reporting/fidelity definitions, quality ownership. | Definitions are not interchangeable with instrument scoring; publication requires the relevant authority. |
+
+Candidate content entities: care plan/event; metric/fidelity definition/version; aggregate reporting product/cohort; implementation action; data request/approval; exchange contract; release/manifest; research study/request/conditions. Model these outside the care-episode tree where appropriate and reference approved source records without duplicating or widening access.
+
+## 7. Role-to-surface model
+
+This is an access-design hypothesis, **not** a permission matrix ready to configure. D-12/D-23/D-24 must approve actual actions, scopes, fields, and conditions.
+
+| Persona/capability | Typical baseline home | Candidate addition | Never assume |
+| --- | --- | --- | --- |
+| Jess — P-04 | My work → person/episode → Assessment/Measures/Review. | EX-01 care/specialist work. | All-centre access, publication authority, or all operational lead rights. |
+| Kai — P-01 | Assigned participant surface only. | EX-02 approved own progress. | Private phone, independent completion, universal account access, or research consent. |
+| Deb — P-02 | Her own eligible contribution. | Separately approved shared/progress information. | Guardian authority or access to Kai's separate answers. |
+| Rachel — P-08 | Permitted team work/ownership view. | EX-03 centre oversight. | Detailed clinical access from management title or aggregate access. |
+| Tom — P-06 | Scoped registration/quality/correction work if granted. | EX-08 quality definitions/use and reporting support. | Correcting unsupported clinical answers or unilateral record merge. |
+| Ananya — P-07 | Scoped resolution and audit. | EX-05/EX-06/EX-08 data/report stewardship. | Unrestricted national/unit-record use or release authority by job title alone. |
+| Sam — P-10 | No automatic baseline clinical home. | EX-04 and permitted evidence/context. | Individual-record drill-down simply because the draft mentions it. |
+| Priya — P-11 | No baseline care interface. | EX-05 governed aggregate products. | Individual records or unconstrained benchmarking. |
+| David — P-12 | No baseline care interface. | EX-05 oversight/governance evidence. | Verified legal ownership or unrestricted raw data access. |
+| Maya — P-13 | No baseline care interface. | EX-06 governed exchange/output. | Care UI access or authority to link arbitrary identifiers. |
+| Helen — P-14 | No baseline care interface. | EX-07 approved research workflow/output. | Research approval for every person or all future studies. |
+| Guardian capability — P-03 | Approved decision pathway only. | Sharing only if separately approved. | Parent relationship equals authority or authority equals full answer access. |
+| Facilitator capability — P-05 | Limited task/session setup and neutral reset. | None implied. | Answer-reading, review, or administration rights. |
+| Administrator capability — P-09 | Permitted Administration areas. | Candidate configuration only if adopted. | Authority to invent policy, scoring, or clinical content. |
+
+## 8. Content model and metadata
+
+| Content type | Required metadata for usable IA | Key distinction |
+| --- | --- | --- |
+| Intake | Intake/person IDs, received/source facts, applicable episode link, field/check completeness, triage outcome/actor/time, waiting state/reason, owner, next action/review and history. | Registration, intake completion and clinical admission are distinct. |
+| Onward referral | Intake/episode/person links, destination/purpose, permitted information, actual attempts, receipt, receiving decision, evidence/source, YSCC/external owners, follow-up and resolution. | Sent, received, accepted and handover resolved are independent facts; external work remains owned. |
+| Person | Stable internal/source identifiers, permitted identity/contact attributes, provenance and available change history. | Source snapshot may not contain historic values. |
+| Episode | ID/number, start/end semantics, owner, centre, status/closure, referral context, dated allocation. | Registration/home centre can differ from service centre. |
+| Assessment | Episode/context, core/conditional plan, reasons, progress, owner, outstanding work, evidence reviews, decision references. | Not synonymous with one questionnaire response. |
+| Collection point | Episode/context, type, planned/due window, cadence/rule version, actual linked collection events. | Due date is not sent/submitted/reviewed date. |
+| Assignment | Instrument/version, respondent role/context, collection point, owner, due window, progress, reasons. | Reissue stays within the assignment; repeat collection is distinct. |
+| Attempt/session | Channel, permitted recipient reference, launch/sending state, expiry/end, observed events, supersession/reissue link. | Sent/opened is not verified respondent identity or completion. |
+| Response | Assignment/attempt, item answers/nonresponses, version, source respondent, recorder, assistance, draft/submission dates. | One accepted fulfilment; corrections are events, not replacement time points. |
+| Permission/authority | Purpose, subject/scope, decision-maker/authority, status, effective time, information/policy version, history. | Research, care, contact, family participation, and visibility must not collapse into one flag. |
+| Review | Reviewer, date, evidence set/revisions, findings/next action under approved content. | Review of partial evidence need not complete assessment. |
+| Correction | Target/revision, prior/new, editor/time, reason/source, applicable approval, resulting revision. | Preserve original respondent and recorder separately from editor. |
+| Resolution case | Candidate/link IDs, evidence, issue/owner, centre support, proposed impact, approval/action, recovery/audit. | Suspicion is not identity proof. |
+| Conditional service/feedback | Episode and specific event/respondent fields, actual date meanings, source/version, allowed visibility. | Service mode differs from questionnaire mode; feedback differs from clinical assessment. |
+
+Use the actual data type and cardinality from approved content. Valid zero, allowed nonresponse, missing, invalid data, and unavailable history require distinct labels. Source raw codes are not participant-facing options. Document the final backend schema and sensitive-field classifications separately before implementation.
+
+## 9. Labels and controlled vocabulary
+
+| Preferred label | Avoid conflating with | Notes |
+| --- | --- | --- |
+| My work | A universal all-user dashboard. | Shows only relevant responsibilities; title/landing content may adapt to capability. |
+| People | Every supporter or staff user account. | This section finds the person's care record; actor management is separate. |
+| Care episode | 90-day review, programme, assessment. | Show identifier and dates; use “episode” in staff context only after terminology validation. |
+| Assessment | Assignment, response, or clinical review event. | Contains core/conditional plan and overall progress. |
+| Measures | All clinical care activity. | Houses collections/assignments/responses, not full medication/care-plan scope. |
+| Questionnaire / request | Instrument codes or reporting batch names. | Candidate participant wording, subject to clinical/content testing. |
+| Submitted | Saved draft, delivered invitation, or reviewed. | Confirmation states the actual operation. |
+| Consent and respondents | One all-purpose consent checkbox. | Plain sublabels separate purpose, authority, relationship, and visibility. |
+| Disposition | Referral source, referral action, or assessment completion. | Clinical term needs label testing; a clearer display label may be approved without changing the model. |
+| Data quality | Permission to change any record. | Issues, correction requests, and approved resolution are separate tasks. |
+
+Keep labels consistent across nav, page heading, breadcrumb, queue, and message where relevant. Historical source labels remain available in provenance without replacing the user-facing vocabulary. Document stakeholder abbreviations and definitions before showing CMDCS, CQR, PMHC-MDS, or other jargon to non-specialists.
+
+## 10. Search and filter design
+
+**People search:** Clearly state current authorised scope. Use approved matching identifiers and discriminating context; do not invent which identity fields may be displayed. Do not use free-form clinical-answer search as the default person lookup. A match opens the person/episode context, not a blind edit action.
+
+**Intake/referral filters:** Intake state, missing-check/waiting reason, reviewer/owner and next review date; referral destination, transmission outcome, unconfirmed receipt, pending/declined receiving decision and unresolved handover. Include only permitted metadata/counts. Open ST-27/ST-28 and preserve the return filters. Intake completed/proceed patients waiting for assessment belong to the downstream assessment queue, not unfinished intake.
+
+**Work and measure filters:** Independent facets for task type, owner, episode/centre where authorised, assignment progress, due window, blocker, instrument, collection point, and channel. “Overdue” is derived, not a replacement for response/link state. Keep query/filters visible and clearable; show permitted result counts.
+
+**Quality search:** Issue type, owner, evidence/request status, relevant centre, and age/due state where defined. A quality case links to the authoritative record rather than copying a second editable answer.
+
+**History:** Default to the selected episode. Explicitly choose cross-episode history and filter instrument/collection dates; show source/version/respondent and comparison warnings. Do not join incomparable scores into one uninterrupted trend.
+
+**Candidate reporting:** Separately scoped products/definitions, period, cohort, method, refresh, and quality. No global search that mixes unrestricted clinical answers with external reporting products.
+
+**Empty/error states:** Distinguish no matches within scope, restrictive filters, search failure, no assignments yet, missing historic coverage, and unavailable access. Offer spelling/filter adjustment, permitted scope change, or responsible support. Never expose that an unauthorised person/record exists. Avoid auto-creating a duplicate from a zero-results screen.
+
+Search query logging, recent-search suggestions, and browser history can contain sensitive information. Do not enable their persistence without an approved privacy policy. Counts and autocomplete must obey the same access boundary as record retrieval.
+
+## 11. Navigation, deep links, and wayfinding
+
+- Keep the staff global shell stable within a granted capability set; do not reshape it on every record. Show active section and local destination in text and visual styling.
+- Keep person and selected-episode context visible during all clinical/collection actions. When switching, protect unsaved work and clear stale content before loading the new context.
+- Use episode-local tabs for Overview, Assessment, Measures, and Consent and respondents. Conditional tabs appear only when adopted and authorised. Deep work surfaces are linked contextually, not all exposed as tabs.
+- A location breadcrumb can show People → person → episode → assignment; collapse middle segments on narrow screens while retaining the immediate parent. Identity labels must use approved privacy-safe display fields.
+- Distinguish browser Back, “Back to results” (restores permitted query/filter/position), and a parent link. Closing a modal returns focus to its trigger without resetting an underlying form.
+- Logical deep-link shape may use opaque IDs: `/people/:personId/episodes/:episodeId/measures/:assignmentId`. This is an illustrative route contract, not an implemented path. Never put names, answers, phone numbers, or consent values in URLs.
+- Invitation credentials require a separate protected access design; do not expose tokens to general logs, analytics, support messages, or copied staff navigation. Token format/storage is a security decision, not defined by the sitemap.
+- Every deep link rechecks authorisation and shows enough permitted context to orient the user. Unavailable/denied access gets a safe return route without disclosing protected target facts.
+- Every screen has an inbound path and an appropriate return/exit. Administrative previews use synthetic participant contexts, not a shortcut around real permissions.
+
+## 12. Responsive and cross-channel structure
+
+Desktop staff work can use a visible sidebar and episode-local navigation. At narrower widths, preserve the active context and key task actions; test an accessible compact menu rather than squeezing tables until identity/state becomes unreadable. Do not prescribe a native mobile app or five-tab bottom bar merely to match a pattern.
+
+Mobile self-report is a focused task sequence, not a reduced staff app. Tablet collection deliberately replaces staff context with participant mode and ends at a neutral screen. The same approved instrument/version and vocabulary carry across eligible channels; identical layout is not required.
+
+Cross-device continuity exists only where approved draft/access rules support it. A consistent IA does not justify promising resume that is not implemented. Timeouts, local clearing, and retained drafts must remain understandable in every channel.
+
+## 13. IA validation plan
+
+| Task to test | Persona/capability | Expected home / distinction |
+| --- | --- | --- |
+| Register a new patient without bypassing intake; resume missing-information/triage work. | Authorised intake staff | People → New person → ST-27; no core assessment until the recorded proceed gate. |
+| Follow an externally sent referral through failure, receipt, receiving decision and handover. | Authorised referral owner | ST-28 and My work; retain unresolved ownership after episode closure. |
+| Find the active assessment for a person with two episodes. | Jess | People → explicit episode → Assessment, not a merged history. |
+| Identify what remains after one SMS response is submitted. | Jess/Rachel within scope | Measures/Assessment; separate response and review/completion. |
+| Reissue an expired link without creating a new review. | Authorised staff | Assignment detail → delivery recovery. |
+| Locate who supplied and who entered an answer. | Jess/Tom as allowed | Response detail/provenance, not inferred from channel. |
+| Correct corroborated data or request clinical evidence. | Tom | Data quality → correct/request; distinct routes. |
+| Resolve suspected duplicate with centre support. | Ananya | Resolution case, not a direct merge button in person search. |
+| Record a purpose-specific decision or check authority. | Authorised staff/P-03 pathway | Consent and respondents; not Administration unless changing policy itself. |
+| Submit an eligible contribution without seeing other answers. | Kai/Deb | Scoped participant sequence only. |
+| End a tablet session safely. | P-05 | Neutral reset; staff authentication and authorisation to return. |
+| Interpret a centre/fidelity finding with missing data. | Rachel/Sam, candidate | EX-03/EX-04 with definition/context/quality, not a raw clinical queue. |
+| Request an aggregate product or approved research data. | Priya/Helen, candidate | Governed product/request pathway; not People search. |
+
+Use card sorting where grouping is uncertain, tree testing before visual polish, then first-click and task-based testing. Record success, wrong turns, time-to-find, interpretation errors, assistance, and terminology confusion. The complete source actor set should inform research, but conditional/candidate branches are tested against their explicit scope status.
+
+## 14. Maintenance and implementation handoff
+
+Screen IDs in this file are canonical. Requirements/rules are owned by document 05; decisions/sources by document 01. Before changing an object's home or label, update its inbound links, breadcrumb, queue entry, flow, help copy, and acceptance task. Avoid separate incompatible “admin” and “clinical” definitions of the same instrument or person record.
+
+Before implementation-ready sign-off, resolve permission granularity, sensitive-field classifications, approved clinical/content inventories, state transitions, actual route/access design, search/matching rules, and adopted candidate surfaces. This is a full proposed architecture of known baseline and source-driven candidate needs, not a claim that unspecified clinical, research, integration, or reporting contracts are complete.
+
+
+## 15. Report tab update — 16 September 2026
+
+The staff person workspace includes **Report**, scoped to the selected care period. Its primary surface is a clinician-editable questionnaire report with Summary, Changes over time, Clinician interpretation and Next steps. Below the report, dated questionnaire evidence shows the sequence of collections for each instrument/version and respondent; expandable details contain individual answers and clinical reviews. Report change log retains authored versions, section-level before/after wording, editor identity/role, time and source snapshots. History & change log brings saved questionnaire changes, follow-ups and care events together within the selected care period. New or corrected evidence flags the report for an update. This staff view does not grant participant or guardian access to the report. See [the report requirements](05-requirements-and-logic.md#9-clinician-progress-report).

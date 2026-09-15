@@ -1,0 +1,1110 @@
+import { RegisterPerson } from "../features/Intake";
+import { ReferralForm } from "../features/Referrals";
+import { canAssess } from "../intake";
+import { collectionSetupLabel } from "../overview";
+import { useEffect, useRef, useState } from "react";
+import {
+  ArrowRight,
+  MessageSquare,
+  Tablet,
+  ClipboardPen,
+  Check,
+  ShieldCheck,
+  Eye,
+} from "lucide-react";
+import { useStore } from "../store";
+import {
+  TODAY,
+  formatDate,
+  DEMO_STAFF,
+  currentStaff,
+  reducer,
+  qualityResolutionError,
+  formatTimestamp,
+} from "../model";
+import { DEMO_INSTRUMENT, INSTRUMENTS, getInstrument } from "../instruments";
+import { Modal, Field, Button, Notice, Select, Badge, Success } from "./UI";
+import CollectionDetails from "./CollectionDetails";
+import InstrumentPreview from "./InstrumentPreview";
+import InstrumentLibrary from "./InstrumentLibrary";
+import EditResponses from "./EditResponses";
+import ReviewResponses from "./ReviewResponses";
+import ClinicianQuestionnaire from "./ClinicianQuestionnaire";
+const formValues = (e) => Object.fromEntries(new FormData(e.currentTarget));
+export default function Forms({
+  modal,
+  onClose,
+  openModal,
+  navigate,
+  startQuestionnaire,
+  notify,
+}) {
+  const { state, dispatch, commit } = useStore();
+  const staff = currentStaff(state);
+  const [channel, setChannel] = useState(
+      modal.collectionDraft?.channel || modal.channel || "SMS link",
+    ),
+    [respondent, setRespondent] = useState(
+      modal.collectionDraft?.respondent || "Person",
+    ),
+    [assistance, setAssistance] = useState(
+      modal.collectionDraft?.assistance ||
+        (modal.channel === "Clinician entry" ? "Transcribed" : "Independent"),
+    ),
+    [done, setDone] = useState(false),
+    [name, setName] = useState(""),
+    [episodeAction, setEpisodeAction] = useState("Paused"),
+    [previewOpen, setPreviewOpen] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [collectionConfirmed, setCollectionConfirmed] = useState(false);
+  const [collectionAttempted, setCollectionAttempted] = useState(false);
+  const [resolution, setResolution] = useState("Confirmed unchanged");
+  const [collectionType, setCollectionType] = useState("Follow-up review");
+  const [instrumentVersion, setInstrumentVersion] = useState(
+    DEMO_INSTRUMENT.version,
+  );
+  const selectedInstrument = getInstrument(instrumentVersion);
+  const previewTrigger = useRef(null);
+  const wasPreviewOpen = useRef(false);
+  useEffect(() => {
+    if (wasPreviewOpen.current && !previewOpen) previewTrigger.current?.focus();
+    wasPreviewOpen.current = previewOpen;
+  }, [previewOpen]);
+  const p = state.people.find((p) => p.id === modal.personId),
+    e = p?.episodes.find((e) => e.id === modal.episodeId),
+    c = e?.collections.find((c) => c.id === modal.collectionId);
+  const save = (action, message) => {
+    const fullAction = { ...modal, ...action };
+    if (reducer(state, fullAction) === state) {
+      setFormError(
+        "This change could not be saved. Check the values and whether the record is still available for this action.",
+      );
+      return false;
+    }
+    const result = commit(fullAction);
+    if (result.error) {
+      setFormError(result.error);
+      return false;
+    }
+    onClose();
+    notify(message);
+    return true;
+  };
+  const footer = (label, disabled = false) => (
+    <div className="modal-footer">
+      {formError && (
+        <p className="field-error form-save-error" role="alert">
+          {formError}
+        </p>
+      )}
+      <Button type="button" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button variant="primary" type="submit" disabled={disabled}>
+        {label}
+      </Button>
+    </div>
+  );
+  if (modal.type === "instrument")
+    return <InstrumentLibrary onClose={onClose} />;
+  if (modal.type === "questionnaire-preview")
+    return (
+      <Modal
+        title="Questionnaire preview"
+        subtitle={`${c.version} · ${p.name} · ${c.label}`}
+        onClose={onClose}
+        closeLabel="Close preview"
+        className="questionnaire-preview-modal"
+      >
+        <InstrumentPreview
+          instrument={getInstrument(c.version)}
+          respondent={c.respondent}
+          onBack={onClose}
+          backLabel={
+            modal.returnToDetails ? "Back to collection details" : undefined
+          }
+        />
+      </Modal>
+    );
+  if (modal.type === "collection-details")
+    return (
+      <CollectionDetails
+        person={p}
+        episode={e}
+        collection={c}
+        canCompleteAsClinician={staff?.role === "Clinician" && canAssess(p, e)}
+        onClose={onClose}
+        onAction={(type) =>
+          openModal({
+            ...modal,
+            type: type === "clinician-entry" ? "collection" : type,
+            channel: type === "clinician-entry" ? "Clinician entry" : undefined,
+            returnToDetails: true,
+          })
+        }
+      />
+    );
+  if (modal.type === "clinician-questionnaire")
+    return (
+      <ClinicianQuestionnaire
+        person={p}
+        episode={e}
+        collection={c}
+        onClose={onClose}
+      />
+    );
+  if (modal.type === "edit-responses")
+    return (
+      <EditResponses
+        person={p}
+        episode={e}
+        collection={c}
+        onClose={onClose}
+        notify={notify}
+      />
+    );
+  if (modal.type === "new-person")
+    return (
+      <RegisterPerson onClose={onClose} navigate={navigate} notify={notify} />
+    );
+  if (["new-referral", "referral-event"].includes(modal.type))
+    return <ReferralForm modal={modal} onClose={onClose} notify={notify} />;
+  if (["plan", "collection"].includes(modal.type) && !canAssess(p, e))
+    return (
+      <Modal title="Complete intake first" onClose={onClose}>
+        <div className="form-body">
+          <Notice>
+            A completed intake with a proceed decision and receiving owner is
+            required before assessment work.
+          </Notice>
+          <Button
+            onClick={() => {
+              onClose();
+              navigate(`/people/${p?.id}?tab=intake`);
+            }}
+          >
+            Open intake
+          </Button>
+        </div>
+      </Modal>
+    );
+  if (modal.type === "plan")
+    return (
+      <Modal
+        title={previewOpen ? "Questionnaire preview" : "Plan a follow-up"}
+        subtitle={
+          previewOpen
+            ? `${selectedInstrument.version} · ${p.name}`
+            : `${p.name} · Care episode ${e.number}`
+        }
+        onClose={previewOpen ? () => setPreviewOpen(false) : onClose}
+        closeLabel={previewOpen ? "Close preview" : "Close dialog"}
+        className={previewOpen ? "questionnaire-preview-modal" : ""}
+      >
+        <form
+          hidden={previewOpen}
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            const result = commit({
+              ...modal,
+              type: "PLAN",
+              ...formValues(ev),
+            });
+            if (result.error) {
+              setFormError(result.error);
+              return;
+            }
+            if (ev.nativeEvent.submitter?.value === "collection") {
+              const collection = result.state.people
+                .find((person) => person.id === p.id)
+                .episodes.find((episode) => episode.id === e.id)
+                .collections.at(-1);
+              openModal({
+                type: "collection",
+                personId: p.id,
+                episodeId: e.id,
+                collectionId: collection.id,
+              });
+            } else {
+              onClose();
+            }
+            notify("Follow-up added to the existing care episode.");
+          }}
+        >
+          <div className="form-body">
+            <Notice>
+              This creates a new collection point in care episode {e.number},
+              preserving the previous responses. Choose Set up collection to
+              save the follow-up and choose how to collect the response.
+            </Notice>
+            <Field
+              label="Collection point type"
+              hint="Sample labels only. Choose the due date explicitly below."
+            >
+              <select
+                name={collectionType === "Custom" ? undefined : "label"}
+                value={collectionType}
+                onChange={(event) => setCollectionType(event.target.value)}
+              >
+                <option>Follow-up review</option>
+                <option>90-day review</option>
+                <option>Custom</option>
+              </select>
+            </Field>
+            {collectionType === "Custom" && (
+              <Field label="Collection point name">
+                <input
+                  name="label"
+                  required
+                  maxLength={60}
+                  placeholder="Describe this follow-up"
+                />
+              </Field>
+            )}
+            <details className="setup-disclosure">
+              <summary>
+                Existing collection plan ({e.collections.length})
+              </summary>
+              <ul>
+                {[...e.collections]
+                  .sort((a, b) => a.due.localeCompare(b.due))
+                  .map((col) => (
+                    <li key={col.id}>
+                      {col.label} · {formatDate(col.due)} ·{" "}
+                      {col.response === "Submitted"
+                        ? "Response received"
+                        : col.assignment}
+                    </li>
+                  ))}
+              </ul>
+            </details>
+            <Field
+              label="Due date"
+              hint="The prototype uses 15 September 2026 as today. Cadence is set explicitly for this sample."
+            >
+              <input name="due" type="date" min={TODAY} required />
+            </Field>
+            <div className="instrument-field">
+              <Field label="Instrument" hint={selectedInstrument.description}>
+                <select
+                  name="version"
+                  value={instrumentVersion}
+                  onChange={(event) => setInstrumentVersion(event.target.value)}
+                >
+                  {INSTRUMENTS.map((instrument) => (
+                    <option key={instrument.version} value={instrument.version}>
+                      {instrument.version}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <button
+                ref={previewTrigger}
+                type="button"
+                className="preview-launcher"
+                onClick={() => setPreviewOpen(true)}
+              >
+                <Eye size={20} aria-hidden="true" />
+                <span>
+                  <strong>Preview questionnaire</strong>
+                  <small>
+                    Up to {selectedInstrument.questions.length} questions · Try
+                    different paths
+                  </small>
+                </span>
+                <ArrowRight size={18} aria-hidden="true" />
+              </button>
+            </div>
+            <Field label="Respondent">
+              <input value={p.name} readOnly />
+            </Field>
+          </div>
+          <div className="modal-footer">
+            {formError && (
+              <p className="field-error form-save-error" role="alert">
+                {formError}
+              </p>
+            )}
+            <Button type="button" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">Add follow-up</Button>
+            <Button variant="primary" type="submit" value="collection">
+              Set up collection
+              <ArrowRight size={18} aria-hidden="true" />
+            </Button>
+          </div>
+        </form>
+        {previewOpen && (
+          <InstrumentPreview
+            key={selectedInstrument.version}
+            instrument={selectedInstrument}
+            respondent="Person"
+            onBack={() => setPreviewOpen(false)}
+            backLabel="Back to follow-up"
+          />
+        )}
+      </Modal>
+    );
+  if (modal.type === "collection") {
+    const allowed =
+      p.consent === "Recorded" &&
+      p.contact === "Suitable" &&
+      e.status === "Active" &&
+      c.response !== "Submitted" &&
+      !!getInstrument(c.version) &&
+      getInstrument(c.version).respondents.includes(respondent) &&
+      (channel !== "Clinician entry" || staff?.role === "Clinician") &&
+      !["Cancelled", "Paused"].includes(c.assignment);
+    const blockers = [
+      p.consent !== "Recorded" &&
+        `Assessment participation is ${p.consent.toLowerCase()}.`,
+      p.contact !== "Suitable" &&
+        `Contact suitability is ${p.contact.toLowerCase()}.`,
+      e.status !== "Active" &&
+        `This care episode is ${e.status.toLowerCase()}.`,
+      c.response === "Submitted" && "A response has already been submitted.",
+      !getInstrument(c.version) && "This questionnaire version is unavailable.",
+      getInstrument(c.version) &&
+        !getInstrument(c.version).respondents.includes(respondent) &&
+        "This questionnaire collects the person’s own perspective. They can receive support with their answers.",
+      channel === "Clinician entry" &&
+        staff?.role !== "Clinician" &&
+        "Choose a Clinician profile to complete this questionnaire.",
+      ["Cancelled", "Paused"].includes(c.assignment) &&
+        `This collection is ${c.assignment.toLowerCase()}.`,
+    ].filter(Boolean);
+    return (
+      <Modal
+        title={
+          done
+            ? "Collection is ready"
+            : channel === "Clinician entry"
+              ? "Complete as clinician"
+              : collectionSetupLabel(c)
+        }
+        subtitle={`${p.name} · ${c.label}`}
+        onClose={onClose}
+      >
+        {done ? (
+          <div className="form-body">
+            <Success
+              title={
+                channel === "SMS link"
+                  ? "Sample link prepared"
+                  : "Sample session ready"
+              }
+              action={
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    startQuestionnaire({
+                      ...modal,
+                      channel,
+                      respondent,
+                      assistance,
+                      attemptId: c.attempts.at(-1)?.id,
+                    });
+                    onClose();
+                  }}
+                >
+                  Open sample questionnaire
+                  <ArrowRight size={18} />
+                </Button>
+              }
+            >
+              This simulated {channel.toLowerCase()} attempt is recorded against
+              the existing assignment. No message has been sent.
+            </Success>
+            <Notice>
+              Submitting the sample questionnaire will update this record. The
+              clinical review will remain pending.
+            </Notice>
+          </div>
+        ) : (
+          <form
+            noValidate
+
+            onSubmit={(ev) => {
+              ev.preventDefault();
+              if (!allowed) return;
+              setCollectionAttempted(true);
+              if (!collectionConfirmed) {
+                const control = ev.currentTarget.elements.namedItem(
+                  "collection-confirmed",
+                );
+                requestAnimationFrame(() => {
+                  control?.focus();
+                  control
+                    ?.closest("label")
+                    ?.scrollIntoView({ block: "center" });
+                });
+                return;
+              }
+              const result = commit({
+                ...modal,
+                type: "DELIVER",
+                channel,
+                respondent,
+                assistance,
+              });
+              if (result.error) {
+                setFormError(result.error);
+                return;
+              }
+              if (channel === "Clinician entry") {
+                openModal({
+                  personId: p.id,
+                  episodeId: e.id,
+                  collectionId: c.id,
+                  type: "clinician-questionnaire",
+                });
+                return;
+              }
+              setDone(true);
+            }}
+          >
+            <div className="form-body">
+              <div className="context-line">
+                <span>{c.version}</span>
+                <Badge>
+                  {c.link === "Expired" ? "Previous link expired" : c.response}
+                </Badge>
+              </div>
+              {!allowed && (
+                <Notice tone="amber">
+                  <strong>Collection needs attention</strong>
+                  <ul>
+                    {blockers.map((blocker) => (
+                      <li key={blocker}>{blocker}</li>
+                    ))}
+                  </ul>
+                  {(p.consent !== "Recorded" || p.contact !== "Suitable") && (
+                    <button
+                      type="button"
+                      className="inline-link"
+                      onClick={() =>
+                        openModal({
+                          ...modal,
+                          type: "consent",
+                          returnToCollection: true,
+                          returnToDetails: false,
+                          collectionDraft: { channel, respondent, assistance },
+                        })
+                      }
+                    >
+                      Update participation & contact
+                    </button>
+                  )}
+                </Notice>
+              )}
+              <Field label="Who is supplying the answers?">
+                <select
+                  value={respondent}
+                  onChange={(ev) => {
+                    setRespondent(ev.target.value);
+                    setCollectionConfirmed(false);
+                  }}
+                >
+                  <option value="Person">{p.name}</option>
+                  {p.family &&
+                    getInstrument(c.version)?.respondents.includes(
+                      "Family respondent",
+                    ) && <option value="Family respondent">{p.family}</option>}
+                </select>
+              </Field>
+              <fieldset className="channel-options">
+                <legend>How will the response be collected?</legend>
+                {[
+                  ["SMS link", "Account-free sample link", MessageSquare],
+                  ["Clinic tablet", "In-person device handover", Tablet],
+                  [
+                    "Clinician entry",
+                    "Complete the questionnaire in your workspace",
+                    ClipboardPen,
+                  ],
+                ].map(([label, description, Icon]) => (
+                  <label
+                    className={`channel ${channel === label ? "chosen" : ""}`}
+                    key={label}
+                  >
+                    <input
+                      type="radio"
+                      name="channel"
+                      value={label}
+                      checked={channel === label}
+                      disabled={
+                        label === "Clinician entry" &&
+                        staff?.role !== "Clinician"
+                      }
+                      onChange={() => {
+                        setChannel(label);
+                        setCollectionConfirmed(false);
+                        setAssistance(
+                          label === "Clinician entry"
+                            ? "Transcribed"
+                            : "Independent",
+                        );
+                      }}
+                    />
+                    <Icon size={23} />
+                    <span>
+                      <strong>{label}</strong>
+                      <small>{description}</small>
+                    </span>
+                    <span className="radio-dot" />
+                  </label>
+                ))}
+              </fieldset>
+              <Field label="Assistance">
+                <select
+                  value={assistance}
+                  onChange={(ev) => {
+                    setAssistance(ev.target.value);
+                    setCollectionConfirmed(false);
+                  }}
+                >
+                  {(channel === "Clinician entry"
+                    ? ["Transcribed", "Joint completion"]
+                    : ["Independent", "Supported"]
+                  ).map((a) => (
+                    <option key={a}>{a}</option>
+                  ))}
+                </select>
+              </Field>
+              <section className="setup-summary" aria-label="Collection checks">
+                <h3>Check this collection</h3>
+                <dl className="metadata">
+                  <div>
+                    <dt>Answering</dt>
+                    <dd>
+                      {respondent === "Family respondent" ? p.family : p.name}
+                      {respondent === "Family respondent"
+                        ? " · own family contribution"
+                        : " · own answers"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>
+                      {channel === "SMS link"
+                        ? "SMS destination"
+                        : "Collection setting"}
+                    </dt>
+                    <dd>
+                      {channel === "SMS link"
+                        ? "No phone number connected · sample link only"
+                        : channel === "Clinic tablet"
+                          ? "Shared clinic device · staff handover"
+                          : `${staff?.name} records the respondent’s answers`}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Assistance</dt>
+                    <dd>{assistance}</dd>
+                  </div>
+                  <div>
+                    <dt>Participation / contact</dt>
+                    <dd>
+                      {p.consent} / {p.contact}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Source</dt>
+                    <dd>
+                      {p.participationRecord?.source ||
+                        "Source not recorded · illustrative sample settings"}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+              {channel === "SMS link" && (
+                <details className="setup-disclosure">
+                  <summary>Preview sample message</summary>
+                  <p className="message-preview">
+                    Your care team at Northside Centre invites you to complete a
+                    short check-in. Open your request to see what it involves
+                    and how to get help.
+                    <br />
+                    <br />
+                    [Sample questionnaire link]
+                  </p>
+                  <p className="muted">
+                    Preview only. No message will be sent.
+                  </p>
+                </details>
+              )}
+              <Notice>
+                {respondent === "Family respondent"
+                  ? `${p.family} provides their own contribution. This does not establish guardian authority.`
+                  : `${p.name} can answer this sample check-in by SMS link, clinic tablet, or with staff recording the answers.`}
+              </Notice>
+              <label className="check-field">
+                <input
+                  type="checkbox"
+                  name="collection-confirmed"
+                  required
+                  disabled={!allowed}
+                  checked={collectionConfirmed}
+                  onChange={(ev) => setCollectionConfirmed(ev.target.checked)}
+                  aria-invalid={
+                    (collectionAttempted && !collectionConfirmed) || undefined
+                  }
+                  aria-describedby={
+                    collectionAttempted && !collectionConfirmed
+                      ? "collection-confirm-error"
+                      : undefined
+                  }
+                />
+                <span>
+                  I have checked the sample respondent, participation settings,
+                  and collection method shown above.
+                </span>
+              </label>
+              {collectionAttempted && !collectionConfirmed && (
+                <p
+                  id="collection-confirm-error"
+                  className="field-error"
+                  role="alert"
+                >
+                  Check the respondent, participation settings and method, then
+                  tick the confirmation to continue.
+                </p>
+              )}
+            </div>
+            {footer(
+              channel === "SMS link"
+                ? "Prepare sample link"
+                : channel === "Clinician entry"
+                  ? "Begin questionnaire"
+                  : "Start sample session",
+              !allowed,
+            )}
+          </form>
+        )}
+      </Modal>
+    );
+  }
+  if (modal.type === "review")
+    return (
+      <ReviewResponses
+        person={p}
+        episode={e}
+        collection={c}
+        initialNote={modal.reviewDraft || ""}
+        onClose={onClose}
+        notify={notify}
+        onEdit={(reviewDraft) =>
+          openModal({
+            ...modal,
+            type: "edit-responses",
+            returnToDetails: false,
+            returnToReview: true,
+            reviewDraft,
+          })
+        }
+      />
+    );
+  if (modal.type === "consent")
+    return (
+      <Modal
+        title="Update sample participation settings"
+        subtitle={p.name}
+        onClose={onClose}
+      >
+        <form
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            save(
+              { type: "CONSENT", ...formValues(ev) },
+              "Sample participation settings updated and recorded in history.",
+            );
+          }}
+        >
+          <div className="form-body">
+            <Notice>
+              Illustrative permission settings for this prototype. Research and
+              guardian authority stay separate.
+            </Notice>
+            <Field label="Assessment participation">
+              <select name="consent" defaultValue={p.consent}>
+                <option>Recorded</option>
+                <option>Not recorded</option>
+                <option>Withdrawn</option>
+              </select>
+            </Field>
+            <Field label="Contact suitability">
+              <select name="contact" defaultValue={p.contact}>
+                <option>Suitable</option>
+                <option>Not confirmed</option>
+                <option>Unsuitable</option>
+              </select>
+            </Field>
+            <Field
+              label="Source or reference"
+              hint="Use a fictional reference. Existing seed settings have no verified source."
+            >
+              <input
+                name="source"
+                required
+                placeholder="e.g. sample participation discussion note"
+              />
+            </Field>
+            <Field label="Reason for recording or changing these settings">
+              <textarea name="reason" rows={3} required />
+            </Field>
+            <p className="muted">
+              Recorded as {staff?.name}. The source, time and previous settings
+              are retained in history.
+            </p>
+            <p className="muted">
+              Withdrawing participation or marking contact unsuitable revokes
+              active sample links. Existing submitted responses stay in the
+              history.
+            </p>
+          </div>
+          {footer("Save sample settings")}
+        </form>
+      </Modal>
+    );
+  if (modal.type === "episode")
+    return (
+      <Modal
+        title="Episode actions"
+        subtitle={`${p.name} · Care episode ${e.number}`}
+        onClose={onClose}
+      >
+        <form
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            save(
+              { type: "EPISODE", status: episodeAction, ...formValues(ev) },
+              `Care episode ${episodeAction.toLowerCase()}. Outstanding collections reconciled.`,
+            );
+          }}
+        >
+          <div className="form-body">
+            <Field label="Action">
+              <select
+                value={episodeAction}
+                onChange={(ev) => setEpisodeAction(ev.target.value)}
+              >
+                <option value="Paused">Pause care episode</option>
+                <option value="Closed">Close care episode</option>
+              </select>
+            </Field>
+            <Field label="Reason for this decision">
+              <textarea
+                name="reason"
+                required
+                rows={3}
+                placeholder="Explain why this period of care is being paused or closed…"
+              />
+            </Field>
+            <Field label="Next care step">
+              <textarea
+                name="nextCareStep"
+                required
+                rows={2}
+                placeholder="Record the agreed action or handover…"
+              />
+            </Field>
+            <Field label="Owner of the next step">
+              <input name="nextCareOwner" defaultValue={p.owner} required />
+            </Field>
+            <div className="impact">
+              <h3>Review the impact</h3>
+              <p>
+                <strong>
+                  {
+                    e.collections.filter((c) => c.response !== "Submitted")
+                      .length
+                  }
+                </strong>{" "}
+                outstanding collections will be{" "}
+                {episodeAction === "Paused" ? "paused" : "cancelled"}.
+              </p>
+              <p>
+                Active sample links will be revoked. Existing responses and
+                review history are retained.
+              </p>
+              <p>No clinical admission decision is made by this action.</p>
+            </div>
+            <label className="check-field">
+              <input type="checkbox" required />
+              <span>
+                I have reviewed outstanding work and the next care step.
+              </span>
+            </label>
+          </div>
+          {footer(
+            episodeAction === "Paused" ? "Pause episode" : "Close episode",
+            e.status !== "Active",
+          )}
+        </form>
+      </Modal>
+    );
+  if (modal.type === "correct") {
+    const issue = state.issues.find((i) => i.id === modal.issueId);
+    return (
+      <Modal
+        title="Review data quality issue"
+        subtitle={`${p.name} · ${issue.title}`}
+        onClose={onClose}
+      >
+        <form
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            const action = {
+              ...modal,
+              type: "RESOLVE_ISSUE",
+              resolution,
+              ...formValues(ev),
+            };
+            const problem = qualityResolutionError(state, action);
+            if (problem) {
+              setFormError(problem);
+              return;
+            }
+            save(
+              action,
+              resolution === "Needs investigation"
+                ? "Investigation recorded. This issue remains open."
+                : "Issue resolved. The outcome and source are recorded in history.",
+            );
+          }}
+        >
+          <div className="form-body">
+            <Notice>{issue.detail}</Notice>
+            <Field label="Current value">
+              <input value={p[issue.field]} readOnly />
+            </Field>
+            <Field label="Outcome">
+              <select
+                value={resolution}
+                onChange={(event) => {
+                  setResolution(event.target.value);
+                  setFormError("");
+                }}
+              >
+                <option value="Confirmed unchanged">Confirm unchanged</option>
+                <option value="Corrected value">Correct the value</option>
+                <option value="Needs investigation">Needs investigation</option>
+              </select>
+            </Field>
+            {resolution === "Corrected value" && (
+              <Field label="Corrected value">
+                {issue.field === "dob" ? (
+                  <input
+                    name="value"
+                    type="date"
+                    max={TODAY}
+                    required
+                    defaultValue={p.dob}
+                  />
+                ) : (
+                  <select name="value" defaultValue={p.contact}>
+                    <option>Suitable</option>
+                    <option>Unsuitable</option>
+                    <option>Not confirmed</option>
+                  </select>
+                )}
+              </Field>
+            )}
+            <Field
+              label={
+                resolution === "Needs investigation"
+                  ? "Source checked so far"
+                  : "Verified source"
+              }
+            >
+              <input
+                name="source"
+                required
+                placeholder="e.g. sample referral record, 14 September"
+              />
+            </Field>
+            <Field label="Reason for this outcome">
+              <textarea name="reason" rows={3} required />
+            </Field>
+            {resolution === "Needs investigation" && (
+              <Field label="Next investigation step">
+                <textarea
+                  name="nextStep"
+                  required
+                  rows={2}
+                  placeholder="What needs to be verified next?"
+                />
+              </Field>
+            )}
+            <Notice>
+              {resolution === "Needs investigation"
+                ? `The issue stays open, with ${staff?.name} responsible for the next investigation step.`
+                : "The original value, source and outcome stay in history. Submitted questionnaire answers are unaffected."}
+            </Notice>
+          </div>
+          {footer(
+            resolution === "Needs investigation"
+              ? "Save investigation"
+              : resolution === "Confirmed unchanged"
+                ? "Confirm unchanged"
+                : "Save correction",
+          )}
+        </form>
+      </Modal>
+    );
+  }
+  const content = {
+    about: [
+      "About this prototype",
+      "A working model of the YSCC assessment experience.",
+      <>
+        <p>
+          Explore staff work, people and care episodes, sample questionnaire
+          collection, clinical review, and data corrections.
+        </p>
+        <Notice>
+          Fictional people, sample instrument and sample policies. Changes stay
+          in this browser. SMS delivery, staff authentication, and clinical
+          scoring are not connected.
+        </Notice>
+        <p>
+          The scenario date is 15 September 2026. Use Administration to reset
+          the sample workspace.
+        </p>
+      </>,
+    ],
+    scope: [
+      "Your workspace",
+      "Northside Centre",
+      <>
+        <div className="scope-detail">
+          <ShieldCheck size={30} />
+          <div>
+            <h3>Northside Centre</h3>
+            <p>
+              {staff?.name} · {staff?.role}
+            </p>
+          </div>
+          <Badge>Selected</Badge>
+        </div>
+        <p>
+          This prototype includes one centre. Live organisation scopes and role
+          permissions require a connected access system.
+        </p>
+      </>,
+    ],
+    profile: [
+      staff?.name || "Staff profile",
+      "Sample staff profile",
+      <>
+        <dl className="metadata">
+          <div>
+            <dt>Role</dt>
+            <dd>{staff?.role}</dd>
+          </div>
+          <div>
+            <dt>Workspace</dt>
+            <dd>Northside Centre</dd>
+          </div>
+          <div>
+            <dt>Access</dt>
+            <dd>Prototype demonstration</dd>
+          </div>
+        </dl>
+        <Notice>
+          No real account is signed in. All displayed people and records are
+          fictional.
+        </Notice>
+        <Field label="Demo staff profile">
+          <select
+            value={staff?.id || ""}
+            onChange={(event) =>
+              dispatch({ type: "SWITCH_STAFF", staffId: event.target.value })
+            }
+          >
+            {DEMO_STAFF.map((person) => (
+              <option key={person.id} value={person.id}>
+                {person.name} · {person.role}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </>,
+    ],
+    rules: [
+      "Collection rules",
+      "Illustrative configuration",
+      <>
+        <p>
+          Questions adapt to earlier answers. Hidden questions are excluded from
+          completion and comparison. Follow-ups require a named collection point
+          and an explicit due date inside an active episode.
+        </p>
+        <p>
+          Reissuing adds a delivery attempt to the same assignment. Submission
+          fulfils that assignment once and leaves clinical review pending.
+        </p>
+        <Notice>
+          Cadence, requiredness, eligibility, and completion policy are sample
+          assumptions awaiting governance approval.
+        </Notice>
+      </>,
+    ],
+    messages: [
+      "Message preview",
+      "Sample SMS content",
+      <>
+        <div className="message-preview">
+          Your care team has invited you to complete a short check-in. Open your
+          secure request to see what it involves and get help if you need it.
+          <br />
+          <br />
+          [Scoped questionnaire link]
+        </div>
+        <Notice>
+          This is a local preview. No SMS provider, contact number, or live send
+          is connected.
+        </Notice>
+      </>,
+    ],
+    reset: [
+      "Reset sample workspace",
+      "This affects only the prototype’s sample data.",
+      <>
+        <p>
+          Return to the six original people and their sample tasks. Your local
+          demo changes and questionnaire drafts will be removed.
+        </p>
+        <Button
+          variant="primary"
+          onClick={() => {
+            dispatch({ type: "RESET" });
+            sessionStorage.removeItem("yscc-session");
+            sessionStorage.removeItem("yscc-draft");
+            Object.keys(sessionStorage)
+              .filter(
+                (key) =>
+                  key.startsWith("yscc-staff-draft:") ||
+                  key.startsWith("yscc-scroll:"),
+              )
+              .forEach((key) => sessionStorage.removeItem(key));
+            onClose();
+            navigate("/");
+            notify("Sample workspace reset.");
+          }}
+        >
+          Reset sample data
+        </Button>
+      </>,
+    ],
+  }[modal.type];
+  if (!content) return null;
+  return (
+    <Modal title={content[0]} subtitle={content[1]} onClose={onClose}>
+      <div className="form-body prose">{content[2]}</div>
+      <div className="modal-footer">
+        <Button onClick={onClose}>Done</Button>
+      </div>
+    </Modal>
+  );
+}

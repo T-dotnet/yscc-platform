@@ -1,0 +1,15 @@
+node_modules/
+.next/
+.next-*/
+.vercel/
+.env*
+!.env.example
+
+# Generated review/build artifacts
+output/
+tmp/
+
+# Local OS/editor files
+.DS_Store
+.idea/
+.vscode/
