@@ -3,3 +3,4 @@ dist/
 .next/
 .next-intake/
 .DS_Store
+.vercel

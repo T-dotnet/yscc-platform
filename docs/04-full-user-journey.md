@@ -1,6 +1,6 @@
 # YSCC Platform — Full user journey
 
-Version 0.3 · 15 September 2026 · Care journey plus CMDCS learning-system journeys  
+Version 0.4 · 16 September 2026 · Care journey aligned to the current local prototype  
 [Document index](README.md) · [Personas](03-personas.md) · [User flows](07-user-flows.md)
 
 ## 1. Journey boundaries
@@ -8,6 +8,8 @@ Version 0.3 · 15 September 2026 · Care journey plus CMDCS learning-system jour
 This is the full proposed lifecycle from intake to episode closure, including activities that continue across the lifecycle. It synthesises S1, provisional S2, and relevant codebook implications; it is **not** a fully agreed Slack journey. Validate the complete discussion and clinical pathway under D-01 in [product framing](01-product-framing.md).
 
 The journey describes experiences, staff actions, system responsibilities, and handoffs over time. The [user flows](07-user-flows.md) describe screen/action sequences. Emotional needs are hypotheses, not interview findings. CP1's named personas now supply the actor model. Section 14 adds service/evidence journeys without forcing commissioning or research into a patient's clinical workflow.
+
+**Current prototype coverage:** The local prototype now demonstrates the care-delivery portion of this journey with fictional data: registration into owned intake; intake/triage states and proceed/do-not-proceed outcomes; assessment-plan creation after proceeding; collection setup and recovery; participant, tablet and clinician completion; clinical review; follow-up; correction; referral follow-through; and pause/close actions. It keeps a selected care period in context, including a closed historical period, and provides a clinician-editable questionnaire-based report. This is coverage of the interaction sequence, not proof that the journey is clinically approved or production-ready. Browser-local storage and sample role/policy checks do not verify external sending/receipt, service handover, server-side access control, real clinical content or the broader service-improvement/system-evidence journeys.
 
 Five rules keep the journey coherent:
 

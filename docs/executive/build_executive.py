@@ -132,7 +132,7 @@ class Page:
             raise ValueError(f'Decision panel overflow: {d["id"]}/{self.local_page}: {h}')
         self.text(p['basis'], M, 793, CW-64, size=7.1, leading=9.2, colour=MUTED)
         self.label(f'{self.local_page}/{self.local_total}', W-M-32, 795, 32, MUTED, 8)
-        self.text('YSCC / Working proposal / 15 September 2026', M, 822, CW-85,
+        self.text(f'YSCC / Working proposal / {data["date"]}', M, 822, CW-85,
                   size=7, leading=8.5, colour=MUTED)
         if self.global_page:
             self.label(f'PACK {self.global_page:02}/{total_pages}', W-M-69, 822, 69, MUTED, 7)
@@ -421,7 +421,7 @@ def cover(c):
     p.label('PRODUCT + UX / EXECUTIVE EDITION',M,89,CW,'#B9D7C8',8)
     p.text('Better care.\nClearer evidence.',M,136,CW,size=40,leading=49,font='Serif',colour=WHITE)
     p.text('Eight concise briefs for alignment, investment and delivery decisions.',M,261,CW-35,size=15,leading=22,colour='#D6E5DB')
-    p.text('A working proposal, not clinical, legal or launch approval. Based on the detailed September 2026 documentation and supplied CMDCS persona draft.',M,327,CW,size=10.5,leading=15,colour='#C0D4C6')
+    p.text('A local prototype demonstrates sample care-collection tasks. This remains a working proposal, not clinical, legal or launch approval.',M,327,CW,size=10.5,leading=15,colour='#C0D4C6')
     p.line(M,397,W-M,397,'#648776')
     p.label('READ THE WHOLE PACK OR OPEN A BRIEF',M,415,CW,'#B9D7C8',8)
     start=2
@@ -435,7 +435,7 @@ def cover(c):
     p.rect(M,720,CW,63,'#304D3E',radius=4)
     p.label('HOW TO READ STATUS',M+13,731,CW-26,'#B9D7C8',7.7)
     p.text('Reported = captured source. Proposed = design baseline. Conditional / candidate = needs scope approval. All personas remain draft hypotheses.',M+13,747,CW-26,size=9.2,leading=12.5,colour=WHITE)
-    p.label(f"15 SEPTEMBER 2026  /  {data['version'].upper()}",M,815,CW-80,'#BCD1C3',7.4)
+    p.label(f"{data['date'].upper()}  /  {data['version'].upper()}",M,815,CW-80,'#BCD1C3',7.4)
     p.label(f'PACK 01/{total_pages}',W-M-70,815,70,'#BCD1C3',7.4)
     c.showPage()
 
@@ -451,7 +451,7 @@ def make_canvas(path,title):
 def write_text_editions():
     # Generated editable reading copies; content.json is the build source of truth.
     for d in documents:
-        lines=[f'# YSCC Platform - {d["title"]}', '', 'Executive edition 1.0 | 15 September 2026 | Working proposal', '', f'Detailed source: [../{d["source"]}](../{d["source"]})', '']
+        lines=[f'# YSCC Platform - {d["title"]}', '', f'{data["version"]} | {data["date"]} | {data["status"]}', '', f'Detailed source: [../{d["source"]}](../{d["source"]})', '']
         for page in d['pages']:
             lines.extend(['## '+page['title'],'',page['subtitle'],''])
             for b in page['blocks']:

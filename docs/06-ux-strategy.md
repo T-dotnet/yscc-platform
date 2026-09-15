@@ -1,6 +1,6 @@
 # YSCC Platform — UX strategy
 
-Version 0.3 · 15 September 2026 · CMDCS persona-aligned research and design strategy  
+Version 0.4 · 16 September 2026 · Strategy aligned to the current local prototype  
 [Document index](README.md) · [Product framing](01-product-framing.md) · [Requirements and logic](05-requirements-and-logic.md)
 
 ## 1. Strategic direction
@@ -10,6 +10,8 @@ Design around a trustworthy, understandable contribution to a continuous care re
 The initial design priority is **safe participation and correct interpretation**, followed by operational efficiency and longitudinal insight. A shorter flow is not a success if it hides visibility, loses provenance, or makes incomplete care look complete.
 
 This strategy does not assume the shared-core model, instruments, consent policy, or scheduling rules are approved. Decisions are tracked in product framing. CP1 adds 11 named personas across Care Delivery, Service Improvement, and System Evidence; D-20–D-24 track naming, phase conflicts, wider workflows, and governance.
+
+**Current prototype as a validation instrument:** The local prototype has progressed the experience from static specification into testable tasks: work prioritisation, person/care-period selection, mandatory intake and referral follow-through, sample collection across channels, review/correction, follow-up, episode actions and an editable progress report. It gives the team a shared, fictional-data artefact for usability, content and operational walkthroughs. It is not itself validation: browser-local persistence and sample role/policy behaviour do not establish real access enforcement, delivery, clinical content/scoring, production accessibility conformance, external handover or service/system reporting. Use the existing acceptance criteria and UX/UI audit as inputs to structured testing rather than treating a working demo as evidence of user understanding or release readiness.
 
 ## 2. Experience principles and design decisions
 

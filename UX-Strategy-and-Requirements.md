@@ -2,11 +2,11 @@
 
 **Expanded documentation:** The [eight-document product and UX set](docs/README.md) is the current working expansion, including the supplied CMDCS persona draft and its scope conflicts. This combined baseline is retained as an input/reference; its FR-01–FR-46 identifiers are retained in the new requirements document. FR-29 and FR-32 reflect the product-owner clarification of 15 September 2026: Clinicians and Data Managers may edit responses, and every edit must be logged.
 
-**Status:** Revised working baseline, 15 September 2026; stakeholder decisions remain open  
+**Status:** Revised working baseline, aligned to the local prototype on 16 September 2026; stakeholder decisions remain open  
 **Sources:** Captured YSCC #ux discussion and headspace EP data extract codebook (2025), listed below  
 **Purpose:** Align product, clinical, design, and engineering work before prototype or implementation.
 
-**Intake update, 15 September 2026:** The product owner confirms that every new patient must go through intake (U1/D-25 in document 01). Registration alone cannot start the core assessment. The current [intake/referral contract](docs/05-requirements-and-logic.md#7-intake-and-onward-referral-contract), F-01/F-17, ST-27/ST-28 and AC-23–AC-29 specify the revised pathway; clinical/service parameters remain D-26/D-27.
+**Intake and prototype update, 16 September 2026:** The product owner confirms that every new patient must go through intake (U1/D-25 in document 01). Registration alone cannot start the core assessment. The current [intake/referral contract](docs/05-requirements-and-logic.md#7-intake-and-onward-referral-contract), F-01/F-17, ST-27/ST-28 and AC-23–AC-29 specify the pathway; the local prototype now demonstrates registration, owned intake, proceed/do-not-proceed decisions, assessment-plan gating and separate referral follow-through with fictional data. Clinical/service parameters remain D-26/D-27, and the prototype is not production evidence.
 
 ## 1. Product framing
 
@@ -374,9 +374,9 @@ Brand assets and the final visual system remain design inputs to obtain before f
 5. **Pre-launch validation:** resolve required decisions, verify approved rules with stakeholders, exercise the applicable acceptance scenarios below, and review participant accessibility/content and permissions.
 6. **Later enhancements:** advanced analytics, richer administration, and additional languages. Basic rules and versioning are already required in phases 1–2.
 
-## 8. Design acceptance criteria for the first prototype
+## 8. Design acceptance criteria and current local prototype
 
-The first clickable prototype should demonstrate the baseline scenarios with synthetic records and clearly labelled sample policy/content. These are design acceptance criteria; a prototype does not prove server-side permissions, delivery, persistence, or clinical scoring.
+The current clickable prototype demonstrates the baseline scenarios with synthetic records and clearly labelled sample policy/content, including the mandatory intake/referral sequence added in this revision. These remain design acceptance criteria, not a test-certification claim: browser-local persistence and sample role checks do not prove server-side permissions, external delivery, production persistence, multi-user concurrency, or clinical scoring.
 
 | Scenario | Observable acceptance condition | Requirements |
 | --- | --- | --- |

@@ -5,9 +5,13 @@ Version 0.3 · 15 September 2026 · Baseline flows and persona-derived candidate
 
 ## 1. Reading the flows
 
-These are proposed interaction specifications, not implemented screens or approved clinical pathways. F-01–F-11 and F-17 describe the baseline; F-12 is conditional; F-13–F-16 cover the broader CMDCS persona needs as candidate scope. L-xx rules and open D-xx decisions govern the branches. Use synthetic data and labelled sample policies until decisions are approved.
+These are proposed interaction specifications, not approved clinical pathways. The local prototype now demonstrates representative screens and state changes for F-01–F-06, F-08–F-09 and F-17 with synthetic data and labelled sample policies; it does not implement every branch or establish production behaviour. F-01–F-11 and F-17 describe the baseline; F-12 is conditional; F-13–F-16 cover the broader CMDCS persona needs as candidate scope. L-xx rules and open D-xx decisions govern the branches.
 
 ST IDs are staff surfaces, PT IDs are scoped participant surfaces, and EX IDs are candidate expansion surfaces. An ID describes a logical screen/view, not a prescribed URL or separate engineering component. Every access and mutation requires server-side authorisation; hiding an action is not enforcement.
+
+### Current prototype coverage and boundary
+
+Implemented local interactions cover registration/intake and intake gating, referral event tracking, the worklist and person workspace, collection preparation/replacement and sample participant/tablet/clinician completion, review and correction with history, follow-up planning, pause/close actions, and the clinician report. The prototype also demonstrates selected care-period context and browser-local activity history. It does not implement F-07 duplicate resolution, F-10 purpose/withdrawal, F-11 governed publication, F-12 conditional services/satisfaction, or F-13–F-16 broader-platform workflows. Its sample role checks, local persistence and event recording are not substitutes for server enforcement, real delivery/receipt, approved policy/content or production audit guarantees.
 
 ## 2. Primary care flow
 

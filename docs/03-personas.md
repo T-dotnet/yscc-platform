@@ -13,6 +13,10 @@ The previous collection-focused profiles are mapped to the source personas. Stab
 
 ## 2. Persona map
 
+### Prototype role mapping and limit
+
+The current local prototype uses sample **Clinician** and **Data Manager** profiles to demonstrate role-sensitive tasks: clinician collection, clinical review, intake decisions, follow-up, episode actions and report editing; Data Manager response editing and data-quality history. It also presents fictional people, family-support context, intake/referral work and a participant questionnaire path. This is a task-coverage aid, not validation of the CMDCS personas, a production role model, centre/aggregate access, or permission to infer access from a job title.
+
 | Source group | ID and adopted profile | Source page | Scope distinction |
 | --- | --- | --- | --- |
 | Care Delivery | P-04 — Jess Tran, Treating Clinician | 4 | Baseline assessment plus candidate wider care/specialist workflow. |

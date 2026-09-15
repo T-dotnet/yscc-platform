@@ -1,7 +1,7 @@
 {
-  "version": "Executive edition 1.2",
-  "date": "15 September 2026",
-  "status": "Working proposal; mandatory new-patient intake confirmed under U1/D-25",
+  "version": "Executive edition 1.3",
+  "date": "16 September 2026",
+  "status": "Working proposal; local prototype demonstrates the care-collection foundation",
   "documents": [
     {
       "id": "01",
@@ -16,7 +16,7 @@
           "blocks": [
             {
               "type": "statement",
-              "text": "Make it clear what is needed, who contributes, what has happened and who acts next."
+              "text": "A local prototype now demonstrates sample intake, collection, review, follow-up and correction."
             },
             {
               "type": "path",
@@ -60,7 +60,7 @@
           ],
           "decision": {
             "title": "LEADERSHIP TAKEAWAY",
-            "text": "Align on the care-collection foundation and approve wider capabilities separately. The proposal is ready for review, not production authorisation."
+            "text": "Use the local prototype to test the care-collection foundation, and approve wider capabilities separately. It is not production authorisation."
           },
           "basis": "Detailed brief 01, sections 1-6. S1/S2 and CMDCS persona draft (CP1)."
         },
@@ -436,12 +436,12 @@
             {
               "type": "note",
               "title": "The journey includes loops and exits",
-              "body": "More evidence returns to steps 2-5. A pause or incomplete exit records reason, owner and next action. Only continuing care enters recurring collection; one refusal does not automatically close care."
+              "body": "The local prototype demonstrates these states with fictional data. More evidence returns to steps 2-5; a pause or incomplete exit records reason, owner and next action. Only continuing care enters recurring collection."
             }
           ],
           "decision": {
             "title": "WHAT LEADERSHIP MUST VALIDATE",
-            "text": "Mandatory new-patient intake is confirmed (D-25). Finalise intake fields/triage and external handover rules (D-26/D-27). Repeated reviews stay in the same episode."
+            "text": "The local prototype demonstrates mandatory intake, referral follow-through and repeated reviews in one episode. Finalise intake/triage and external-handover rules (D-26/D-27)."
           },
           "basis": "Detailed brief 04, J-01 to J-09; U1/D-25 confirms intake. Clinical/service detail remains D-26/D-27."
         },
@@ -567,12 +567,12 @@
             {
               "type": "note",
               "title": "Scope stays explicit",
-              "body": "Mandatory new-patient intake is confirmed (D-25). Operational details remain proposed. Satisfaction, services and the eight CR capabilities need separate scope decisions."
+              "body": "The local prototype demonstrates intake, collection, review, correction and referral with sample data. Operational details remain proposed; satisfaction, services and the eight CR capabilities need separate scope decisions."
             }
           ],
           "decision": {
             "title": "APPROVAL STANDARD",
-            "text": "Approve clinical content, permissions, operational rules and in-scope tests before enabling production workflows. A working prototype is not proof of security, persistence, scoring or delivery."
+            "text": "Approve clinical content, permissions, operational rules and in-scope tests before production. Local browser persistence and sample roles do not prove security, delivery, clinical scoring or server enforcement."
           },
           "basis": "Detailed brief 05: FR-01 to FR-46, L-01 to L-29 and AC-01 to AC-29; U1/D-25."
         },
@@ -724,7 +724,7 @@
                 [
                   "03",
                   "Prototype",
-                  "Exercise clinician, SMS/tablet, family, recovery and operational handoffs."
+                  "Exercise the implemented local intake, collection, review, correction, referral and report tasks."
                 ],
                 [
                   "04",
@@ -1136,7 +1136,7 @@
           ],
           "decision": {
             "title": "MANDATORY INTAKE AND NEXT STEPS",
-            "text": "Every new patient goes through intake (D-25); registration is not completion. Waiting and non-proceeding intakes retain an owner and next action. Clinical admission remains separate."
+            "text": "The local prototype now demonstrates this gate with sample records. Registration is not completion; waiting and non-proceeding intakes retain an owner and next action. Clinical admission remains separate."
           },
           "basis": "F-01/F-02/F-05/F-08/F-09/F-17; U1/D-25. Intake detail D-26/D-27 remains proposed."
         },
@@ -1914,11 +1914,11 @@
               "items": [
                 {
                   "title": "My work",
-                  "body": "Owned intake waits, referral follow-up and due work."
+                  "body": "Implemented locally: owned intake waits, referral follow-up and due work."
                 },
                 {
                   "title": "People",
-                  "body": "Register new patients into intake; then select care context."
+                  "body": "Implemented locally: register into intake, then select the care context."
                 },
                 {
                   "title": "Data quality",
@@ -1964,7 +1964,7 @@
             "title": "FINDABILITY TEST",
             "text": "Can staff find the right episode, distinguish a response from a reviewed assessment, and return to their work without losing context? Test labels and paths before visual sign-off."
           },
-          "basis": "Detailed brief 08, ST-00 to ST-28; intake rule U1/D-25. Surfaces are proposed, not implemented routes."
+          "basis": "Detailed brief 08, ST-00 to ST-28; intake rule U1/D-25. Core staff surfaces are demonstrated locally; production routes and access remain proposed."
         },
         {
           "title": "Separate spaces. Governed connections.",

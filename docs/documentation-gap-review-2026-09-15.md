@@ -1,5 +1,7 @@
 # YSCC documentation gap review
 
+> **Historical review:** The local prototype was subsequently extended on 16 September 2026 with mandatory intake/referral follow-through, selected care periods, report editing and additional local workflow coverage. Read this review as its dated evidence, not as the current implementation status; see [the documentation index](README.md) for the aligned description and boundaries.
+
 15 September 2026 · Review findings and proposed follow-up · No requirements or product behaviour changed
 
 ## Overall assessment

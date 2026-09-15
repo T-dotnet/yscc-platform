@@ -1,8 +1,8 @@
 # YSCC Platform — Product and UX documentation
 
-Version 0.3 · 15 September 2026 · Includes the supplied CMDCS persona profiles
+Version 0.4 · 16 September 2026 · Aligned to the current interactive prototype
 
-Eight separate documents expand the [revised combined baseline](../UX-Strategy-and-Requirements.md). They describe a proposed product, not an approved clinical protocol or implemented system. U1/D-25 records the product owner’s mandatory-intake decision; other stakeholder approvals and full Slack-thread verification are not claimed.
+Eight separate documents expand the [revised combined baseline](../UX-Strategy-and-Requirements.md). They describe a proposed product and its current local interactive demonstration, not an approved clinical protocol or production system. U1/D-25 records the product owner’s mandatory-intake decision; other stakeholder approvals and full Slack-thread verification are not claimed.
 
 ## Documents
 
@@ -31,9 +31,11 @@ Suggested reading order: framing → personas and VPC → journey → requiremen
 
 The full #ux discussion was not retrieved. The journey is a synthesis of the available material. Personas are complete as working artefacts, not research-validated descriptions of actual people. All illustrative policy behaviour must be labelled as sample behaviour in a prototype.
 
-## Confirmed intake update — 15 September 2026
+## Current prototype alignment — 16 September 2026
 
-Every new patient must go through intake before the core assessment or ongoing-care pathway (U1/D-25). Registration alone does not complete intake. The [requirements contract](05-requirements-and-logic.md#7-intake-and-onward-referral-contract) now defines proposed registration fields, intake/triage/waiting states, progression gates and onward-referral follow-through, including external ownership. F-01/F-17, ST-27/ST-28 and AC-23–AC-29 carry this into flows, IA and acceptance scenarios. D-26/D-27 retain remaining clinical/service details. This documentation update does not implement the flow in the prototype.
+Every new patient must go through intake before the core assessment or ongoing-care pathway (U1/D-25). Registration alone does not complete intake. The prototype now demonstrates this gate with local sample data: registration opens owned intake; intake records its state, history and proceed/do-not-proceed outcome; a completed/proceed outcome enables an initial assessment plan; and referral activity retains separate sending, receipt, decision and handover states.
+
+The same local prototype demonstrates a worklist, person/care-period context, collection through sample SMS, tablet and clinician-entry paths, review, correction history, follow-up planning, pause/close actions, a clinician-editable report and instrument administration. It uses browser-local storage, fictional people, sample policy/content and local role checks only. It does **not** prove production authentication or authorisation, external referral/SMS delivery, multi-user concurrency, clinical instruments/scoring, approved policy, or release readiness. The [requirements contract](05-requirements-and-logic.md#7-intake-and-onward-referral-contract), F-01/F-17, ST-27/ST-28 and AC-23–AC-29 remain the intended specification; D-26/D-27 retain remaining clinical/service decisions.
 
 ## Shared vocabulary
 
@@ -69,6 +71,6 @@ All requirements except FR-15 and FR-39 form a **proposed** MVP baseline, subjec
 
 Account-free SMS, tablet self-entry, clinician entry, and appropriate family participation are reported launch capabilities. This does not mean every instrument supports every respondent or channel. Monthly collection is possible, not mandated. A support route is required; automated clinical escalation is not included without separate approval.
 
-No application, clinical instrument, permissions implementation, live delivery, or production compliance has been created or verified by this documentation work.
+A local interactive prototype has been created and is documented above. No production application, clinical instrument, server-enforced permissions implementation, live delivery, or production compliance has been created or verified by this documentation work.
 
 The supplied persona PDF expands the product horizon beyond collection to service improvement and system evidence. Its Stage 2 self-report statement conflicts with the captured Slack MVP requirement; D-21 tracks that conflict. Wider dashboards, care recording, reporting, integration, and research are visible candidate scope (CR-01–CR-08), not hidden omissions or new launch commitments.

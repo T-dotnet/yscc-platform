@@ -112,6 +112,12 @@ Related source personas: P-06 — Tom Fletcher, P-07 — Ananya Rao, and P-08 �
 
 ## 6. Fit hypotheses and validation
 
+### Current prototype evidence, not validation
+
+The local prototype makes several hypotheses observable: Kai-style participant completion can use a clear introduction, help/exit, conditional sample questions, review and a neutral end state; Jess-style work can begin from an owned queue and continue through collection, review, follow-up and a report; and Tom/Ananya-style work can inspect a correction with provenance and history. Intake and referral queues also make ownership and waiting states visible. These are implemented sample interactions, not evidence that the personas, needs, gains, usability or operational impact have been validated with users.
+
+The prototype uses fictional records, browser-local state and sample policies. It has no live participant contact, external referral, authenticated role enforcement, real instrument/scoring or governed reporting/release workflow. Test the hypotheses with representative people and approved content before treating an observed demo path as product fit.
+
 | ID | Hypothesis | Test | Evidence of fit / warning |
 | --- | --- | --- | --- |
 | V-01 | Participants understand purpose, visibility, and next step. | Teach-back after the introduction and confirmation screens. | Accurate explanation without coaching; submission alone does not establish comprehension. |

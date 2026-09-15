@@ -1,6 +1,6 @@
 # YSCC Platform — Full information architecture
 
-Version 0.3 · 15 September 2026 · Baseline architecture plus CMDCS candidate extensions  
+Version 0.4 · 16 September 2026 · Architecture aligned to the current local prototype  
 [Document index](README.md) · [User flows](07-user-flows.md) · [Requirements and logic](05-requirements-and-logic.md)
 
 ## 1. Purpose and architecture boundaries
@@ -10,6 +10,8 @@ This IA covers organisation, labels, navigation, search, and the underlying cont
 CP1's three persona groups—Care Delivery, Service Improvement, System Evidence—explain who creates/uses data. They are **not automatically three navigation menus**. Daily care work, scoped operational work, and governed external evidence need different surfaces and access boundaries.
 
 Baseline staff navigation is **My work, People, Data quality, Administration**. Participants use narrowly scoped collection surfaces. Services/Feedback are conditional on D-15. Wider care, progress dashboards, service learning, reporting/exchange, and research are candidate extensions CR-01–CR-08, with phase/governance decisions still open. A governed external output can satisfy a stakeholder need without a new portal.
+
+**Current prototype navigation:** The local prototype realises the core staff navigation above, then person-level **Overview**, **Assessment**, **Intake**, **Referrals**, **Report** and **History**. A care-period selector appears where a person has more than one episode; current and historical records stay distinct. Participant completion and questionnaire preview are intentionally focused experiences rather than a reduced staff workspace. These are local prototype surfaces, not a production sitemap or access contract: the app uses fictional records and browser-local state, while real route authorisation, participant authentication, token protection, persistent back-end data, broader centre/reporting workspaces and candidate research/exchange areas remain outside the demonstrated implementation.
 
 ## 2. Domain and content relationships
 

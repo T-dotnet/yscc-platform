@@ -1,6 +1,6 @@
 # YSCC Platform — Requirements and logic
 
-Version 0.3 · 15 September 2026 · Baseline preserved; CMDCS candidate capabilities added  
+Version 0.4 · 16 September 2026 · Baseline aligned to the current local prototype  
 [Document index](README.md) · [Source, scope, and decision register](01-product-framing.md)
 
 ## 1. Status and specification conventions
@@ -12,6 +12,12 @@ All FRs except FR-15 and FR-39 form the proposed MVP baseline. FR-15 satisfactio
 The rules below make expected behaviour testable without inventing clinical thresholds, age rules, reminder intervals, instrument content, or retention periods. Open D-xx decisions are dependencies, not optional post-launch refinements. A prototype may use labelled sample rules; production requires approved rules or explicit exclusion of the affected workflow.
 
 Interpret “must” in a proposed requirement as the intended implementation obligation **if approved and in scope**. It does not represent a legal conclusion or proof of compliance.
+
+### Current local prototype coverage — 16 September 2026
+
+The interactive prototype now exercises representative portions of the baseline with fictional records: FR-01 care periods and mandatory intake; FR-06–FR-14 collection points, pinned questionnaire versions, response history, review and corrections; FR-16–FR-21 sample delivery/participant paths; FR-30–FR-38 work queues, audit, intake/referral ownership and episode actions; and the clinician report interaction described in section 9. It uses browser-local persistence and sample conditions to make these flows testable.
+
+This is not a claim that every FR, rule or acceptance scenario is implemented. In particular, production authentication/authorisation, policy configuration, purpose-specific consent enforcement, external SMS/referral delivery, server audit/retention, interoperability, multi-user concurrency, clinical instruments/scoring and candidate reporting/research capabilities are not established by the prototype. Requirements and acceptance scenarios remain the delivery target and require approved policy/content plus implemented-environment verification.
 
 ## 2. Functional requirements
 
