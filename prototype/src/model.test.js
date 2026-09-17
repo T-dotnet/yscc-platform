@@ -13,6 +13,11 @@ import {
   collectionActor,
   personEventText,
 } from "./model.js";
+import {
+  getInstrument,
+  LIKERT_INSTRUMENT,
+  questionnaireState,
+} from "./instruments.js";
 const ctx = {
   personId: "YS-1024",
   episodeId: "EP-1024-01",
@@ -73,7 +78,7 @@ test("older mock data is replaced once with the refreshed branching scenarios", 
   const updated = upgradeSampleData(old);
   assert.deepEqual(old, before);
   assert.equal(updated.people[0].name, "Kai Thompson");
-  assert.equal(updated.sampleRevision, 4);
+  assert.equal(updated.sampleRevision, 5);
   assert.equal(
     updated.audit.some((item) => item.id === "old-edit"),
     false,
@@ -89,11 +94,73 @@ test("a follow-up adds a pinned collection in the existing episode and preserves
     due: "2026-10-15",
   });
   assert.equal(next.people[0].episodes.length, 1);
-  assert.equal(next.people[0].episodes[0].collections.length, 3);
+  assert.equal(
+    next.people[0].episodes[0].collections.length,
+    seed.people[0].episodes[0].collections.length + 1,
+  );
   assert.equal(collection(next).version, VERSION);
   assert.deepEqual(
     next.people[0].episodes[0].collections[0],
     seed.people[0].episodes[0].collections[0],
+  );
+});
+test("a care event is added to the selected episode with its event and recording dates", () => {
+  const seed = createSeed();
+  const next = reducer(seed, {
+    ...ctx,
+    type: "ADD_CARE_EVENT",
+    eventType: "medication",
+    eventDate: TODAY,
+    medicationName: "Sample medication",
+    medicationChange: "Dose changed",
+    dose: "25 mg daily",
+    reason: "Reviewed after appointment",
+    notes: "Monitor until the next review.",
+  });
+  const event = next.people[0].episodes[0].events[0];
+  assert.equal(event.actionType, "ADD_CARE_EVENT");
+  assert.equal(event.eventType, "medication");
+  assert.equal(event.eventDate, TODAY);
+  assert.equal(event.fields.medicationName, "Sample medication");
+  assert.equal(event.fields.dose, "25 mg daily");
+  assert.equal(event.actor, "Jess Taylor");
+  assert.ok(event.timestamp);
+  assert.deepEqual(
+    next.people[0].episodes[0].collections,
+    seed.people[0].episodes[0].collections,
+  );
+});
+test("care events reject missing type-specific data and dates outside the episode", () => {
+  const seed = createSeed();
+  assert.deepEqual(
+    reducer(seed, {
+      ...ctx,
+      type: "ADD_CARE_EVENT",
+      eventType: "medication",
+      eventDate: TODAY,
+      medicationChange: "Started",
+    }),
+    seed,
+  );
+  assert.deepEqual(
+    reducer(seed, {
+      ...ctx,
+      type: "ADD_CARE_EVENT",
+      eventType: "other",
+      eventDate: "2025-01-01",
+      summary: "Outside the care period",
+    }),
+    seed,
+  );
+  assert.deepEqual(
+    reducer(seed, {
+      ...ctx,
+      type: "ADD_CARE_EVENT",
+      eventType: "other",
+      eventDate: "2026-02-31",
+      summary: "Invalid calendar date",
+    }),
+    seed,
   );
 });
 test("reissue adds an attempt without creating another assignment or deleting the draft", () => {
@@ -112,6 +179,32 @@ test("submission is accepted once and does not complete a clinical review or alt
   assert.equal(next.people[0].episodes[0].disposition, "Admitted");
   assert.deepEqual(submit(next), next);
 });
+
+test("supported tablet completion does not create a clinical review task", () => {
+  const started = reducer(deliver(createSeed()), {
+    ...ctx,
+    type: "DELIVER",
+    channel: "Clinic tablet",
+    respondent: "Person",
+    assistance: "Supported",
+  });
+  const next = reducer(started, {
+    ...ctx,
+    type: "SUBMIT",
+    channel: "Clinic tablet",
+    attemptId: collection(started).attempts.at(-1)?.id,
+    answers: createSampleAnswers({
+      participation: "In person",
+      support: "A little support",
+      next: "My next steps",
+    }),
+  });
+  assert.equal(collection(next).review, "Not required");
+  assert.equal(
+    getTasks(next).some((task) => task.collection.id === collection(next).id),
+    false,
+  );
+});
 test("withdrawal revokes active links and prevents later delivery or submission", () => {
   let s = deliver(createSeed());
   s = reducer(s, {
@@ -123,6 +216,59 @@ test("withdrawal revokes active links and prevents later delivery or submission"
   assert.equal(collection(s).link, "Revoked");
   assert.deepEqual(deliver(s), s);
   assert.deepEqual(submit(s), s);
+});
+
+test("consent requests are sent before a participant decision and retain withdrawal history", () => {
+  const state = createSeed();
+  const sent = reducer(state, {
+    ...ctx,
+    type: "CONSENT_SEND",
+    consentId: "service-improvement",
+    channel: "SMS link",
+  });
+  const request = sent.people[0].consentRequests[0];
+  assert.equal(request.status, "Sent");
+  assert.equal(sent.people[0].consent, "Recorded");
+  const accepted = reducer(sent, {
+    ...ctx,
+    type: "CONSENT_DECISION",
+    consentRequestId: request.id,
+    status: "Accepted",
+  });
+  assert.equal(accepted.people[0].consentRequests[0].status, "Accepted");
+  const withdrawn = reducer(accepted, {
+    ...ctx,
+    type: "CONSENT_WITHDRAW",
+    consentRequestId: request.id,
+  });
+  const finalRequest = withdrawn.people[0].consentRequests[0];
+  assert.equal(finalRequest.status, "Withdrawn");
+  assert.deepEqual(
+    finalRequest.history.map((entry) => entry.status),
+    ["Sent", "Accepted", "Withdrawn"],
+  );
+  assert.equal(withdrawn.people[0].consent, "Recorded");
+});
+
+test("declining assessment participation blocks only that consent's future collection", () => {
+  const state = createSeed();
+  state.people[0].consentRequests = [];
+  const sent = reducer(state, {
+    ...ctx,
+    type: "CONSENT_SEND",
+    consentId: "assessment-participation",
+    channel: "SMS link",
+  });
+  const request = sent.people[0].consentRequests[0];
+  const declined = reducer(sent, {
+    ...ctx,
+    type: "CONSENT_DECISION",
+    consentRequestId: request.id,
+    status: "Declined",
+  });
+  assert.equal(declined.people[0].consent, "Not recorded");
+  assert.equal(declined.people[0].consentRequests[0].status, "Declined");
+  assert.deepEqual(deliver(declined), declined);
 });
 test("episode closure cancels outstanding work and preserves historical responses", () => {
   const seed = deliver(createSeed());
@@ -374,19 +520,49 @@ test("submitted sample records have a coherent delivery and submission history",
   }
 });
 
-test("reset mock responses all use the current questionnaire and coherent sample history", () => {
+test("reset mock responses use available questionnaire versions and coherent sample history", () => {
   const saved = createSeed();
   saved.sampleRevision = 2;
   const upgraded = upgradeSampleData(saved);
   for (const person of upgraded.people)
     for (const episode of person.episodes)
       for (const response of episode.collections) {
-        assert.equal(response.version, VERSION);
+        const instrument = getInstrument(response.version);
+        assert.ok(instrument, response.version);
         if (response.response === "Submitted") {
-          assert.equal(response.answers.length, 24);
+          assert.equal(response.answers.length, instrument.questions.length);
+          assert.equal(
+            questionnaireState(instrument, response.answers).complete,
+            true,
+          );
           assert.ok(response.submittedAt);
         }
       }
+});
+
+test("revision four mock data gains longitudinal Likert responses once", () => {
+  const saved = createSeed();
+  const mia = saved.people.find((person) => person.name === "Mia Robinson");
+  mia.episodes[0].collections = mia.episodes[0].collections.filter(
+    (collection) => collection.version !== LIKERT_INSTRUMENT.version,
+  );
+  saved.sampleRevision = 4;
+  saved.audit.push({ id: "preserved-edit" });
+  const before = structuredClone(saved);
+  const migrated = upgradeSampleData(saved);
+  const migratedMia = migrated.people.find(
+    (person) => person.name === "Mia Robinson",
+  );
+  assert.deepEqual(saved, before);
+  assert.equal(migrated.sampleRevision, 5);
+  assert.equal(
+    migratedMia.episodes[0].collections.filter(
+      (collection) => collection.version === LIKERT_INSTRUMENT.version,
+    ).length,
+    4,
+  );
+  assert.ok(migrated.audit.some((entry) => entry.id === "preserved-edit"));
+  assert.equal(upgradeSampleData(migrated), migrated);
 });
 
 test("new collections retain named respondents and the staff member who entered answers", () => {

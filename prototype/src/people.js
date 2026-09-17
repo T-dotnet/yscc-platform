@@ -76,6 +76,8 @@ export function personStatus(person, episode) {
           ? collection.reviewDate
             ? `Reviewed ${formatDate(collection.reviewDate)}`
             : "Clinical review complete"
+          : status === "Completed"
+            ? "Completed · no clinical review required"
           : status === "Paused" || status === "Cancelled"
             ? `Collection ${status.toLowerCase()}`
             : status === "Due today"

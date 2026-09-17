@@ -13,8 +13,10 @@ import {
   canEditResponses,
   currentStaff,
   formatDate,
-  collectionActor,
   clinicalReviewStatus,
+  noClinicalReviewRequired,
+  displayPersonName,
+  displayCollectionActor,
 } from "../model";
 import { Modal, Button, Badge, Field, Notice } from "./UI";
 import SubmittedAnswers from "./SubmittedAnswers";
@@ -44,10 +46,12 @@ export default function ReviewResponses({
   const noteField = useRef(null);
   const returnFocus = useRef(null);
   const c = collection;
-  const reviewed = c.review === "Reviewed";
+  const reviewNotRequired = noClinicalReviewRequired(c);
+  const reviewed = c.review === "Reviewed" || reviewNotRequired;
   const canReview =
     currentStaff(state)?.role === "Clinician" &&
     c.response === "Submitted" &&
+    !reviewNotRequired &&
     (!reviewed || c.needsReview);
   const canEdit =
     canEditResponses(state) &&
@@ -72,11 +76,13 @@ export default function ReviewResponses({
       title={
         c.needsReview
           ? "Review updated answers"
+          : reviewNotRequired
+            ? "Response recorded"
           : reviewed
             ? "Review recorded"
             : "Review questionnaire"
       }
-      subtitle={`${person.name} · ${c.label} · ${c.version}`}
+      subtitle={`${displayPersonName(person)} · ${c.label} · ${c.version}`}
       onClose={requestClose}
       wide
       className="response-dialog"
@@ -135,16 +141,27 @@ export default function ReviewResponses({
               <ReviewIcon size={23} aria-hidden="true" />
               <div>
                 <h3>
-                  {c.needsReview
+                  {reviewNotRequired
+                    ? "Clinical review not required"
+                    : c.needsReview
                     ? "Earlier clinical review"
                     : "Clinical review"}
                 </h3>
-                <p className="review-author">
-                  {c.reviewActor || "Reviewer not recorded"}
-                  {c.reviewDate && ` · ${formatDate(c.reviewDate)}`}
-                </p>
+                {reviewNotRequired ? (
+                  <p className="review-author">
+                    This response used a completion method that does not need a
+                    separate clinical review.
+                  </p>
+                ) : (
+                  <p className="review-author">
+                    {c.reviewActor || "Reviewer not recorded"}
+                    {c.reviewDate && ` · ${formatDate(c.reviewDate)}`}
+                  </p>
+                )}
                 <p className="recorded-review-text">
-                  {c.reviewNote || "No review note recorded."}
+                  {reviewNotRequired
+                    ? `${c.channel}${c.assistance ? ` · ${c.assistance}` : ""}`
+                    : c.reviewNote || "No review note recorded."}
                 </p>
                 {c.needsReview && (
                   <p className="review-impact">
@@ -158,7 +175,9 @@ export default function ReviewResponses({
             <div className="review-introduction">
               <ClipboardCheck size={22} aria-hidden="true" />
               <p>
-                {canReview
+                {reviewNotRequired
+                  ? "This response does not require a separate clinical review."
+                  : canReview
                   ? "Read the answers, then record your observations and next care step."
                   : "Awaiting clinical review. A clinician can review these answers and record the next care step."}
               </p>
@@ -184,11 +203,11 @@ export default function ReviewResponses({
             <dl className="response-source-grid">
               <div>
                 <dt>Answered by</dt>
-                <dd>{collectionActor(person, c, "respondent")}</dd>
+                <dd>{displayCollectionActor(person, c, "respondent")}</dd>
               </div>
               <div>
                 <dt>Recorded by</dt>
-                <dd>{collectionActor(person, c, "recorder")}</dd>
+                <dd>{displayCollectionActor(person, c, "recorder")}</dd>
               </div>
               <div>
                 <dt>Collection method</dt>
@@ -271,7 +290,9 @@ export default function ReviewResponses({
         </div>
         <div className="modal-footer response-dialog-footer">
           <p className="response-footer-note">
-            {canReview
+            {reviewNotRequired
+              ? "No separate clinical review required · Answers remain available above"
+              : canReview
               ? "Review stays separate from assessment completion."
               : reviewed && !c.needsReview
                 ? "Saved review · Answers remain available above"

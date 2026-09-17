@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build nine executive PDFs from a single, editable content source.
+"""Build eight executive PDFs from a single, editable content source.
 
 Uses fixed page plans and measured typography; refuses overflowing layouts.
 Detailed Markdown source documents are read for provenance and never modified.
@@ -46,7 +46,7 @@ BODY_BOTTOM = 694
 DECISION_TOP = 714
 DECISION_H = 70
 data = json.loads((HERE / 'content.json').read_text())
-documents = data['documents']
+documents = [d for d in data['documents'] if d['id'] != '09']
 total_pages = 1 + sum(len(d['pages']) for d in documents)
 layout_checks = []
 
@@ -200,7 +200,7 @@ def block_height(b, width):
         w=(width-30)/4
         return max(measure(it['title'],w-18,size=10.7,leading=14,font='Bold')+8+measure(it['body'],w-18,size=9.1,leading=12.5)+24 for it in b['items'])
     if t == 'hierarchy':
-        return 65+sum(max(measure(a,150,size=11,leading=14,font='Bold'),measure(c,width-190,size=10,leading=14))+18 for a,c in b['items'])+12
+        return 55+sum(max(measure(a,150,size=11,leading=14,font='Bold'),measure(c,width-190,size=10,leading=14))+13 for a,c in b['items'])+7
     raise ValueError(t)
 
 
@@ -330,9 +330,9 @@ def draw_block(p,b,x,y,width):
         trail=f"{b['root']}  /  {b['middle']}  /  {b['leaf']}"
         p.label('PERSISTENT CARE CONTEXT',x+14,y+12,width-28,size=7.3)
         p.text(trail,x+14,y+29,width-28,size=12.5,leading=17,font='Bold')
-        yy=y+65
+        yy=y+55
         for i,(a,c) in enumerate(b['items']):
-            h=max(measure(a,150,size=11,leading=14,font='Bold'),measure(c,width-190,size=10,leading=14))+18
+            h=max(measure(a,150,size=11,leading=14,font='Bold'),measure(c,width-190,size=10,leading=14))+13
             p.line(x+22,yy+7,x+34,yy+7,TEAL)
             if i<len(b['items'])-1:p.line(x+22,yy+7,x+22,yy+h+7,TEAL)
             p.text(a,x+42,yy,150,size=11,leading=14,font='Bold')
@@ -451,7 +451,15 @@ def make_canvas(path,title):
 def write_text_editions():
     # Generated editable reading copies; content.json is the build source of truth.
     for d in documents:
-        lines=[f'# YSCC Platform - {d["title"]}', '', f'{data["version"]} | {data["date"]} | {data["status"]}', '', f'Detailed source: [../{d["source"]}](../{d["source"]})', '']
+        lines=[
+            f'# YSCC Platform - {d["title"]}',
+            '',
+            f'{data["version"]} | {data["date"]} | {data["status"]}',
+            '',
+            f'[Visual PDF](../../output/pdf/executive/{d["id"]}-{d["slug"]}-executive.pdf) | '
+            f'[Detailed original](../{d["source"]}) | [Executive index](README.md)',
+            '',
+        ]
         for page in d['pages']:
             lines.extend(['## '+page['title'],'',page['subtitle'],''])
             for b in page['blocks']:
@@ -460,6 +468,17 @@ def write_text_editions():
                 elif b['type']=='rows':
                     lines.extend(['| '+' | '.join(b['headers'])+' |','| --- | --- |'])
                     lines.extend('| '+' | '.join(row)+' |' for row in b['rows']);lines.append('')
+                elif b['type']=='diagram':
+                    node_titles={node['id']:clean(node['title']).replace('\n',' ') for node in b['nodes']}
+                    lines.extend(['### Steps',''])
+                    for node in b['nodes']:
+                        body=node.get('body','')
+                        step='- **'+clean(node['title']).replace('\n',' ')+':**'
+                        lines.extend([step+(' '+body if body else ''),''])
+                    lines.extend(['### Connections',''])
+                    for edge in b['edges']:
+                        label=f" -- {edge['label']} --> " if edge.get('label') else ' -> '
+                        lines.extend(['- '+node_titles[edge['from']]+label+node_titles[edge['to']],''])
                 elif b['type'] in ('journey','branchflow'):
                     for row in b.get('items',b.get('rows',[])):lines.extend(['- '+' - '.join(row),''])
                 elif b['type']=='hierarchy':
@@ -481,6 +500,7 @@ def write_text_editions():
 
 def main():
     OUT.mkdir(parents=True,exist_ok=True);QA.mkdir(parents=True,exist_ok=True)
+    write_text_editions()
     hashes={d['source']:hashlib.sha256((ROOT/'docs'/d['source']).read_bytes()).hexdigest() for d in documents}
     files=[]
     for d in documents:

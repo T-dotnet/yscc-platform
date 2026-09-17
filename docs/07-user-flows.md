@@ -1,6 +1,7 @@
 # YSCC Platform — User flows
 
-Version 0.3 · 15 September 2026 · Baseline flows and persona-derived candidate flows  
+Version 0.5 · 16 September 2026 · Flows aligned to the current local prototype
+
 [Document index](README.md) · [Requirements and logic](05-requirements-and-logic.md) · [Screen inventory and IA](08-information-architecture.md)
 
 ## 1. Reading the flows
@@ -11,7 +12,7 @@ ST IDs are staff surfaces, PT IDs are scoped participant surfaces, and EX IDs ar
 
 ### Current prototype coverage and boundary
 
-Implemented local interactions cover registration/intake and intake gating, referral event tracking, the worklist and person workspace, collection preparation/replacement and sample participant/tablet/clinician completion, review and correction with history, follow-up planning, pause/close actions, and the clinician report. The prototype also demonstrates selected care-period context and browser-local activity history. It does not implement F-07 duplicate resolution, F-10 purpose/withdrawal, F-11 governed publication, F-12 conditional services/satisfaction, or F-13–F-16 broader-platform workflows. Its sample role checks, local persistence and event recording are not substitutes for server enforcement, real delivery/receipt, approved policy/content or production audit guarantees.
+Implemented local interactions cover registration/intake and intake gating, referral event tracking, the worklist and person workspace, collection preparation/replacement and sample participant/tablet/clinician completion, channel-dependent review and correction with history, purpose-specific consent-library requests with accept/decline/withdraw history, follow-up planning, pause/close actions, and the Progress dashboard/report flow. Care-period annotations remain available through History. The prototype also demonstrates selected care-period context and browser-local activity history. It does not implement verified consent authority, actual consent/SMS/referral delivery, consent expiry/cancellation or a production purpose-policy engine. It also does not implement F-07 duplicate resolution, F-11 governed publication, F-12 conditional services/satisfaction, or F-13–F-16 broader-platform workflows. Its sample role checks, local persistence and event recording are not substitutes for server enforcement, approved policy/content or production audit guarantees.
 
 ## 2. Primary care flow
 
@@ -29,14 +30,18 @@ flowchart TD
     G --> E
     F -->|Yes| H[Clinician, SMS or tablet collection]
     H --> I[Confirm accepted response for this assignment]
-    I --> J[Review evidence and outstanding work]
-    J -->|More evidence| D
-    J -->|Pause or incomplete exit| C[Record assessment reason, owner and next action]
-    J -->|Decision ready| K[Record disposition and handover]
-    K --> L{Continuing care?}
-    L -->|Yes| M[Schedule approved review in same episode]
-    M --> E
-    L -->|No or care later ends| N[Reconcile pending work and close if appropriate]
+    I --> J{Separate clinical review required?}
+    J -->|Yes| J1[Record clinical review of identified evidence]
+    J -->|No| J2[Retain approved not-required rule and inspect outstanding work]
+    J1 --> K{More evidence, pause or decision ready?}
+    J2 --> K
+    K -->|More evidence| D
+    K -->|Pause or incomplete exit| C[Record assessment reason, owner and next action]
+    K -->|Decision ready| L[Record disposition and handover]
+    L --> M{Continuing care?}
+    M -->|Yes| N[Schedule approved review in same episode]
+    N --> E
+    M -->|No or care later ends| O[Reconcile pending work and close if appropriate]
 ```
 
 The diagram's collection node includes draft, failure, and cancellation outcomes detailed below; it does not imply every started task reaches submission. Permission checks are repeated at each relevant action, including dispatch and submission.
@@ -70,7 +75,7 @@ The diagram's collection node includes draft, failure, and cancellation outcomes
 4. In ST-07, identify clinician rating versus transcribed respondent answer versus approved joint completion. Validate the pinned item rules and keep that provenance visible.
 5. Save draft or continue answering. Back/navigation preserves confirmed drafts under policy and warns about unsaved changes; no unsupported offline guarantee.
 6. Submit → validate/current-authority check → saving state → confirmed response and fulfilled assignment. Save failure/uncertainty → recovery without false success or duplicate fulfilment.
-7. Return to ST-05/ST-09 with remaining work visible; choose next assignment or clinical review F-05.
+7. Return to ST-05/ST-09 with remaining work visible. If the approved rule requires review, continue to F-05; otherwise show **Review not required** with the rule/reason and continue to remaining assessment work. The prototype uses this no-review path for clinician entry and supported tablet completion only; D-10 owns the production rule.
 
 **Outcome:** This assignment is fulfilled or retains its actual incomplete state; the full assessment is not automatically complete.  
 **Rules/tests:** L-03–L-11; AC-01, AC-02, AC-04, AC-10, AC-13, AC-15–AC-17.
@@ -122,32 +127,32 @@ Detailed sequence:
 1. Staff confirm the right person/episode/assignment, permissions, instrument eligibility, and assistance context. Launch a temporary participant session.
 2. PT-01 → PT-02 isolates participant context and explains visibility/support. The participant must not see a staff sidebar, person search, previous answers, or unrelated tasks.
 3. PT-03 → PT-04 where permitted → submit. Record whether completion was independent, assisted, joint, or transcribed according to what actually happened.
-4. Confirm accepted receipt at PT-05, then end participant context and show PT-09 neutral reset. Provide enough confirmation to avoid confusion without leaving answer content exposed.
+4. Confirm accepted receipt at PT-05, then end participant context and show PT-09 neutral reset. Provide enough confirmation to avoid confusion without leaving answer content exposed. The prototype records supported tablet completion as review not required and independent tablet completion as pending review; this sample distinction requires D-10 approval.
 5. Staff re-authenticate and pass authorisation before returning to ST-09 to check receipt; the participant session itself cannot reopen staff work.
 
-| Interruption | Required interaction |
-| --- | --- |
-| Cancel/stop | Explain saved/unsaved consequences allowed by policy, end session, clear local context, show PT-09. |
-| Timeout | Approved warning/extension where permitted; on expiry clear local context. Saved server draft retention/resume is a separate rule. |
-| Failed save | Show unresolved save with safe retry; do not clear recoverable work as though it was submitted. If session must end, follow the approved security/draft policy. |
-| Back after reset | Remain neutral or require fresh authorised access; never redisplay prior answers or staff workspace. |
-| New participant | Staff launch a new eligible session; no prior-person context carries across. |
+| Interruption     | Required interaction                                                                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cancel/stop      | Explain saved/unsaved consequences allowed by policy, end session, clear local context, show PT-09.                                                             |
+| Timeout          | Approved warning/extension where permitted; on expiry clear local context. Saved server draft retention/resume is a separate rule.                              |
+| Failed save      | Show unresolved save with safe retry; do not clear recoverable work as though it was submitted. If session must end, follow the approved security/draft policy. |
+| Back after reset | Remain neutral or require fresh authorised access; never redisplay prior answers or staff workspace.                                                            |
+| New participant  | Staff launch a new eligible session; no prior-person context carries across.                                                                                    |
 
 **Rules/tests:** L-03, L-07, L-09–L-11; AC-03, AC-04, AC-11, AC-16. Session duration/storage decisions remain D-18.
 
 ## 7. F-05 — Clinical review, disposition, and handover
 
 **Actor:** Jess/P-04 with approved clinical capabilities.  
-**Entry:** ST-05 or ST-09 → ST-10 Review.
+**Entry:** ST-05 or the combined Assessment collection list → ST-10 Review for a response whose approved policy requires separate review. A response marked review not required remains visible evidence but does not create a review task.
 
-1. Confirm episode/assessment and inspect submitted evidence, source/version, and outstanding assignments. Link to ST-13 for history and ST-17 for permitted correction context.
+1. Confirm episode/assessment, the governing review-required decision, and inspect submitted evidence, source/version, and outstanding assignments. Link to ST-13 for history and ST-17 for permitted correction context.
 2. Additional evidence required → add an eligible module with reason in ST-05 and repeat F-02. Reviewing partial evidence does not complete the assessment.
 3. Record review identifying evidence/revision and date. Evaluate the approved completion criteria separately.
 4. Pause or close incomplete → ST-12 with reason/owner/next action; preserve partial evidence and reconcile outreach. No automatic recurring collection.
 5. Ready disposition → ST-12. Record admitted/not admitted/undecided as approved, separate referral destination/action, and dated team/stream allocation.
 6. Any onward referral → F-17 for actual sending, receiving decision and handover follow-through, including external steps. Continuing care → confirm next team/owner/plan, then F-08. Not continuing → record next care step and F-09 if episode closes. Transfer follows approved episode/access rules.
 
-**Rules/tests:** L-14–L-18, L-23–L-24; AC-02, AC-07, AC-09, AC-12, AC-14. A clinical decision is not inferred from a computed score or completed form.
+**Rules/tests:** L-14–L-18, L-23–L-24; AC-02, AC-04, AC-07, AC-09, AC-12, AC-14. A clinical decision is not inferred from a computed score, completed form or review-not-required status.
 
 ## 8. F-06 — Correct from evidence or request clinician input
 
@@ -208,11 +213,14 @@ Detailed sequence:
 **Actors:** Kai, an authorised P-03 guardian where applicable, and permitted staff.  
 **Entry:** ST-11; PT-08 only if the approved policy includes a digital decision surface.
 
-1. Identify the particular purpose/action and current information version. Check who can make the decision and what evidence establishes authority.
-2. Explain choices, visibility, consequences, and support using approved wording. Uncertain authority → named review route, not invented age/relationship logic.
-3. Record decision/status, person/scope, decision-maker/authority, and effective time. If digital collection is not approved, staff use the approved recording pathway; do not invent a guardian account.
-4. Withdrawal/change → show the policy-defined affected actions and apply the relevant access/contact/use rules. Unrelated purposes remain separate.
-5. Record history and pending-work reconciliation. Retention/disposal follows its approved process, not an automatic all-data deletion or indefinite-preservation assumption.
+1. At ST-11, staff select the particular approved consent from the library. The request pins the purpose information/version, person and episode scope where applicable, eligible respondent, decision-maker/authority context and approved delivery channel. Selecting an item does not make a decision.
+2. Check who can make the decision and what evidence establishes authority, then confirm suitable contact/channel. Uncertain authority or unsuitable contact → named review/alternative pathway, not invented age or relationship logic.
+3. Send the request and record the real dispatch outcome. “Sent” is not consent. PT-08 shows the pinned information, purpose, visibility, consequences and support using approved wording, with explicit **Accept** and **Decline** actions. If digital collection is not approved, staff use the approved recording pathway; do not invent a guardian account.
+4. Persist the participant's accept or decline against that request, with decision-maker/authority and effective time. The relevant action gate reads the resulting current accepted request only; a decline leaves unrelated purposes unchanged.
+5. A later authorised withdrawal changes the accepted request to withdrawn, records its effective time and shows the policy-defined impact on future links, reminders, contact, access and secondary use. It does not overwrite the earlier acceptance or automatically delete submitted history.
+6. Retain request, delivery, decision and withdrawal history. Expiry/cancellation/failed delivery have their own disposition and recovery; retention/disposal follows its approved process, not an automatic all-data deletion or indefinite-preservation assumption.
+
+**Current prototype boundary:** Staff can choose one of three sample versioned purposes, use SMS link or clinic tablet, open a scoped participant view, record Accept/Decline and later Withdraw, and inspect retained history/audit. It blocks a duplicate active request for the same purpose and unsuitable sample SMS contact. The send is browser-local sample state, authority is not verified, expiry/cancellation is not implemented, and the participant wording is not approved policy.
 
 **Rules/tests:** L-07–L-09, L-19; AC-08, AC-10, AC-17. D-04–D-06/D-11 determine production behaviour.
 
@@ -276,39 +284,41 @@ These flows operationalise CP1's wider personas but are not build-ready. CR requ
 
 **Rules/tests:** L-07, L-18, L-24, L-29; AC-26–AC-27; FR-09–FR-10, FR-22–FR-24, FR-35–FR-38. See requirements section 7 for state and ownership tables.
 
-
 ## 16. Shared interaction-state specification
 
-| State | Feedback and action |
-| --- | --- |
-| Default | Clear current context and specific action label; one primary next action. |
-| Hover | Pointer affordance without revealing essential information only on hover. |
-| Focus | Visible focus indicator, logical keyboard order, and readable labels. |
-| Active/pressed | Immediate acknowledgement without falsely declaring persistence. |
-| Loading | Name the operation; prevent duplicate submission; retain useful context. Do not invent progress percentages. |
-| Disabled/blocked | Explain the relevant prerequisite/owner in accessible text where disclosure allows; offer a permitted alternative. |
-| Error | Say what failed and what can be done next; inline item errors plus accessible summary; preserve safe recoverable input. |
-| Success | Confirm only the actual saved/submitted/reviewed/corrected action, with next step. |
-| Empty | Distinguish no records, no matching filters, unavailable history, and restricted access. Never imply “no previous care” from missing data. |
-| Initial loading/skeleton | Preserve layout/context; do not display stale records as belonging to a newly selected person/episode. |
+| State                    | Feedback and action                                                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Default                  | Clear current context and specific action label; one primary next action.                                                                  |
+| Hover                    | Pointer affordance without revealing essential information only on hover.                                                                  |
+| Focus                    | Visible focus indicator, logical keyboard order, and readable labels.                                                                      |
+| Active/pressed           | Immediate acknowledgement without falsely declaring persistence.                                                                           |
+| Loading                  | Name the operation; prevent duplicate submission; retain useful context. Do not invent progress percentages.                               |
+| Disabled/blocked         | Explain the relevant prerequisite/owner in accessible text where disclosure allows; offer a permitted alternative.                         |
+| Error                    | Say what failed and what can be done next; inline item errors plus accessible summary; preserve safe recoverable input.                    |
+| Success                  | Confirm only the actual saved/submitted/reviewed/corrected action, with next step.                                                         |
+| Empty                    | Distinguish no records, no matching filters, unavailable history, and restricted access. Never imply “no previous care” from missing data. |
+| Initial loading/skeleton | Preserve layout/context; do not display stale records as belonging to a newly selected person/episode.                                     |
 
 For confirmation overlays, announce purpose, manage focus, and return focus to the trigger on cancellation. Navigation distinguishes browser Back from explicit “Back to results”/parent links; preserve authorised list filters. Do not put tokens, clinical answers, or personal names in shareable route/query parameters. Reduced-motion behaviour must preserve all status information.
 
 ## 17. Traceability and readiness
 
-| Care/learning phase | Main flows | Primary surfaces | Validation |
-| --- | --- | --- | --- |
-| J-01–J-03 | F-01, F-02, F-10, F-17 where needed | ST-02–ST-06, ST-11–ST-12, ST-27–ST-28 | AC-01, AC-06, AC-09–AC-10, AC-23–AC-29. |
-| J-04–J-05 | F-02–F-04 | ST-06–ST-09; PT-01–PT-09 | AC-02–AC-04, AC-08, AC-11, AC-13, AC-15–AC-17. |
-| J-06–J-09 | F-05, F-08, F-09 | ST-04–ST-05, ST-09–ST-13 | AC-07, AC-09, AC-12, AC-14, AC-21. |
-| Cross-cutting integrity | F-06, F-07, F-10, F-11 | ST-11, ST-14–ST-23 | AC-05, AC-10, AC-18–AC-20. |
-| Wider care/progress | F-13 | EX-01–EX-02 | Candidate CR-01/CR-02 acceptance after scope approval. |
-| SJ-01–SJ-04 | F-14 | EX-03–EX-04, EX-08; baseline quality views | Candidate CR-03–CR-05 acceptance. |
-| SJ-05–SJ-08 | F-15, F-16 | EX-05–EX-08 | Candidate CR-04/CR-06–CR-08 acceptance. |
+| Care/learning phase     | Main flows                          | Primary surfaces                           | Validation                                             |
+| ----------------------- | ----------------------------------- | ------------------------------------------ | ------------------------------------------------------ |
+| J-01–J-03               | F-01, F-02, F-10, F-17 where needed | ST-02–ST-06, ST-11–ST-12, ST-27–ST-28      | AC-01, AC-06, AC-09–AC-10, AC-23–AC-29.                |
+| J-04–J-05               | F-02–F-04                           | ST-06–ST-09; PT-01–PT-09                   | AC-02–AC-04, AC-08, AC-11, AC-13, AC-15–AC-17.         |
+| J-06–J-09               | F-05, F-08, F-09                    | ST-04–ST-05, ST-09–ST-13                   | AC-07, AC-09, AC-12, AC-14, AC-21.                     |
+| Cross-cutting integrity | F-06, F-07, F-10, F-11              | ST-11, ST-14–ST-23                         | AC-05, AC-10, AC-18–AC-20.                             |
+| Wider care/progress     | F-13                                | EX-01–EX-02                                | Candidate CR-01/CR-02 acceptance after scope approval. |
+| SJ-01–SJ-04             | F-14                                | EX-03–EX-04, EX-08; baseline quality views | Candidate CR-03–CR-05 acceptance.                      |
+| SJ-05–SJ-08             | F-15, F-16                          | EX-05–EX-08                                | Candidate CR-04/CR-06–CR-08 acceptance.                |
 
 Before wireframe sign-off, ensure each in-scope action has an entry, permission decision, success state, interruption/recovery, and exit. Before production, replace sample policies with approved rules and repeat applicable tests against real persistence, scope enforcement, and delivery.
 
-
 ## 18. Clinician Progress report flow — 16 September 2026
 
-Select person and care period → **Report** → read the questionnaire-based summary and changes over time → inspect dated evidence or expand questionnaire details → **Edit report** → update summary, changes, interpretation and next steps → **Save report** → see author/time/version and saved narrative. **Cancel** discards unsaved narrative changes. Reload retains saved report text; **Report change log** shows changed sections with before/after wording, editor identity/role, time and previous versions. Cancelled edits and unchanged saves create no log entry. A new submission or corrected response shows an update-needed notice while preserving authored text. Reopen editing against the new evidence, review the wording, and save a new report version. Saving does not alter submitted answers or complete pending clinical reviews. See [the report requirements](05-requirements-and-logic.md#9-clinician-progress-report).
+Select person and care period → **Report** → read the overall patient-progress dashboard → use the separate questionnaire/version selector → review the selected Likert or qualitative answer changes → inspect **Questionnaire comparison and details** → open a dated response when review detail is needed. Submitted response history, Clinical notes and the clinician-authored narrative are hidden from this flow; use Assessment or History for the complete collection, follow-up and annotation trail. Charts describe changed comparable answers, never a clinical score or direction. The Edit report action and visible report change log are hidden from this flow. See [the report requirements](05-requirements-and-logic.md#9-clinician-progress-report).
+
+## 19. Events flow — provisional prototype direction
+
+Select person and care period → **Events** → review the newest-first episode timeline → **Record event** → choose a provisional event type → enter the actual event date and type-specific context → save and inspect the actor/time record. Return to the selected episode without widening access to other care periods. The current flow is a prototype for validation, not a final care-plan, medication, referral, annotation or clinical-outcome workflow. See D-29 and the Events tab direction in [the information architecture](08-information-architecture.md#15-report-and-events-tab-direction--16-september-2026).

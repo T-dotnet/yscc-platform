@@ -1,4 +1,7 @@
-import { sampleAnswersFor } from "./sampleQuestionnaires.js";
+import {
+  createLikertSampleAnswers,
+  sampleAnswersFor,
+} from "./sampleQuestionnaires.js";
 import { careChanges, recordFieldChanges } from "./activity.js";
 import {
   applyIntakeAction,
@@ -10,6 +13,7 @@ import {
   DEMO_INSTRUMENT,
   INSTRUMENTS,
   LEGACY_INSTRUMENT,
+  LIKERT_INSTRUMENT,
   getInstrument,
   questionnaireState,
   answerLabel,
@@ -18,13 +22,40 @@ import {
 import {
   REPORT_FIELDS,
   reportChanges,
+  progressAnnotationError,
   reportEditError,
+  reportSourceKey,
   reportSources,
 } from "./report.js";
+import { careEventContent, careEventError } from "./careEvents.js";
 
 export const TODAY = "2026-09-15";
 export const VERSION = DEMO_INSTRUMENT.version;
 export const STORAGE_KEY = "yscc-prototype-v1";
+export const CONSENT_LIBRARY = [
+  {
+    id: "assessment-participation",
+    title: "Assessment participation",
+    description: "Taking part in YSCC assessment and follow-up check-ins.",
+    version: "Consent v1.0",
+    scope: "This care episode",
+  },
+  {
+    id: "contact-about-care",
+    title: "Contact about care",
+    description: "Receiving messages about appointments and care activities.",
+    version: "Consent v1.0",
+    scope: "This care episode",
+  },
+  {
+    id: "service-improvement",
+    title: "Service improvement and research",
+    description:
+      "Using information for approved service improvement or research.",
+    version: "Consent v1.0",
+    scope: "Person-level purpose",
+  },
+];
 export const DEMO_STAFF = [
   { id: "jess", name: "Jess Taylor", role: "Clinician" },
   { id: "ananya", name: "Ananya", role: "Data Manager" },
@@ -50,6 +81,32 @@ export const initials = (name) =>
     .map((n) => n[0])
     .slice(0, 2)
     .join("");
+export const displayName = (name, role) =>
+  name && !["Not recorded", "Name not recorded", "Unknown"].includes(name)
+    ? `${name} · ${role}`
+    : name || "Not recorded";
+export const displayPersonName = (person) =>
+  displayName(person?.name, "Patient");
+export const displayFamilyName = (person) =>
+  displayName(person?.family, "Family carer");
+export const collectionActorIdentity = (person, collection, actor) => {
+  const value = collectionActor(person, collection, actor);
+  const role =
+    actor === "respondent"
+      ? collection.respondent === "Family respondent"
+        ? "Family carer"
+        : "Patient"
+      : collection.channel === "Clinician entry"
+        ? "Clinician"
+        : collection.recorder === "Family respondent"
+          ? "Family carer"
+          : "Patient";
+  return { name: value, role };
+};
+export const displayCollectionActor = (person, collection, actor) => {
+  const { name, role } = collectionActorIdentity(person, collection, actor);
+  return displayName(name, role);
+};
 export const age = (dob) => {
   if (!dob) return "Unknown";
   const d = new Date(dob);
@@ -172,6 +229,108 @@ const sampleHistories = {
   "A-3-history-discharge": ["Clinic tablet", "2025-06-12", "2025-06-12"],
 };
 
+const longitudinalLikertPoints = [
+  {
+    key: "starting-point",
+    label: "Life and care check-in · Starting point",
+    due: "2026-06-16",
+    submittedAt: "2026-06-16T10:00:00Z",
+    reviewDate: "2026-06-18",
+    answers: {
+      "routine-worked": "Rarely",
+      "meaningful-activity": "Sometimes",
+      "felt-connected": "Rarely",
+      "support-available": "Rarely",
+      "felt-heard": "Disagree",
+      "understood-next": "Neither agree nor disagree",
+    },
+  },
+  {
+    key: "four-weeks",
+    label: "Life and care check-in · 4 weeks",
+    due: "2026-07-14",
+    submittedAt: "2026-07-14T10:00:00Z",
+    reviewDate: "2026-07-16",
+    answers: {
+      "routine-worked": "Sometimes",
+      "meaningful-activity": "Sometimes",
+      "felt-connected": "Sometimes",
+      "support-available": "Sometimes",
+      "felt-heard": "Neither agree nor disagree",
+      "understood-next": "Agree",
+    },
+  },
+  {
+    key: "eight-weeks",
+    label: "Life and care check-in · 8 weeks",
+    due: "2026-08-11",
+    submittedAt: "2026-08-11T10:00:00Z",
+    reviewDate: "2026-08-13",
+    answers: {
+      "routine-worked": "Sometimes",
+      "meaningful-activity": "Often",
+      "felt-connected": "Sometimes",
+      "support-available": "Often",
+      "felt-heard": "Agree",
+      "understood-next": "Agree",
+    },
+  },
+  {
+    key: "twelve-weeks",
+    label: "Life and care check-in · 12 weeks",
+    due: "2026-09-08",
+    submittedAt: "2026-09-08T10:00:00Z",
+    reviewDate: "2026-09-10",
+    answers: {
+      "routine-worked": "Often",
+      "meaningful-activity": "Often",
+      "felt-connected": "Often",
+      "support-available": "Often",
+      "felt-heard": "Agree",
+      "understood-next": "Strongly agree",
+    },
+  },
+];
+
+function longitudinalLikertCollections(person) {
+  return longitudinalLikertPoints.map((point) => {
+    const id = `A-5-life-care-${point.key}`;
+    const attemptId = `${id}-sample-session`;
+    return {
+      id,
+      label: point.label,
+      due: point.due,
+      version: LIKERT_INSTRUMENT.version,
+      assignment: "Fulfilled",
+      response: "Submitted",
+      review: "Reviewed",
+      reviewNote: "Fictional longitudinal response reviewed for this workspace.",
+      reviewActor: "Jess Taylor",
+      reviewDate: point.reviewDate,
+      assessmentProgress: "Completed",
+      answers: createLikertSampleAnswers(point.answers),
+      attempts: [
+        {
+          id: attemptId,
+          date: point.submittedAt.slice(0, 10),
+          channel: "Clinic tablet",
+          status: "Session started (sample)",
+          respondentName: person.name,
+        },
+      ],
+      submittedAt: point.submittedAt,
+      submittedAttemptId: attemptId,
+      link: "Ended",
+      respondent: "Person",
+      respondentName: person.name,
+      recorder: "Person",
+      recorderName: person.name,
+      assistance: "Independent",
+      channel: "Clinic tablet",
+    };
+  });
+}
+
 const LEGACY_PARTICIPANT_ROLE = "Young person";
 
 function updateParticipantRoles(value) {
@@ -200,11 +359,13 @@ export function upgradeSampleData(state) {
     ),
   );
   if (hasOldQuestionnaire) return createSeed();
-  if (state.sampleRevision < 4 || !state.sampleRevision)
+  if (state.sampleRevision < 5 || !state.sampleRevision)
     return prepareSeed(structuredClone(state));
-  return state.intakeRevision === 1
+  if (state.intakeRevision !== 1)
+    state = prepareIntakes(structuredClone(state));
+  return state.consentRevision === 1
     ? state
-    : prepareIntakes(structuredClone(state));
+    : prepareConsentRequests(structuredClone(state));
 }
 
 function prepareSeed(state) {
@@ -215,6 +376,21 @@ function prepareSeed(state) {
     // Keep existing record IDs stable so saved responses and sessions still resolve.
     current.number = "02";
     zoe.episodes.push(previousZoeEpisode());
+  }
+  const mia = next.people.find((p) => p.id === "YS-1029");
+  const miaEpisode = mia?.episodes.find((e) => e.id === "EP-1029-01");
+  if (miaEpisode) {
+    const additions = longitudinalLikertCollections(mia).filter(
+      (sample) => !miaEpisode.collections.some((c) => c.id === sample.id),
+    );
+    const currentIndex = miaEpisode.collections.findIndex(
+      (c) => c.id === "A-5-current",
+    );
+    miaEpisode.collections.splice(
+      currentIndex < 0 ? miaEpisode.collections.length : currentIndex,
+      0,
+      ...additions,
+    );
   }
   for (const person of next.people) {
     for (const episode of person.episodes) {
@@ -259,8 +435,43 @@ function prepareSeed(state) {
       }
     }
   }
-  next.sampleRevision = 4;
-  return prepareIntakes(next);
+  next.sampleRevision = 5;
+  return prepareConsentRequests(prepareIntakes(next));
+}
+
+function prepareConsentRequests(next) {
+  for (const person of next.people) {
+    if (Array.isArray(person.consentRequests)) continue;
+    const assessment = CONSENT_LIBRARY[0];
+    person.consentRequests = [
+      {
+        id: `CR-${person.id}-assessment`,
+        consentId: assessment.id,
+        title: assessment.title,
+        version: assessment.version,
+        scope: assessment.scope,
+        status: person.consent === "Withdrawn" ? "Withdrawn" : "Accepted",
+        channel: "SMS link",
+        sentAt: person.episodes[0]?.start || TODAY,
+        decidedAt: person.episodes[0]?.start || TODAY,
+        decisionMaker: person.name,
+        history: [
+          {
+            status: "Sent",
+            at: person.episodes[0]?.start || TODAY,
+            actor: "Sample fixture",
+          },
+          {
+            status: person.consent === "Withdrawn" ? "Withdrawn" : "Accepted",
+            at: person.episodes[0]?.start || TODAY,
+            actor: person.name,
+          },
+        ],
+      },
+    ];
+  }
+  next.consentRevision = 1;
+  return next;
 }
 
 function prepareIntakes(next) {
@@ -308,7 +519,7 @@ function prepareIntakes(next) {
         id: `IN-${person.id}-migration`,
         owner: person.owner || "Jess Taylor",
         today: TODAY,
-        actor: "Prototype migration",
+        actor: "Workspace migration",
         timestamp: new Date().toISOString(),
         episodeId:
           person.episodes.find((ep) => ep.status === "Active")?.id || null,
@@ -338,6 +549,24 @@ export function createSeed() {
       owner: "Jess Taylor",
       consent: "Recorded",
       contact: "Suitable",
+      consentRequests: [
+        {
+          id: `CR-${1024 + i}-assessment`,
+          consentId: "assessment-participation",
+          title: "Assessment participation",
+          version: "Consent v1.0",
+          scope: "This care episode",
+          status: "Accepted",
+          channel: "SMS link",
+          sentAt: "2026-06-15",
+          decidedAt: "2026-06-15",
+          decisionMaker: s[0],
+          history: [
+            { status: "Sent", at: "2026-06-15", actor: "Sample fixture" },
+            { status: "Accepted", at: "2026-06-15", actor: s[0] },
+          ],
+        },
+      ],
       family: i === 0 ? "Deb Thompson" : null,
       episodes: [
         {
@@ -434,18 +663,31 @@ export function collectionStatus(c) {
   if (c.assignment === "Cancelled") return "Cancelled";
   if (c.assignment === "Paused") return "Paused";
   if (c.needsReview) return "Ready for review";
+  if (c.response === "Submitted" && noClinicalReviewRequired(c))
+    return "Completed";
   if (c.review === "Reviewed") return "Reviewed";
   if (c.response === "Submitted") return "Ready for review";
   if (c.due < TODAY) return "Overdue";
   if (c.due === TODAY) return "Due today";
   return "Scheduled";
 }
+export const noClinicalReviewRequired = (c) =>
+  c?.response === "Submitted" &&
+  !c.needsReview &&
+  (c.channel === "Clinician entry" ||
+    (c.channel === "Clinic tablet" && c.assistance === "Supported"));
+export const hasPendingClinicalReview = (c) =>
+  c?.response === "Submitted" &&
+  !noClinicalReviewRequired(c) &&
+  (c.review !== "Reviewed" || !!c.needsReview);
 export const clinicalReviewStatus = (c) =>
   c.needsReview
     ? "Re-review required"
-    : c.response !== "Submitted"
-      ? "Awaiting response"
-      : c.review || "Pending";
+    : noClinicalReviewRequired(c)
+      ? "Not required"
+      : c.response !== "Submitted"
+        ? "Awaiting response"
+        : c.review || "Pending";
 
 export function collectionActor(person, c, actor) {
   const role = c[actor];
@@ -467,7 +709,8 @@ export const personEventText = (person, detail = "") =>
     )
     .join(" · ");
 export function nextAction(c) {
-  if (c.response === "Submitted") return "Review responses";
+  if (c.response === "Submitted")
+    return noClinicalReviewRequired(c) ? "View details" : "Review responses";
   if (c.link === "Expired") return "Reissue questionnaire";
   if (c.attempts.length) return "Follow up collection";
   return "Set up collection";
@@ -483,7 +726,7 @@ export function getTasks(state) {
             .filter(
               (c) =>
                 !["Cancelled", "Paused"].includes(c.assignment) &&
-                (c.review !== "Reviewed" || c.needsReview),
+                (c.response !== "Submitted" || hasPendingClinicalReview(c)),
             )
             .map((c) => ({
               person: p,
@@ -549,6 +792,28 @@ export function reducer(state, action) {
     });
   };
   switch (action.type) {
+    case "ADD_CARE_EVENT": {
+      if (careEventError(e, action, TODAY)) return state;
+      const content = careEventContent(action);
+      e.events ??= [];
+      e.events.unshift({
+        id: uid(),
+        date: action.eventDate,
+        eventDate: action.eventDate,
+        timestamp: recordedAt,
+        title: content.title,
+        detail: content.detail,
+        actionType: action.type,
+        eventType: action.eventType,
+        fields: content.fields,
+        personId: p.id,
+        episodeId: e.id,
+        actor: staff?.name || "Not recorded",
+        actorId: staff?.id || null,
+        role: staff?.role || null,
+      });
+      break;
+    }
     case "SAVE_PROGRESS_REPORT": {
       const staff = currentStaff(state);
       if (reportEditError(e, staff?.role, action)) return state;
@@ -579,6 +844,27 @@ export function reducer(state, action) {
               ? changes.map(({ label }) => label).join(", ")
               : "Evidence updated; narrative unchanged"
         }`,
+      );
+      break;
+    }
+    case "ADD_PROGRESS_ANNOTATION": {
+      if (progressAnnotationError(e, staff?.role, action)) return state;
+      const annotation = {
+        id: uid(),
+        text: action.text.trim(),
+        actor: staff.name,
+        actorId: staff.id,
+        role: staff.role,
+        timestamp: recordedAt,
+        reportRevision: e.progressReport?.revision ?? null,
+        evidenceRevision: reportSourceKey(e),
+      };
+      e.progressAnnotations ??= [];
+      e.progressAnnotations.unshift(annotation);
+      event(
+        "Progress annotation added",
+        `${staff.name} added an annotation${annotation.reportRevision ? ` against report version ${annotation.reportRevision}` : " before the first saved report"}.`,
+        { annotationId: annotation.id },
       );
       break;
     }
@@ -791,10 +1077,15 @@ export function reducer(state, action) {
       c.submittedAt = TODAY;
       c.submittedTimestamp = recordedAt;
       c.submittedAttemptId = c.attempts.at(-1)?.id;
-      c.review = "Pending";
+      const reviewRequired = !noClinicalReviewRequired({
+        ...c,
+        response: "Submitted",
+        needsReview: false,
+      });
+      c.review = reviewRequired ? "Pending" : "Not required";
       event(
         "Questionnaire response received",
-        `${c.label} · ${collectionActor(p, c, "respondent")} · clinical review pending`,
+        `${c.label} · ${collectionActor(p, c, "respondent")} · ${reviewRequired ? "clinical review pending" : "clinical review not required"}`,
       );
       break;
     case "REVIEW":
@@ -802,6 +1093,7 @@ export function reducer(state, action) {
         currentStaff(state)?.role !== "Clinician" ||
         !c ||
         c.response !== "Submitted" ||
+        noClinicalReviewRequired(c) ||
         (c.review === "Reviewed" && !c.needsReview) ||
         !action.note?.trim()
       )
@@ -827,6 +1119,158 @@ export function reducer(state, action) {
         { reviewRevision: c.reviewRevision },
       );
       break;
+    case "CONSENT_SEND": {
+      const item = CONSENT_LIBRARY.find(
+        (entry) => entry.id === action.consentId,
+      );
+      if (
+        !p ||
+        !item ||
+        !e ||
+        e.status !== "Active" ||
+        !["SMS link", "Clinic tablet"].includes(action.channel) ||
+        (action.channel === "SMS link" && p.contact !== "Suitable") ||
+        p.consentRequests?.some(
+          (request) =>
+            request.consentId === item.id &&
+            ["Sent", "Accepted"].includes(request.status),
+        )
+      )
+        return state;
+      const request = {
+        id: uid(),
+        consentId: item.id,
+        title: item.title,
+        version: item.version,
+        scope:
+          item.scope === "This care episode"
+            ? `Care episode ${e.number}`
+            : item.scope,
+        status: "Sent",
+        channel: action.channel,
+        sentAt: TODAY,
+        sentTimestamp: recordedAt,
+        history: [
+          {
+            status: "Sent",
+            at: recordedAt,
+            actor: staff?.name || "Staff member",
+          },
+        ],
+      };
+      p.consentRequests ??= [];
+      p.consentRequests.unshift(request);
+      event(
+        "Consent request sent",
+        `${item.title} · ${item.version} · ${action.channel}`,
+        {
+          consentRequestId: request.id,
+        },
+      );
+      next.audit.unshift({
+        id: uid(),
+        date: TODAY,
+        timestamp: recordedAt,
+        personId: p.id,
+        title: "Consent request sent",
+        detail: `${item.title} · ${action.channel}`,
+        actor: staff?.name || "Staff member",
+        actorId: staff?.id,
+        role: staff?.role,
+        scope: request.scope,
+      });
+      break;
+    }
+    case "CONSENT_DECISION": {
+      const request = p?.consentRequests?.find(
+        (item) => item.id === action.consentRequestId,
+      );
+      if (
+        !p ||
+        !request ||
+        request.status !== "Sent" ||
+        !["Accepted", "Declined"].includes(action.status)
+      )
+        return state;
+      request.status = action.status;
+      request.decidedAt = TODAY;
+      request.decisionTimestamp = recordedAt;
+      request.decisionMaker = p.name;
+      request.history.push({
+        status: action.status,
+        at: recordedAt,
+        actor: p.name,
+      });
+      if (request.consentId === "assessment-participation") {
+        p.consent = action.status === "Accepted" ? "Recorded" : "Not recorded";
+        if (action.status === "Declined")
+          p.episodes.forEach((episode) =>
+            episode.collections.forEach((collection) => {
+              if (
+                collection.response !== "Submitted" &&
+                collection.link === "Active"
+              )
+                collection.link = "Revoked";
+            }),
+          );
+      }
+      event(
+        `Consent request ${action.status.toLowerCase()}`,
+        `${request.title} · decision recorded by ${p.name}`,
+        { consentRequestId: request.id },
+      );
+      next.audit.unshift({
+        id: uid(),
+        date: TODAY,
+        timestamp: recordedAt,
+        personId: p.id,
+        title: `Consent ${action.status.toLowerCase()}`,
+        detail: request.title,
+        actor: p.name,
+        scope: request.scope,
+      });
+      break;
+    }
+    case "CONSENT_WITHDRAW": {
+      const request = p?.consentRequests?.find(
+        (item) => item.id === action.consentRequestId,
+      );
+      if (!p || !request || request.status !== "Accepted") return state;
+      request.status = "Withdrawn";
+      request.withdrawnAt = TODAY;
+      request.withdrawnTimestamp = recordedAt;
+      request.history.push({
+        status: "Withdrawn",
+        at: recordedAt,
+        actor: p.name,
+      });
+      if (request.consentId === "assessment-participation") {
+        p.consent = "Withdrawn";
+        p.episodes.forEach((episode) =>
+          episode.collections.forEach((collection) => {
+            if (
+              collection.response !== "Submitted" &&
+              collection.link === "Active"
+            )
+              collection.link = "Revoked";
+          }),
+        );
+      }
+      event("Consent withdrawn", `${request.title} · recorded for ${p.name}`, {
+        consentRequestId: request.id,
+      });
+      next.audit.unshift({
+        id: uid(),
+        date: TODAY,
+        timestamp: recordedAt,
+        personId: p.id,
+        title: "Consent withdrawn",
+        detail: request.title,
+        actor: p.name,
+        scope: request.scope,
+      });
+      break;
+    }
     case "CONSENT":
       if (
         !p ||

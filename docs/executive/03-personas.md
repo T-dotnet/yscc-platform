@@ -1,6 +1,6 @@
 # YSCC Platform - Personas
 
-Executive edition 1.0 | 15 September 2026 | Working proposal
+Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/03-personas-executive.pdf) | [Detailed original](../03-personas.md) | [Executive index](README.md)
 
@@ -8,35 +8,47 @@ Executive edition 1.0 | 15 September 2026 | Working proposal
 
 The people whose trust, time and contributions make the care record useful.
 
-### Jess Tran - Treating Clinician
+### Jess Tran
 
-P-04 | Draft hypothesis
+**Role:** Treating Clinician
 
-- **Need:** Record care once, see the whole picture and connect local and specialist input.
-- **Friction:** Administrative effort, fragmented evidence and disconnected advice.
-- **Design implication:** Clear episode context, interpretable progress and safe handover. Full care planning and medication/event workflows remain candidate scope.
+**Id:** P-04
 
-### Kai - Person
+**Need:** Record care once, see the whole picture and connect local and specialist input.
 
-P-01 | Draft hypothesis
+**Friction:** Administrative effort, fragmented evidence and disconnected advice.
 
-- **Need:** Be heard, understand progress and take part in care decisions.
-- **Friction:** Retelling the story, unclear visibility and unsuitable digital contexts.
-- **Design implication:** Plain explanations, eligible contribution and suitable support. Personal progress views and launch phasing need an explicit decision.
+**Design:** Clear episode context, interpretable progress and safe handover. Full care planning and medication/event workflows remain candidate scope.
 
-### Deb - Family Carer
+### Kai
 
-P-02 | Draft hypothesis
+**Role:** Young person
 
-- **Need:** Give useful context and understand how to support the person.
-- **Friction:** Feeling excluded or overloaded; uncertainty about involvement.
-- **Design implication:** Separate tasks and clear visibility. Family relationship is not guardian authority or automatic access to Kai's answers.
+**Id:** P-01
+
+**Need:** Be heard, understand progress and take part in care decisions.
+
+**Friction:** Retelling the story, unclear visibility and unsuitable digital contexts.
+
+**Design:** Plain explanations, eligible contribution and suitable support. Personal progress views and launch phasing need an explicit decision.
+
+### Deb
+
+**Role:** Family Carer
+
+**Id:** P-02
+
+**Need:** Give useful context and understand how to support the person.
+
+**Friction:** Feeling excluded or overloaded; uncertainty about involvement.
+
+**Design:** Separate tasks and clear visibility. Family relationship is not guardian authority or automatic access to Kai's answers.
 
 ### Research must reflect real contexts
 
-Co-design with Aboriginal and Torres Strait Islander people and diverse lived experiences. Test shared devices, assistance and accessibility; do not assume every person is digitally confident.
+The local prototype exercises clinician/data-manager work plus scoped participant questionnaire and consent decisions. This is not persona validation. Co-design with Aboriginal and Torres Strait Islander people and diverse lived experiences.
 
-### Executive implication
+### EXECUTIVE IMPLICATION
 
 Protect informed participation and clinician time together. Validate the Engagement Team and specialist contexts separately; do not treat one persona as the whole service.
 
@@ -46,39 +58,55 @@ Basis: Detailed brief 03; CMDCS Persona Draft v2 (CP1), pp. 4-6. All profiles ar
 
 The people who turn data capture into service quality, operational understanding and shared learning.
 
-### Rachel Nguyen - Centre Leader
+### Rachel Nguyen
 
-P-08 | Draft hypothesis
+**Role:** Centre Leader
 
-- **Need:** Understand caseload, workforce, performance and model fidelity.
-- **Friction:** Manual reporting, inconsistent data and change pressure.
-- **Design implication:** Scoped oversight and action ownership. Operations and clinical leadership may need different access.
+**Id:** P-08
 
-### Tom Fletcher - Data Officer
+**Need:** Understand caseload, workforce, performance and model fidelity.
 
-P-06 | Draft hypothesis
+**Friction:** Manual reporting, inconsistent data and change pressure.
 
-- **Need:** Support accurate registration and close completeness gaps.
-- **Friction:** Chasing staff and maintaining parallel quality workflows.
-- **Design implication:** Embedded checks, clear owners and verified-source correction; otherwise request clinician input.
+**Design:** Scoped oversight and action ownership. Operations and clinical leadership may need different access.
 
-### Ananya Rao - Data Manager
+### Tom Fletcher
 
-P-07 | Draft hypothesis
+**Role:** Data Officer
 
-- **Need:** Maintain comparable records, definitions and governed outputs across sites.
-- **Friction:** Mapping complexity, inconsistent records and manual extracts.
-- **Design implication:** Centre-supported resolution and traceable definitions/releases. Reporting contracts and broader grants need approval.
+**Id:** P-06
 
-### Dr Sam Okafor - Implementation Scientist
+**Need:** Support accurate registration and close completeness gaps.
 
-P-10 | Draft hypothesis
+**Friction:** Chasing staff and maintaining parallel quality workflows.
 
-- **Need:** Understand implementation and turn fidelity evidence into practical support.
-- **Friction:** Late or context-free evidence and weak feedback to services.
-- **Design implication:** Connect site context, findings and improvement actions. Person-level access is not automatically granted.
+**Design:** Embedded checks, clear owners and verified-source correction; otherwise request clinician input.
 
-### Executive implication
+### Ananya Rao
+
+**Role:** Data Manager
+
+**Id:** P-07
+
+**Need:** Maintain comparable records, definitions and governed outputs across sites.
+
+**Friction:** Mapping complexity, inconsistent records and manual extracts.
+
+**Design:** Centre-supported resolution and traceable definitions/releases. Reporting contracts and broader grants need approval.
+
+### Dr Sam Okafor
+
+**Role:** Implementation Scientist
+
+**Id:** P-10
+
+**Need:** Understand implementation and turn fidelity evidence into practical support.
+
+**Friction:** Late or context-free evidence and weak feedback to services.
+
+**Design:** Connect site context, findings and improvement actions. Person-level access is not automatically granted.
+
+### EXECUTIVE IMPLICATION
 
 Confirm who owns each quality and improvement action. Treat wider dashboards, fidelity and reporting as candidate scope with explicit definitions and access controls.
 
@@ -88,41 +116,56 @@ Basis: Detailed brief 03; CP1 pp. 8-11. Source roles and pain points remain unva
 
 The people who use governed evidence beyond day-to-day care. They do not automatically need the care interface.
 
-### Priya Sharma - PHN Commissioner
+### Priya Sharma
 
-P-11 | Draft hypothesis
+**Role:** PHN Commissioner
 
-- **Need:** Evaluate and commission services using fair comparisons.
-- **Friction:** Inconsistent, late or non-comparable reporting.
-- **Design implication:** Approved aggregate products with cohort, denominator, quality and comparison limits.
+**Id:** P-11
 
-### David Thompson - Policy Lead
+**Need:** Evaluate and commission services using fair comparisons.
 
-P-12 | Draft hypothesis
+**Friction:** Inconsistent, late or non-comparable reporting.
 
-- **Need:** Understand accountability, governance and system value.
-- **Friction:** Fragmented evidence and unclear responsibilities.
-- **Design implication:** Evidence linked to definitions, owners and exceptions. The draft's stewardship claims need confirmation.
+**Design:** Approved aggregate products with cohort, denominator, quality and comparison limits.
 
-### Maya Brooks - AIHW Lead
+### David Thompson
 
-P-13 | Draft hypothesis
+**Role:** Policy Lead
 
-- **Need:** Support consistent national exchange, alignment and approved linkage.
-- **Friction:** Fragile integrations and inconsistent definitions.
-- **Design implication:** Agreed schemas, mappings and release manifests; a governed output may be enough without a portal.
+**Id:** P-12
 
-### Dr Helen Marsh - Researcher
+**Need:** Understand accountability, governance and system value.
 
-P-14 | Draft hypothesis
+**Friction:** Fragmented evidence and unclear responsibilities.
 
-- **Need:** Use approved, appropriately authorised data and return findings to care.
-- **Friction:** Unclear access processes and weak care/research integration.
-- **Design implication:** Study-specific request, approval, release and closure. Future trial operations are not assumed.
+**Design:** Evidence linked to definitions, owners and exceptions. The draft's stewardship claims need confirmation.
 
-### Access is a decision, not a persona trait
+### Maya Brooks
+
+**Role:** AIHW Lead
+
+**Id:** P-13
+
+**Need:** Support consistent national exchange, alignment and approved linkage.
+
+**Friction:** Fragile integrations and inconsistent definitions.
+
+**Design:** Agreed schemas, mappings and release manifests; a governed output may be enough without a portal.
+
+### Dr Helen Marsh
+
+**Role:** Researcher
+
+**Id:** P-14
+
+**Need:** Use approved, appropriately authorised data and return findings to care.
+
+**Friction:** Unclear access processes and weak care/research integration.
+
+**Design:** Study-specific request, approval, release and closure. Future trial operations are not assumed.
+
+### ACCESS IS A DECISION, NOT A PERSONA TRAIT
 
 Approve purpose, minimum data, recipients and responsibilities first. Guardian, tablet-facilitator and administrator roles remain supporting capabilities, not extra source personas.
 
 Basis: Detailed brief 03; CP1 pp. 13-16; D-23/D-24. No legal ownership, access or research authority is established here.
-

@@ -1,11 +1,13 @@
-import { collectionStatus, currentStaff } from "./model.js";
+import {
+  collectionStatus,
+  currentStaff,
+  hasPendingClinicalReview,
+} from "./model.js";
 
 export function isOutstanding(collection) {
   return (
     !["Paused", "Cancelled"].includes(collection.assignment) &&
-    (collection.response !== "Submitted" ||
-      collection.review !== "Reviewed" ||
-      !!collection.needsReview)
+    (collection.response !== "Submitted" || hasPendingClinicalReview(collection))
   );
 }
 

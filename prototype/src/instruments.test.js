@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   DEMO_INSTRUMENT as instrument,
+  LIKERT_INSTRUMENT,
   LEGACY_INSTRUMENT,
   INSTRUMENTS,
   getInstrument,
@@ -82,6 +83,44 @@ test("versioned definitions have unique stable IDs and valid acyclic conditions"
   assert.equal(getInstrument(LEGACY_INSTRUMENT.version).questions.length, 3);
 });
 
+test("the youth check-in keeps verbal Likert anchors and nonresponse distinct", () => {
+  assert.equal(LIKERT_INSTRUMENT.questions.length, 6);
+  assert.equal(
+    LIKERT_INSTRUMENT.responseFormat,
+    "Two verbal five-point Likert scales",
+  );
+  for (const question of LIKERT_INSTRUMENT.questions) {
+    assert.equal(question.responseType, "likert");
+    assert.equal(question.scale.options.length, 5);
+    assert.deepEqual(
+      question.options.slice(0, question.scale.options.length),
+      question.scale.options,
+    );
+    assert.ok(!question.scale.options.includes("Prefer not to answer"));
+    assert.ok(question.nonResponseOptions.includes("Prefer not to answer"));
+  }
+  const frequency = LIKERT_INSTRUMENT.questions[0].scale.options;
+  const agreement = LIKERT_INSTRUMENT.questions.at(-1).scale.options;
+  assert.deepEqual(frequency, [
+    "Never",
+    "Rarely",
+    "Sometimes",
+    "Often",
+    "Always",
+  ]);
+  assert.deepEqual(agreement, [
+    "Strongly disagree",
+    "Disagree",
+    "Neither agree nor disagree",
+    "Agree",
+    "Strongly agree",
+  ]);
+  const declined = LIKERT_INSTRUMENT.questions.map(
+    () => "Prefer not to answer",
+  );
+  assert.equal(questionnaireState(LIKERT_INSTRUMENT, declined).complete, true);
+});
+
 test("each selectable questionnaire stays pinned through collection and submission", () => {
   for (const definition of INSTRUMENTS) {
     let state = createSeed();
@@ -131,7 +170,7 @@ test("each selectable questionnaire stays pinned through collection and submissi
     );
     state = reducer(state, { type: "SUBMIT", ...context, answers });
     assert.equal(collection(state).response, "Submitted");
-    assert.equal(collection(state).review, "Pending");
+    assert.equal(collection(state).review, "Not required");
     assert.equal(collection(state).version, definition.version);
     assert.deepEqual(collection(state).answers, answers);
     assert.deepEqual(
@@ -367,9 +406,10 @@ test("every refreshed mock response is complete on its path and fixtures expose 
   for (const person of state.people)
     for (const episode of person.episodes)
       for (const response of episode.collections) {
-        assert.equal(response.version, instrument.version);
+        const definition = getInstrument(response.version);
+        assert.ok(definition, response.version);
         if (response.response !== "Submitted") continue;
-        const path = questionnaireState(instrument, response.answers);
+        const path = questionnaireState(definition, response.answers);
         assert.ok(path.complete, response.id);
         assert.deepEqual(response.answers, path.answers, response.id);
         paths.push(path.total);

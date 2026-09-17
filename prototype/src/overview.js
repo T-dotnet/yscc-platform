@@ -1,6 +1,11 @@
 import { canAssess } from "./intake.js";
 import { getInstrument } from "./instruments.js";
-import { collectionStatus, formatDate, TODAY } from "./model.js";
+import {
+  collectionStatus,
+  formatDate,
+  noClinicalReviewRequired,
+  TODAY,
+} from "./model.js";
 
 // Opening setup never delivers anything; its confirmation remains a separate step.
 export function collectionSetupLabel(collection) {
@@ -18,6 +23,7 @@ export function overviewNextStep(person, episode, collection, staff) {
   const c = collection;
   const submitted = c.response === "Submitted";
   const reviewed = submitted && c.review === "Reviewed" && !c.needsReview;
+  const reviewNotRequired = noClinicalReviewRequired(c);
   const status = collectionStatus(c);
   const daysLate = Math.round(
     (Date.parse(TODAY) - Date.parse(c.due)) / 86400000,
@@ -49,6 +55,12 @@ export function overviewNextStep(person, episode, collection, staff) {
 
   // Existing evidence stays readable even if permission or intake changes later.
   if (submitted) {
+    if (reviewNotRequired)
+      return step(
+        "Questionnaire completed",
+        "The response was recorded through a supported completion method. No separate clinical review is required.",
+        details,
+      );
     if (reviewed)
       return step(
         "Clinical review recorded",
@@ -117,7 +129,7 @@ export function overviewNextStep(person, episode, collection, staff) {
   if (c.link === "Expired")
     return step(
       "Replace the expired questionnaire link",
-      `The previous link has expired and no response has been submitted.${c.response === "Draft" ? " A draft was recorded, but it cannot be resumed in this prototype." : ""} Confirm the respondent and collection method for another attempt on this collection.`,
+      `The previous link has expired and no response has been submitted.${c.response === "Draft" ? " A draft was recorded, but it cannot be resumed here." : ""} Confirm the respondent and collection method for another attempt on this collection.`,
       { label: collectionSetupLabel(c), modal: "collection" },
     );
 
@@ -133,7 +145,7 @@ export function overviewNextStep(person, episode, collection, staff) {
       status === "Overdue"
         ? "Follow up the unfinished response"
         : "Check the response in progress",
-      "A draft is recorded, but the questionnaire has not been submitted. Check the collection activity and support needed. The sample draft cannot be resumed in this prototype.",
+      "A draft is recorded, but the questionnaire has not been submitted. Check the collection activity and support needed. The sample draft cannot be resumed here.",
       details,
     );
 

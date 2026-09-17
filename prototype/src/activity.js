@@ -199,9 +199,30 @@ export function activityEntries(person, episode, audit = []) {
         })),
       ),
   );
-  return entries.sort((a, b) =>
-    (b.timestamp || b.date || "").localeCompare(a.timestamp || a.date || ""),
-  );
+  return entries
+    .map((entry) => {
+      if (!entry.attemptId && !entry.id) return entry;
+      const collection = episode.collections.find(
+        (item) => item.id === entry.collectionId,
+      );
+      const attempt = collection?.attempts.find(
+        (item) => item.id === entry.attemptId || item.id === entry.id,
+      );
+      if (!collection || !attempt) return entry;
+      return {
+        ...entry,
+        collectionLabel: collection.label,
+        attemptRespondent:
+          attempt.respondentName ||
+          collection.respondentName ||
+          "Respondent not recorded",
+        attemptChannel: attempt.channel,
+        attemptStatus: attempt.status,
+      };
+    })
+    .sort((a, b) =>
+      (b.timestamp || b.date || "").localeCompare(a.timestamp || a.date || ""),
+    );
 }
 
 export function activityChangeDetails(entry) {

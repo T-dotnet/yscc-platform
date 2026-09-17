@@ -9,6 +9,7 @@ import {
 import {
   reportChangeLog,
   reportEditError,
+  progressAnnotationError,
   reportSources,
   reportSourceKey,
 } from "./report.js";
@@ -89,6 +90,42 @@ test("first report save records initial wording, editor identity, role and time"
       after: action.content.interpretation,
     },
   );
+});
+
+test("clinician annotations are append-only, care-period scoped and retain author context", () => {
+  const { state, person, episode } = scenario();
+  const action = {
+    type: "ADD_PROGRESS_ANNOTATION",
+    personId: person.id,
+    episodeId: episode.id,
+    text: "Discuss the preferred support format at the next appointment.",
+  };
+  const next = reducer(state, action);
+  const saved = next.people.find((p) => p.id === person.id).episodes[0];
+  const [annotation] = saved.progressAnnotations;
+  assert.equal(annotation.text, action.text);
+  assert.equal(annotation.actor, "Jess Taylor");
+  assert.equal(annotation.role, "Clinician");
+  assert.ok(Number.isFinite(Date.parse(annotation.timestamp)));
+  assert.equal(annotation.reportRevision, null);
+  assert.equal(next.people.find((p) => p.id === person.id).episodes[1].progressAnnotations, undefined);
+  assert.equal(saved.events[0].title, "Progress annotation added");
+  assert.equal(reducer(next, { ...action, text: "A second annotation." }).people.find((p) => p.id === person.id).episodes[0].progressAnnotations.length, 2);
+});
+
+test("annotations reject empty, overlong and non-clinician saves", () => {
+  const { state, person, episode } = scenario();
+  const action = {
+    type: "ADD_PROGRESS_ANNOTATION",
+    personId: person.id,
+    episodeId: episode.id,
+    text: "",
+  };
+  assert.match(progressAnnotationError(episode, "Clinician", action), /Write an annotation/);
+  assert.equal(reducer(state, action), state);
+  assert.equal(reducer(state, { ...action, text: "x".repeat(2001) }), state);
+  const other = { ...state, staffId: "ananya" };
+  assert.equal(reducer(other, { ...action, text: "A note" }), other);
 });
 
 test("each report section logs only actual changes, including removal, across reload", () => {

@@ -13,6 +13,7 @@ import {
   formatDate,
   formatTimestamp,
   age,
+  displayPersonName,
 } from "../model";
 import {
   INTAKE_STATES,
@@ -111,7 +112,7 @@ export function RegisterPerson({ onClose, navigate, notify }) {
                   navigate(`/people/${duplicate.id}?tab=intake`);
                 }}
               >
-                Review {duplicate.name}’s record
+                Review {displayPersonName(duplicate)}’s record
               </button>
             </Notice>
           )}
@@ -520,7 +521,7 @@ export function IntakePanel({ person, intake, navigate }) {
             <div className="panel-body stack">
               <p className="muted">
                 Sample review categories. Staff apply the approved service
-                checks; this prototype makes no clinical triage decision.
+                checks; this workspace makes no clinical triage decision.
               </p>
               {INTAKE_CHECKS.map(([key, label]) => (
                 <label className="check-field" key={key}>
@@ -633,7 +634,7 @@ export function IntakePanel({ person, intake, navigate }) {
 export default function IntakeWorkspace({ person, navigate, openModal }) {
   const params = useSearchParams(),
     intake = person.intakes[0];
-  const tabs = ["Intake", "Referrals", "Assessment", "History"];
+  const tabs = ["Intake", "Referrals", "History"];
   const tab =
     tabs.find((t) => t.toLowerCase() === params.get("tab")) || "Intake";
   const returnTo = safeReturnTo(params.get("returnTo"));
@@ -646,7 +647,7 @@ export default function IntakeWorkspace({ person, navigate, openModal }) {
       <div className="person-heading">
         <Avatar name={person.name} large />
         <div>
-          <h1>{person.name}</h1>
+          <h1>{displayPersonName(person)}</h1>
           <p>
             {person.id}
             <span>·</span>
@@ -697,29 +698,6 @@ export default function IntakeWorkspace({ person, navigate, openModal }) {
           <Referrals person={person} intake={intake} openModal={openModal} />
         )}
         {tab === "History" && <IntakeHistory intake={intake} />}
-        {tab === "Assessment" && (
-          <Panel
-            title={
-              intakeReady(intake)
-                ? "Ready for assessment planning"
-                : "Intake must be completed first"
-            }
-          >
-            <div className="panel-body stack">
-              <Notice>
-                {intakeReady(intake)
-                  ? "The proceed decision is recorded. Choose the initial assessment due date from intake."
-                  : "Registration does not start an assessment. Resolve required checks and record a proceed decision with a receiving assessment owner."}
-              </Notice>
-              <Button
-                variant="primary"
-                onClick={() => navigate(`/people/${person.id}?tab=intake`)}
-              >
-                Open intake
-              </Button>
-            </div>
-          </Panel>
-        )}
       </div>
     </>
   );

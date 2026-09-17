@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { INSTRUMENTS } from "../instruments";
 import {
-  FileCheck2,
   BookOpen,
   SlidersHorizontal,
   MessageSquare,
@@ -13,7 +12,7 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { useStore } from "../store";
-import { formatDate, formatTimestamp, currentStaff } from "../model";
+import { displayPersonName, currentStaff } from "../model";
 import {
   PageHeading,
   Panel,
@@ -68,7 +67,7 @@ export function Quality({ openModal, navigate }) {
                           className="name-link"
                           onClick={() => navigate(`/people/${p.id}`)}
                         >
-                          {p.name}
+                          {displayPersonName(p)}
                         </button>
                         <small>
                           {p.id} · {i.id}
@@ -119,35 +118,6 @@ export function Quality({ openModal, navigate }) {
                 : "A verified correction will appear here after it is saved."}
             </Empty>
           )}
-          <Panel title="Recent record updates">
-            <div className="panel-body">
-              {state.audit.length ? (
-                state.audit.map((a) => (
-                  <div className="audit-entry" key={a.id}>
-                    <FileCheck2 size={20} />
-                    <div>
-                      <strong>{a.title}</strong>
-                      <p>{a.detail}</p>
-                      {a.reason && <p>Reason: {a.reason}</p>}
-                      {a.source && <p>Source: {a.source}</p>}
-                      <small>
-                        {a.personId} · {a.actor}
-                        {a.role && ` · ${a.role}`} ·{" "}
-                        {a.timestamp
-                          ? formatTimestamp(a.timestamp)
-                          : formatDate(a.date)}
-                      </small>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="muted">
-                  No changes recorded yet. Original values, corrected values,
-                  source, and reason appear here after a correction.
-                </p>
-              )}
-            </div>
-          </Panel>
         </div>
       </div>
     </>
@@ -163,7 +133,7 @@ export function Administration({ openModal }) {
         subtitle="The foundations of a consistent care experience."
       />
       <Notice>
-        Sample configuration for exploring the prototype. Publication, clinical
+        Sample configuration for exploring the workspace. Publication, clinical
         approval, and live permissions are not connected.
       </Notice>
       <Panel title="Workspace configuration" className="admin-panel">
@@ -230,7 +200,7 @@ export function Help({ navigate, openModal }) {
     <>
       <PageHeading
         title="Help & guidance"
-        subtitle="A few paths to explore the prototype."
+        subtitle="A few paths to explore the workspace."
       />
       <div className="help-grid">
         {[

@@ -1,6 +1,7 @@
 # YSCC Platform — Product framing
 
-Version 0.4 · 16 September 2026 · Aligned to the current interactive prototype  
+Version 0.5 · 16 September 2026 · Aligned to the current interactive prototype
+
 [Document index](README.md) · Owns scope, source register, and open decisions
 
 ## 1. Product statement
@@ -52,9 +53,9 @@ Primary evaluation measures are specified in [UX strategy](06-ux-strategy.md). T
 
 ### Current prototype boundary
 
-The local prototype now demonstrates the proposed care-collection foundation with fictional people and a fixed sample date: new-person registration and mandatory intake; intake decisions and referral follow-through; a care-period workspace and worklist; version-pinned sample questionnaires; SMS/tablet/clinician-entry collection; submitted-response review, correction and audit; follow-up planning; pause/close actions; and a clinician-editable progress report. The prototype is useful evidence of the interaction model, not a production implementation or approval of clinical policy.
+The local prototype now demonstrates the proposed care-collection foundation with fictional people and a fixed sample date: new-person registration and mandatory intake; intake decisions and referral follow-through; a care-period workspace and worklist; version-pinned sample questionnaires; SMS/tablet/clinician-entry collection; purpose-specific consent requests with accept/decline/withdraw history; submitted-response review, correction and audit; channel-dependent review handling; follow-up planning; pause/close actions; and a Progress dashboard with clinician report versions, annotations and source evidence. The prototype is useful evidence of the interaction model, not a production implementation or approval of clinical policy.
 
-It deliberately remains browser-local. Its local storage, sample staff roles, sample permission/contact checks, referral event recording and questionnaire content do not establish real identity, server-side access enforcement, external sending, clinical scoring, official content, data retention, interoperability or multi-user safety. The proposed baseline below remains the target for approved delivery.
+It deliberately remains browser-local. Its local storage, sample staff roles, sample permission/contact/review rules, referral and consent-request event recording and questionnaire content do not establish real identity or decision-making authority, server-side access enforcement, external sending, clinical scoring, official content, data retention, interoperability or multi-user safety. The proposed baseline below remains the target for approved delivery.
 
 ### Proposed MVP baseline
 
@@ -63,7 +64,7 @@ It deliberately remains browser-local. Its local storage, sample staff roles, sa
 | Person and episode workspace; intake, assessment plan, and clinical review | FR-01–FR-05, FR-09, FR-13, FR-36–FR-38 | Mandatory new-patient intake confirmed (D-25); include registration, owned waiting/triage, onward-referral tracking and incomplete exits. Clinical criteria and local ownership remain D-26/D-27. |
 | Distinct baseline and repeated collections with interpretable history | FR-06–FR-14 | Cadence, scoring, dates, and comparison rules must be approved. Monthly is conditional on instrument/cadence approval. |
 | Clinician, SMS, and tablet collection, including eligible family participation | FR-16–FR-21 | Eligibility, recipient verification, shared-device suitability, and assistance are action-specific. |
-| Purpose-specific permissions, authority, privacy, and support | FR-22–FR-29 | Production rules and responsible owners must be settled before enabling the activity. |
+| Purpose-specific consent requests, authority, privacy, and support | FR-22–FR-29 | Consent is selected from an approved library, sent as a distinct request, and retains its accept, decline, withdrawal and delivery history. Production rules and responsible owners must be settled before enabling the activity. |
 | Corrections, audit, data resolution, work queues, and handover | FR-30–FR-38, FR-46 | Scopes and correction/resolution authority require approval. |
 | Accessible, reliable collection and communication | FR-40–FR-45 | Language, content, save/resume, and notification rules need sign-off. |
 
@@ -132,13 +133,13 @@ D-25 below is **confirmed** by the product owner. Decisions in the open table re
 | D-01 | Validate the common core/conditional journey and reconcile the complete #ux discussion. | Caroline + Assessment Team | FR-02–FR-04; journey and flows. |
 | D-02 | Approve core/modules, rule triggers, items, scoring, requiredness, and permitted nonresponse. | Clinical/content owners | FR-02–FR-05, FR-11–FR-13. |
 | D-03 | Approve respondent, independent/assisted/joint completion, and channel eligibility per instrument. | Clinical measurement/content owners | FR-16–FR-21. |
-| D-04 | Define purposes and decision-making authority, including person/guardian pathways. | Legal/PIA + clinical leadership | FR-22–FR-25. |
+| D-04 | Define the consent-request library, purposes, decision-making authority and approved person/guardian pathways. Confirm which purposes can be sent digitally, their content/version, expiry/reminder rules and the effect of accept, decline and withdrawal. | Legal/PIA + clinical leadership | FR-22–FR-25. |
 | D-05 | Define answer visibility and permitted sharing for every participant/context. | Clinical + privacy/data governance | FR-27–FR-29. |
 | D-06 | Define withdrawal consequences and retention/disposal of responses, drafts, audit, and imports. | Legal + data governance | FR-07, FR-24, FR-32, FR-46. |
 | D-07 | Approve contact suitability, recipient verification, SMS copy, expiry, and reminder/opt-out rules. | Clinical operations + security/legal | FR-18–FR-19, FR-40. |
 | D-08 | Set review instruments, cadence, anchor, due windows, late/missed handling, and any monthly collection. | Clinical operations | FR-06, FR-10, FR-19. |
 | D-09 | Define new/reopened/transferred episode boundaries and dated ownership. | Clinical operations + data lead | FR-01, FR-14, FR-38. |
-| D-10 | Approve assessment completion/review criteria, disposition and incomplete-exit codes, and referral actions. | Assessment Team + clinical operations | FR-08, FR-36–FR-38. |
+| D-10 | Approve assessment completion/review criteria, including which instrument/channel/assistance combinations require a separate clinical review and how “not required” is recorded; approve disposition, incomplete-exit codes, and referral actions. | Assessment Team + clinical operations | FR-08, FR-36–FR-38. |
 | D-11 | Define pending-work treatment on pause, withdrawal, referral, and closure. | Clinical operations + data governance | FR-18–FR-19, FR-24, FR-38, FR-44. |
 | D-12 | Approve role capabilities and centre/cluster/system access, including cross-centre care. | Operations + security/data governance | FR-14, FR-28–FR-29, FR-35, FR-46. |
 | D-13 | Name verified correction sources, correction authority, and re-review/rescoring procedure. | Data governance + clinical/technical leads | FR-13, FR-30, FR-32–FR-33. |
@@ -155,9 +156,11 @@ D-25 below is **confirmed** by the product owner. Decisions in the open table re
 | D-24 | Define approved research requests, consent/ethics/authority, National Research Office workflow, and future trial boundaries. | Research/data governance + clinical/product leads | CP1 p. 16; CR-08. |
 | D-26 | Finalise intake fields/matching, approved triage criteria, waiting reasons/review dates, responsible intake/Engagement Team and assessment handoff; align pre-episode intake linkage with D-09. | Clinical operations + Assessment Team + data/product leads | D-25 confirmed; FR-01, FR-09, FR-35–FR-38; L-27/L-28, F-01, ST-27, AC-23–AC-25/AC-28–AC-29. |
 | D-27 | Confirm onward-referral destinations, sharing channels/system of record, receipt/decision evidence, follow-up windows, external responsibilities and handover/alternative-resolution conditions. | Clinical operations + privacy/data governance + receiving-service owners | FR-09–FR-10, FR-22–FR-24, FR-35–FR-38; L-29, F-17, ST-28, AC-26–AC-27. |
+| D-28 | Validate the Report tab’s purpose, audience, evidence hierarchy, questionnaire/version selector, comparison rules, event markers and whether interpretation or annotation belongs there. | Clinical leadership + Assessment Team + product/UX + data governance | ST-13/ST-29; report requirements section 9; current Report implementation is a provisional prototype direction. |
+| D-29 | Validate the Events tab’s purpose, event taxonomy, required fields, authorisation, relationship to the care plan and History, and which events may be shown as context in Report charts. | Clinical operations + Assessment Team + privacy/data governance + product/UX | CR-01/FR-39; provisional ST-31; current Events implementation is a provisional prototype direction. |
 
 ## 8. Readiness and next decision
 
-This framing is ready for structured review and neutral wireframes. It is not ready to authorise production collection. First validate D-01, reconcile the CP1/S1 phase conflict in D-21, and appoint clinical, permission, and operational decision owners. Decide the four D-15 scope items and the CR-01–CR-08 broader-platform phases explicitly. Sample rules can support prototype testing, but unresolved rules must be approved or their affected production workflow explicitly excluded before launch.
+This framing is ready for structured review and neutral wireframes. It is not ready to authorise production collection. First validate D-01, reconcile the CP1/S1 phase conflict in D-21, and appoint clinical, permission, and operational decision owners. Decide D-28 and D-29 with the same care as the underlying assessment and consent rules: the current Report and Events tabs are interaction hypotheses, not stakeholder-approved workflows. Decide the four D-15 scope items and the CR-01–CR-08 broader-platform phases explicitly. Sample rules can support prototype testing, but unresolved rules must be approved or their affected production workflow explicitly excluded before launch.
 
 Changes to these decisions must be traced into [requirements and logic](05-requirements-and-logic.md), then into the journey, flows, IA, and test scenarios. See [UX strategy](06-ux-strategy.md) for the delivery and research sequence.

@@ -1,54 +1,45 @@
-import { useState } from "react";
-import { ArrowRight, ClipboardCheck, MessagesSquare } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, ChevronDown, MessagesSquare } from "lucide-react";
 import { getInstrument } from "../instruments";
 import SubmittedAnswers from "../components/SubmittedAnswers";
-import {
-  formatDate,
-  collectionActor,
-  clinicalReviewStatus,
-  collectionStatus,
-} from "../model";
+import { formatDate, collectionActor } from "../model";
 import {
   compareResponses,
   questionnaireProgress,
   responseDate,
 } from "../progress";
-import {
-  Badge,
-  Button,
-  Notice,
-  Panel,
-  Select,
-  TextLink,
-} from "../components/UI";
+import { Notice, Select, TextLink } from "../components/UI";
 
 const dateLabel = (c) =>
   responseDate(c)
     ? formatDate(responseDate(c))
     : "Submission date not recorded";
 
-export default function QuestionnaireEvidence({ person, episode, openModal }) {
-  const [questionnaireVersion, setQuestionnaireVersion] = useState(null);
+export default function QuestionnaireEvidence({
+  person,
+  episode,
+  openModal,
+  questionnaireVersion,
+}) {
   const [latestId, setLatestId] = useState(null);
+  const [earlierId, setEarlierId] = useState(null);
   const [questionSearch, setQuestionSearch] = useState("");
   const [sectionFilter, setSectionFilter] = useState("all");
   const [changesOnly, setChangesOnly] = useState(false);
+  useEffect(() => {
+    setLatestId(null);
+    setEarlierId(null);
+    setQuestionSearch("");
+    setSectionFilter("all");
+    setChangesOnly(false);
+  }, [person.id, episode.id, questionnaireVersion]);
   const progress = questionnaireProgress(
     person,
     episode,
     questionnaireVersion,
     latestId,
   );
-  const {
-    latest,
-    earlier,
-    baseline,
-    pendingReviews,
-    open,
-    latestReview,
-    undated,
-  } = progress;
-  const [earlierId, setEarlierId] = useState(null);
+  const { latest, earlier, baseline, undated } = progress;
   const selected = earlier.find((c) => c.id === earlierId) || baseline;
   const comparison = compareResponses(person, selected, latest);
   const instrument = getInstrument(latest?.version);
@@ -68,51 +59,24 @@ export default function QuestionnaireEvidence({ person, episode, openModal }) {
       collectionId: collection?.id,
     });
   return (
-    <div className="stack patient-progress">
-      <Panel
-        title="Questionnaire details"
-        action={
-          latest && (
-            <Button onClick={() => show("review", latest)}>
-              View latest response
-            </Button>
-          )
-        }
-      >
+    <div className="stack patient-progress questionnaire-details">
+      <details className="report-accordion questionnaire-comparison-panel" open>
+        <summary>
+          <span>Questionnaire comparison and details</span>
+          <ChevronDown size={18} aria-hidden="true" />
+        </summary>
         <div className="panel-body progress-comparison">
-          {progress.questionnaires.length > 0 && (
-            <label className="progress-compare-control questionnaire-picker">
-              <span>Questionnaire</span>
-              <Select
-                label="Questionnaire"
-                value={progress.version}
-                onChange={(event) => {
-                  setQuestionnaireVersion(event.target.value);
-                  setLatestId(null);
-                  setEarlierId(null);
-                  setQuestionSearch("");
-                  setSectionFilter("all");
-                  setChangesOnly(false);
-                }}
-              >
-                {progress.questionnaires.map((version) => (
-                  <option key={version} value={version}>
-                    {version || "Questionnaire version not recorded"}
-                  </option>
-                ))}
-              </Select>
-            </label>
+          {latest && comparison.reason && (
+            <div className="report-accordion-action">
+              <TextLink onClick={() => show("review", latest)}>
+                View latest response
+              </TextLink>
+            </div>
           )}
           {latest ? (
             <>
-              <div className="progress-comparison-heading">
-                <div>
-                  <p className="muted">
-                    {collectionActor(person, latest, "respondent")} ·{" "}
-                    {latest.respondent || "Respondent role not recorded"}
-                  </p>
-                </div>
-                {progress.latestOptions.length > 1 && (
+              {progress.latestOptions.length > 1 && (
+                <div className="progress-comparison-heading">
                   <label className="progress-compare-control">
                     <span>Response on latest date</span>
                     <Select
@@ -130,24 +94,8 @@ export default function QuestionnaireEvidence({ person, episode, openModal }) {
                       ))}
                     </Select>
                   </label>
-                )}
-                {earlier.length > 0 && (
-                  <label className="progress-compare-control">
-                    <span>Compare latest with</span>
-                    <Select
-                      label="Compare latest with"
-                      value={selected?.id || ""}
-                      onChange={(event) => setEarlierId(event.target.value)}
-                    >
-                      {earlier.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.label} · {dateLabel(c)}
-                        </option>
-                      ))}
-                    </Select>
-                  </label>
-                )}
-              </div>
+                </div>
+              )}
               {progress.latestOptions.length > 1 && (
                 <Notice>
                   Multiple responses share the latest submission date. Their
@@ -172,6 +120,22 @@ export default function QuestionnaireEvidence({ person, episode, openModal }) {
               ) : (
                 <>
                   <div className="answer-tools comparison-tools">
+                    {earlier.length > 0 && (
+                      <label className="progress-compare-control">
+                        <span>Compare latest with</span>
+                        <Select
+                          label="Compare latest with"
+                          value={selected?.id || ""}
+                          onChange={(event) => setEarlierId(event.target.value)}
+                        >
+                          {earlier.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.label} · {dateLabel(c)}
+                            </option>
+                          ))}
+                        </Select>
+                      </label>
+                    )}
                     <label>
                       Find a question
                       <input
@@ -232,10 +196,16 @@ export default function QuestionnaireEvidence({ person, episode, openModal }) {
                           <th scope="col">
                             <span>{selected.label}</span>
                             <small>{dateLabel(selected)}</small>
+                            <TextLink onClick={() => show("review", selected)}>
+                              View earlier response
+                            </TextLink>
                           </th>
                           <th scope="col">
                             <span>{latest.label}</span>
                             <small>{dateLabel(latest)} · Latest</small>
+                            <TextLink onClick={() => show("review", latest)}>
+                              View latest response
+                            </TextLink>
                           </th>
                           <th scope="col">Change</th>
                         </tr>
@@ -282,9 +252,6 @@ export default function QuestionnaireEvidence({ person, episode, openModal }) {
                         ? "Questions not asked, missing, declined or invalid answers are excluded from change counts."
                         : "Changes are shown per answer; there is no combined clinical score."}
                     </span>
-                    <TextLink onClick={() => show("review", selected)}>
-                      View earlier response
-                    </TextLink>
                   </div>
                   {(selected.channel !== latest.channel ||
                     selected.assistance !== latest.assistance) && (
@@ -311,7 +278,7 @@ export default function QuestionnaireEvidence({ person, episode, openModal }) {
                   {undated.length === 1 ? "response has" : "responses have"} no
                   recorded submission date and{" "}
                   {undated.length === 1 ? "is" : "are"} excluded from the
-                  comparison. See the history below.
+                  comparison. Open Assessment to review all responses.
                 </Notice>
               )}
             </>
@@ -325,114 +292,13 @@ export default function QuestionnaireEvidence({ person, episode, openModal }) {
               </h3>
               <p>
                 {progress.responses.length
-                  ? "You can still open each submitted response in the history below."
+                  ? "Open Assessment to review submitted responses and collection history."
                   : "Once the first questionnaire is submitted, its answers will appear here. Follow-ups will add new points for comparison."}
               </p>
             </div>
           )}
         </div>
-      </Panel>
-
-      <div className="progress-detail-grid">
-        <Panel title="Latest clinician review">
-          <div className="panel-body">
-            {latestReview ? (
-              <>
-                <div className="progress-review-meta">
-                  <Badge>{clinicalReviewStatus(latestReview)}</Badge>
-                  <span className="muted">
-                    {latestReview.reviewDate
-                      ? formatDate(latestReview.reviewDate)
-                      : "Review date not recorded"}
-                  </span>
-                </div>
-                <p className="progress-review-note">
-                  {latestReview.reviewNote || "No review note recorded."}
-                </p>
-                <p className="muted">
-                  {latestReview.reviewActor || "Reviewer not recorded"} ·{" "}
-                  {latestReview.label}
-                </p>
-                {latestReview.needsReview && (
-                  <Notice tone="amber">
-                    This note relates to earlier answers. A new review is
-                    required.
-                  </Notice>
-                )}
-                {!latestReview.needsReview && pendingReviews.length > 0 && (
-                  <Notice>
-                    There are submitted responses awaiting review. This note
-                    does not cover them.
-                  </Notice>
-                )}
-                <TextLink onClick={() => show("review", latestReview)}>
-                  Read review and responses
-                </TextLink>
-              </>
-            ) : (
-              <div className="progress-empty">
-                <ClipboardCheck size={26} aria-hidden="true" />
-                <h3>No clinical review recorded</h3>
-                <p>
-                  Review notes will provide the clinician’s interpretation and
-                  next care step alongside the questionnaire responses.
-                </p>
-              </div>
-            )}
-          </div>
-        </Panel>
-        <Panel title="Response & follow-up history">
-          <ol className="progress-history">
-            {[
-              ...open.map((c) => ({ c, kind: "open" })),
-              ...[...progress.dated]
-                .reverse()
-                .map((c) => ({ c, kind: "response" })),
-              ...undated.map((c) => ({ c, kind: "response" })),
-              ...progress.collections
-                .filter((c) => c.response !== "Submitted" && !open.includes(c))
-                .map((c) => ({ c, kind: "inactive" })),
-            ].map(({ c, kind }) => (
-              <li key={c.id} className={kind === "response" ? "received" : ""}>
-                <div className="progress-history-line">
-                  <strong>{c.label}</strong>
-                  <Badge>
-                    {kind === "response"
-                      ? clinicalReviewStatus(c)
-                      : collectionStatus(c)}
-                  </Badge>
-                </div>
-                <p>
-                  {kind === "response"
-                    ? `Submitted · ${dateLabel(c)}`
-                    : `Due · ${c.due ? formatDate(c.due) : "Date not recorded"}`}
-                </p>
-                <small>
-                  {collectionActor(person, c, "respondent")} ·{" "}
-                  {c.version || "Version not recorded"}
-                </small>
-                <TextLink
-                  onClick={() =>
-                    show(
-                      kind === "response" ? "review" : "collection-details",
-                      c,
-                    )
-                  }
-                >
-                  {kind === "response"
-                    ? "View response & review"
-                    : "View collection"}
-                </TextLink>
-              </li>
-            ))}
-          </ol>
-          {progress.collections.length === 0 && (
-            <div className="panel-body">
-              <p>No collections recorded in this care period.</p>
-            </div>
-          )}
-        </Panel>
-      </div>
+      </details>
     </div>
   );
 }

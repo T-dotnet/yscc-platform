@@ -21,6 +21,9 @@ import {
   reducer,
   qualityResolutionError,
   formatTimestamp,
+  displayPersonName,
+  displayFamilyName,
+  CONSENT_LIBRARY,
 } from "../model";
 import { DEMO_INSTRUMENT, INSTRUMENTS, getInstrument } from "../instruments";
 import { Modal, Field, Button, Notice, Select, Badge, Success } from "./UI";
@@ -30,6 +33,7 @@ import InstrumentLibrary from "./InstrumentLibrary";
 import EditResponses from "./EditResponses";
 import ReviewResponses from "./ReviewResponses";
 import ClinicianQuestionnaire from "./ClinicianQuestionnaire";
+import CareEventForm from "./CareEventForm";
 const formValues = (e) => Object.fromEntries(new FormData(e.currentTarget));
 export default function Forms({
   modal,
@@ -37,6 +41,7 @@ export default function Forms({
   openModal,
   navigate,
   startQuestionnaire,
+  startConsentRequest,
   notify,
 }) {
   const { state, dispatch, commit } = useStore();
@@ -107,11 +112,20 @@ export default function Forms({
   );
   if (modal.type === "instrument")
     return <InstrumentLibrary onClose={onClose} />;
+  if (modal.type === "care-event")
+    return (
+      <CareEventForm
+        episode={e}
+        error={formError}
+        onClose={onClose}
+        onSave={(action) => save(action, "Event added to the timeline.")}
+      />
+    );
   if (modal.type === "questionnaire-preview")
     return (
       <Modal
         title="Questionnaire preview"
-        subtitle={`${c.version} · ${p.name} · ${c.label}`}
+        subtitle={`${c.version} · ${displayPersonName(p)} · ${c.label}`}
         onClose={onClose}
         closeLabel="Close preview"
         className="questionnaire-preview-modal"
@@ -134,14 +148,42 @@ export default function Forms({
         collection={c}
         canCompleteAsClinician={staff?.role === "Clinician" && canAssess(p, e)}
         onClose={onClose}
-        onAction={(type) =>
+        onAction={(type) => {
+          if (type === "clinician-entry") {
+            const instrument = getInstrument(c.version);
+            const respondent = instrument?.respondents.includes(c.respondent)
+              ? c.respondent
+              : "Person";
+            const assistance = ["Transcribed", "Joint completion"].includes(
+              c.assistance,
+            )
+              ? c.assistance
+              : "Transcribed";
+            const result = commit({
+              ...modal,
+              type: "DELIVER",
+              channel: "Clinician entry",
+              respondent,
+              assistance,
+            });
+            if (result.error) {
+              setFormError(result.error);
+              return;
+            }
+            openModal({
+              personId: p.id,
+              episodeId: e.id,
+              collectionId: c.id,
+              type: "clinician-questionnaire",
+            });
+            return;
+          }
           openModal({
             ...modal,
-            type: type === "clinician-entry" ? "collection" : type,
-            channel: type === "clinician-entry" ? "Clinician entry" : undefined,
+            type,
             returnToDetails: true,
-          })
-        }
+          });
+        }}
       />
     );
   if (modal.type === "clinician-questionnaire")
@@ -194,8 +236,8 @@ export default function Forms({
         title={previewOpen ? "Questionnaire preview" : "Plan a follow-up"}
         subtitle={
           previewOpen
-            ? `${selectedInstrument.version} · ${p.name}`
-            : `${p.name} · Care episode ${e.number}`
+            ? `${selectedInstrument.version} · ${displayPersonName(p)}`
+            : `${displayPersonName(p)} · Care episode ${e.number}`
         }
         onClose={previewOpen ? () => setPreviewOpen(false) : onClose}
         closeLabel={previewOpen ? "Close preview" : "Close dialog"}
@@ -280,7 +322,7 @@ export default function Forms({
             </details>
             <Field
               label="Due date"
-              hint="The prototype uses 15 September 2026 as today. Cadence is set explicitly for this sample."
+              hint="This workspace uses 15 September 2026 as today. Cadence is set explicitly for this sample."
             >
               <input name="due" type="date" min={TODAY} required />
             </Field>
@@ -316,7 +358,7 @@ export default function Forms({
               </button>
             </div>
             <Field label="Respondent">
-              <input value={p.name} readOnly />
+              <input value={displayPersonName(p)} readOnly />
             </Field>
           </div>
           <div className="modal-footer">
@@ -383,7 +425,7 @@ export default function Forms({
               ? "Complete as clinician"
               : collectionSetupLabel(c)
         }
-        subtitle={`${p.name} · ${c.label}`}
+        subtitle={`${displayPersonName(p)} · ${c.label}`}
         onClose={onClose}
       >
         {done ? (
@@ -418,7 +460,8 @@ export default function Forms({
             </Success>
             <Notice>
               Submitting the sample questionnaire will update this record. The
-              clinical review will remain pending.
+              clinical review is not required for clinician entry or supported
+              tablet completion.
             </Notice>
           </div>
         ) : (
@@ -506,11 +549,15 @@ export default function Forms({
                     setCollectionConfirmed(false);
                   }}
                 >
-                  <option value="Person">{p.name}</option>
+                  <option value="Person">{displayPersonName(p)}</option>
                   {p.family &&
                     getInstrument(c.version)?.respondents.includes(
                       "Family respondent",
-                    ) && <option value="Family respondent">{p.family}</option>}
+                    ) && (
+                      <option value="Family respondent">
+                        {displayFamilyName(p)}
+                      </option>
+                    )}
                 </select>
               </Field>
               <fieldset className="channel-options">
@@ -578,7 +625,9 @@ export default function Forms({
                   <div>
                     <dt>Answering</dt>
                     <dd>
-                      {respondent === "Family respondent" ? p.family : p.name}
+                      {respondent === "Family respondent"
+                        ? displayFamilyName(p)
+                        : displayPersonName(p)}
                       {respondent === "Family respondent"
                         ? " · own family contribution"
                         : " · own answers"}
@@ -635,8 +684,8 @@ export default function Forms({
               )}
               <Notice>
                 {respondent === "Family respondent"
-                  ? `${p.family} provides their own contribution. This does not establish guardian authority.`
-                  : `${p.name} can answer this sample check-in by SMS link, clinic tablet, or with staff recording the answers.`}
+                  ? `${displayFamilyName(p)} provides their own contribution. This does not establish guardian authority.`
+                  : `${displayPersonName(p)} can answer this sample check-in by SMS link, clinic tablet, or with staff recording the answers.`}
               </Notice>
               <label className="check-field">
                 <input
@@ -704,11 +753,174 @@ export default function Forms({
         }
       />
     );
+  if (modal.type === "consent-send") {
+    const sendableConsents = CONSENT_LIBRARY.filter(
+      (item) =>
+        !p.consentRequests?.some(
+          (request) =>
+            request.consentId === item.id &&
+            ["Sent", "Accepted"].includes(request.status),
+        ),
+    );
+    return (
+      <Modal
+        title="Send consent request"
+        subtitle={`${displayPersonName(p)} · Care episode ${e.number}`}
+        onClose={onClose}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            save(
+              { type: "CONSENT_SEND", ...formValues(event) },
+              "Sample consent request sent. Open it from the list to view the patient experience.",
+            );
+          }}
+        >
+          <div className="form-body">
+            <Notice>
+              Select an approved sample consent. Sending a request does not
+              record consent.
+            </Notice>
+            <Field label="Consent purpose">
+              <select name="consentId" defaultValue={sendableConsents[0]?.id}>
+                {sendableConsents.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.title} · {item.version}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Delivery channel">
+              <select name="channel" defaultValue="SMS link">
+                <option>SMS link</option>
+                <option>Clinic tablet</option>
+              </select>
+            </Field>
+            <p className="muted">
+              SMS requires suitable contact. This is labelled sample policy, not
+              approved consent wording.
+            </p>
+          </div>
+          {footer("Send sample request", sendableConsents.length === 0)}
+        </form>
+      </Modal>
+    );
+  }
+  if (modal.type === "consent-detail") {
+    const request = p.consentRequests?.find(
+      (item) => item.id === modal.consentRequestId,
+    );
+    if (!request) return null;
+    return (
+      <Modal
+        title={request.title}
+        subtitle={`${request.status} · ${request.version}`}
+        onClose={onClose}
+      >
+        <div className="form-body">
+          <dl className="metadata">
+            <div>
+              <dt>Scope</dt>
+              <dd>{request.scope}</dd>
+            </div>
+            <div>
+              <dt>Channel</dt>
+              <dd>{request.channel}</dd>
+            </div>
+            <div>
+              <dt>Sent</dt>
+              <dd>{request.sentAt || "Not sent"}</dd>
+            </div>
+            <div>
+              <dt>Decision</dt>
+              <dd>{request.status}</dd>
+            </div>
+            {request.decisionMaker && (
+              <div>
+                <dt>Decision maker</dt>
+                <dd>{request.decisionMaker}</dd>
+              </div>
+            )}
+          </dl>
+          <Notice>
+            This opens a scoped sample patient view. It does not establish
+            recipient verification, authority, delivery or production
+            persistence.
+          </Notice>
+        </div>
+        <div className="modal-footer">
+          <Button variant="secondary" onClick={onClose}>
+            Close
+          </Button>
+          {request.status === "Sent" && (
+            <Button
+              variant="primary"
+              onClick={() =>
+                startConsentRequest({
+                  personId: p.id,
+                  episodeId: e.id,
+                  consentRequestId: request.id,
+                })
+              }
+            >
+              Open sample patient view
+            </Button>
+          )}
+          {request.status === "Accepted" && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                openModal({
+                  ...modal,
+                  type: "consent-withdraw",
+                  consentRequestId: request.id,
+                })
+              }
+            >
+              Record withdrawal
+            </Button>
+          )}
+        </div>
+      </Modal>
+    );
+  }
+  if (modal.type === "consent-withdraw") {
+    const request = p.consentRequests?.find(
+      (item) => item.id === modal.consentRequestId,
+    );
+    if (!request) return null;
+    return (
+      <Modal
+        title="Record consent withdrawal"
+        subtitle={request.title}
+        onClose={onClose}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            save(
+              { type: "CONSENT_WITHDRAW", consentRequestId: request.id },
+              "Consent withdrawal recorded. Earlier decisions remain in history.",
+            );
+          }}
+        >
+          <div className="form-body">
+            <Notice>
+              This stops future activity only where the approved purpose policy
+              requires it. It does not delete prior history.
+            </Notice>
+          </div>
+          {footer("Record withdrawal")}
+        </form>
+      </Modal>
+    );
+  }
   if (modal.type === "consent")
     return (
       <Modal
         title="Update sample participation settings"
-        subtitle={p.name}
+        subtitle={displayPersonName(p)}
         onClose={onClose}
       >
         <form
@@ -722,7 +934,7 @@ export default function Forms({
         >
           <div className="form-body">
             <Notice>
-              Illustrative permission settings for this prototype. Research and
+              Illustrative permission settings for this workspace. Research and
               guardian authority stay separate.
             </Notice>
             <Field label="Assessment participation">
@@ -770,7 +982,7 @@ export default function Forms({
     return (
       <Modal
         title="Episode actions"
-        subtitle={`${p.name} · Care episode ${e.number}`}
+        subtitle={`${displayPersonName(p)} · Care episode ${e.number}`}
         onClose={onClose}
       >
         <form
@@ -848,7 +1060,7 @@ export default function Forms({
     return (
       <Modal
         title="Review data quality issue"
-        subtitle={`${p.name} · ${issue.title}`}
+        subtitle={`${displayPersonName(p)} · ${issue.title}`}
         onClose={onClose}
       >
         <form
@@ -955,7 +1167,7 @@ export default function Forms({
   }
   const content = {
     about: [
-      "About this prototype",
+      "About this workspace",
       "A working model of the YSCC assessment experience.",
       <>
         <p>
@@ -988,7 +1200,7 @@ export default function Forms({
           <Badge>Selected</Badge>
         </div>
         <p>
-          This prototype includes one centre. Live organisation scopes and role
+          This workspace includes one centre. Live organisation scopes and role
           permissions require a connected access system.
         </p>
       </>,
@@ -1008,7 +1220,7 @@ export default function Forms({
           </div>
           <div>
             <dt>Access</dt>
-            <dd>Prototype demonstration</dd>
+            <dd>Workspace demonstration</dd>
           </div>
         </dl>
         <Notice>
@@ -1042,7 +1254,8 @@ export default function Forms({
         </p>
         <p>
           Reissuing adds a delivery attempt to the same assignment. Submission
-          fulfils that assignment once and leaves clinical review pending.
+          fulfils that assignment once. Clinician entry and supported tablet
+          completion do not require a separate clinical review.
         </p>
         <Notice>
           Cadence, requiredness, eligibility, and completion policy are sample
@@ -1069,7 +1282,7 @@ export default function Forms({
     ],
     reset: [
       "Reset sample workspace",
-      "This affects only the prototype’s sample data.",
+      "This affects only the workspace’s sample data.",
       <>
         <p>
           Return to the six original people and their sample tasks. Your local

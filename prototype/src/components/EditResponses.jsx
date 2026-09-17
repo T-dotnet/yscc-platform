@@ -2,7 +2,7 @@ import useDraft from "../useDraft";
 import { useRef, useState } from "react";
 import { Pencil, ArrowLeft } from "lucide-react";
 import { useStore } from "../store";
-import { currentStaff, responseEditError } from "../model";
+import { currentStaff, displayPersonName, responseEditError } from "../model";
 import { Modal, Button, Field, Notice } from "./UI";
 import SubmittedAnswers from "./SubmittedAnswers";
 import DiscardChanges from "./DiscardChanges";
@@ -60,7 +60,7 @@ export default function EditResponses({
   return (
     <Modal
       title="Edit answers"
-      subtitle={`${person.name} · ${collection.label} · ${collection.version}`}
+      subtitle={`${displayPersonName(person)} · ${collection.label} · ${collection.version}`}
       onClose={requestClose}
       wide
       className="response-dialog"

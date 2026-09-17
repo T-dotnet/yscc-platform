@@ -33,7 +33,7 @@ test("clinician can fill and submit patient answers within the same assessment",
   const c = collection(saved);
   assert.equal(c.response, "Submitted");
   assert.equal(c.assignment, "Fulfilled");
-  assert.equal(c.review, "Pending");
+  assert.equal(c.review, "Not required");
   assert.equal(c.respondent, "Person");
   assert.equal(
     collectionActor(saved.people[0], c, "respondent"),
@@ -50,8 +50,8 @@ test("clinician can fill and submit patient answers within the same assessment",
   );
   assert.equal(saved.people[0].episodes[0].collections.length, 2);
   assert.equal(
-    getTasks(saved).find((task) => task.person.id === context.personId).status,
-    "Ready for review",
+    getTasks(saved).some((task) => task.person.id === context.personId),
+    false,
   );
   assert.equal(reducer(saved, submission(started)), saved);
 });

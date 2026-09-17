@@ -32,6 +32,13 @@ export default function QuestionnaireFlow({
     path.visible[0];
   const position = path.visible.indexOf(current);
   const section = path.sections.find((s) => s.id === current?.question.section);
+  const scale = current?.question.scale;
+  const scaleOptions = scale?.options || [];
+  const nonResponseOptions = scale
+    ? current.question.options.filter(
+        (option) => !scaleOptions.includes(option),
+      )
+    : [];
   const Heading = headingLevel || (preview ? "h3" : "h1");
   useEffect(() => {
     heading.current?.focus({ preventScroll: true });
@@ -229,7 +236,7 @@ export default function QuestionnaireFlow({
             {preview
               ? "This is a practice path. No care record is updated."
               : clinicianEntry
-                ? "These answers will be saved with you as recorder. Clinical review remains pending."
+                ? "These answers will be saved with you as recorder. No separate clinical review is required."
                 : "Your response will be submitted once, then be ready for the care team’s review."}
           </Notice>
           <div className="question-controls">
@@ -284,29 +291,43 @@ export default function QuestionnaireFlow({
           <p className="question-hint" id={`${id}-hint`}>
             {current.question.hint}
           </p>
-          <fieldset className="answer-options" aria-describedby={`${id}-hint`}>
+          {scale && (
+            <p className="likert-instruction" id={`${id}-scale`}>
+              <strong>{scale.label}</strong>
+              <span>{scale.instruction}</span>
+            </p>
+          )}
+          <fieldset
+            className={`answer-options ${scale ? "likert-options" : ""}`}
+            aria-describedby={`${id}-hint${scale ? ` ${id}-scale` : ""}`}
+          >
             <legend className="sr-only">
               {questionTitle(current.question, respondent)}
             </legend>
-            {current.question.options.map((option) => (
-              <label
-                className={`answer-option ${current.answer === option ? "chosen" : ""}`}
+            {(scale ? scaleOptions : current.question.options).map((option) => (
+              <AnswerOption
                 key={option}
-              >
-                <input
-                  type="radio"
-                  name={`${id}-${current.question.id}`}
-                  value={option}
-                  checked={current.answer === option}
-                  onChange={() => choose(option)}
-                />
-                <span className="radio-dot" />
-                <span>{option}</span>
-                {current.answer === option && (
-                  <Check size={19} aria-hidden="true" />
-                )}
-              </label>
+                option={option}
+                name={`${id}-${current.question.id}`}
+                selected={current.answer === option}
+                onChoose={choose}
+                likert={!!scale}
+              />
             ))}
+            {scale && nonResponseOptions.length > 0 && (
+              <div className="likert-nonresponse">
+                <p>If the scale does not fit</p>
+                {nonResponseOptions.map((option) => (
+                  <AnswerOption
+                    key={option}
+                    option={option}
+                    name={`${id}-${current.question.id}`}
+                    selected={current.answer === option}
+                    onChoose={choose}
+                  />
+                ))}
+              </div>
+            )}
           </fieldset>
           <div className="question-controls">
             <Button
@@ -341,5 +362,24 @@ export default function QuestionnaireFlow({
         </>
       )}
     </div>
+  );
+}
+
+function AnswerOption({ option, name, selected, onChoose, likert = false }) {
+  return (
+    <label
+      className={`answer-option ${likert ? "likert-option" : ""} ${selected ? "chosen" : ""}`}
+    >
+      <input
+        type="radio"
+        name={name}
+        value={option}
+        checked={selected}
+        onChange={() => onChoose(option)}
+      />
+      <span className="radio-dot" />
+      <span>{option}</span>
+      {selected && <Check size={19} aria-hidden="true" />}
+    </label>
   );
 }

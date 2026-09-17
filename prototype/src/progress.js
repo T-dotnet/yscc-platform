@@ -3,7 +3,12 @@ import {
   questionnaireState,
   answerLabel,
 } from "./instruments.js";
-import { TODAY, collectionActor, formatDate } from "./model.js";
+import {
+  TODAY,
+  collectionActor,
+  formatDate,
+  hasPendingClinicalReview,
+} from "./model.js";
 
 // Submission dates are evidence dates. Due dates never stand in for them.
 export function responseDate(collection) {
@@ -117,9 +122,7 @@ export function patientProgress(person, episode, latestId) {
     earlier.find((c) => !comparisonReason(person, c, latest)) ||
     earlier[0] ||
     null;
-  const pendingReviews = responses.filter(
-    (c) => c.review !== "Reviewed" || c.needsReview,
-  );
+  const pendingReviews = responses.filter(hasPendingClinicalReview);
   const open =
     episode.status === "Active"
       ? episode.collections
@@ -222,9 +225,123 @@ export function reportEvidence(person, episode) {
           };
         },
       );
-      return { ...group, first, last, comparison, sections };
+      const responseHistory = group.points.map((current, index) => {
+        const previous = group.points[index - 1] || null;
+        return {
+          current,
+          previous,
+          comparison: previous
+            ? compareResponses(person, previous, current)
+            : null,
+        };
+      });
+      return {
+        ...group,
+        first,
+        last,
+        comparison,
+        sections,
+        responseHistory,
+      };
     }),
   };
+}
+
+// Shape report evidence for the dashboard without turning ordinal responses
+// into a clinical score. Each Likert question keeps its own authored scale.
+export function questionnaireDashboardGroups(evidence) {
+  return evidence.groups.map((group) => {
+    const instrument = getInstrument(group.version);
+    if (!instrument) {
+      return {
+        ...group,
+        instrumentName: group.version || "Unknown questionnaire",
+        likertTrends: [],
+        qualitativeChanges: [],
+        responseHistory: group.responseHistory.map((entry) => ({
+          ...entry,
+          changedCount: 0,
+          likertChangedCount: 0,
+          qualitativeQuestionCount: 0,
+          qualitativeChanges: [],
+        })),
+      };
+    }
+    const comparisonByQuestion = new Map(
+      group.comparison.rows.map((row) => [row.id, row]),
+    );
+    const questions = instrument.questions.map((question, index) => {
+      const points = group.points.map((collection) => {
+        const answer = collection.answers?.[index];
+        const scaleIndex = question.scale?.options.indexOf(answer) ?? -1;
+        return {
+          id: collection.id,
+          label: collection.label,
+          date: responseDate(collection),
+          answer:
+            answer === "" || answer == null ? "No answer recorded" : answer,
+          value: scaleIndex < 0 ? null : scaleIndex + 1,
+        };
+      });
+      return {
+        id: question.id,
+        section: instrument.sections.find(
+          (section) => section.id === question.section,
+        ),
+        question: question.title,
+        responseType: question.responseType || "choice",
+        scale: question.scale || null,
+        points,
+        comparison: comparisonByQuestion.get(question.id) || null,
+      };
+    });
+    const questionsById = new Map(
+      questions.map((question) => [question.id, question]),
+    );
+    const responseHistory = group.responseHistory.map((entry) => {
+      const changedRows =
+        entry.comparison?.rows.filter((row) => row.change === "Changed") || [];
+      const qualitativeChanges = changedRows.flatMap((row) => {
+        const question = questionsById.get(row.id);
+        return question && question.responseType !== "likert"
+          ? [
+              {
+                id: row.id,
+                section: question.section,
+                question: row.question,
+                comparison: row,
+              },
+            ]
+          : [];
+      });
+      return {
+        ...entry,
+        changedCount: changedRows.length,
+        likertChangedCount: changedRows.filter(
+          (row) => questionsById.get(row.id)?.responseType === "likert",
+        ).length,
+        qualitativeQuestionCount: questions.filter(
+          (question) => question.responseType !== "likert",
+        ).length,
+        qualitativeChanges,
+      };
+    });
+    return {
+      ...group,
+      instrumentName: instrument.name || group.version,
+      likertTrends: questions.filter(
+        (question) =>
+          question.responseType === "likert" &&
+          question.points.filter((point) => point.value !== null).length >= 2,
+      ),
+      qualitativeChanges: questions.filter(
+        (question) =>
+          question.responseType !== "likert" &&
+          question.comparison?.change === "Changed",
+      ),
+      responseHistory,
+    };
+  });
 }
 
 export function suggestedReport(person, episode) {
@@ -234,7 +351,7 @@ export function suggestedReport(person, episode) {
     : null;
   const summary = !evidence.responses.length
     ? "No questionnaires have been submitted in this care period. A starting assessment is needed before changes can be described."
-    : `${evidence.responses.length} submitted ${evidence.responses.length === 1 ? "questionnaire informs" : "questionnaires inform"} this report${datedRange ? `, covering ${datedRange}` : "; submission dates need confirmation"}. ${evidence.pendingReviews.length ? `${evidence.pendingReviews.length} ${evidence.pendingReviews.length === 1 ? "response still needs" : "responses still need"} clinical review.` : "All submitted responses have a recorded clinical review."}${evidence.undated.length ? ` ${evidence.undated.length} ${evidence.undated.length === 1 ? "response has" : "responses have"} no submission date and cannot show change over time.` : ""}`;
+    : `${evidence.responses.length} submitted ${evidence.responses.length === 1 ? "questionnaire informs" : "questionnaires inform"} this report${datedRange ? `, covering ${datedRange}` : "; submission dates need confirmation"}. ${evidence.pendingReviews.length ? `${evidence.pendingReviews.length} ${evidence.pendingReviews.length === 1 ? "response still needs" : "responses still need"} clinical review.` : "All submitted responses are reviewed or do not require a separate clinical review."}${evidence.undated.length ? ` ${evidence.undated.length} ${evidence.undated.length === 1 ? "response has" : "responses have"} no submission date and cannot show change over time.` : ""}`;
   const changes = evidence.groups
     .map((group) => {
       const heading = `${group.version || "Unknown questionnaire"} · ${group.respondent} (${group.role || "role not recorded"})`;

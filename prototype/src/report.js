@@ -64,6 +64,19 @@ export function reportSources(episode) {
 export const reportSourceKey = (episode) =>
   JSON.stringify(reportSources(episode));
 
+// Annotations are deliberately separate from the authored report. They are
+// append-only context against a care period, not edits to questionnaire data
+// or a substitute for a clinical review.
+export function progressAnnotationError(episode, role, action) {
+  if (role !== "Clinician") return "Only a clinician can add an annotation.";
+  if (!episode) return "This care period is unavailable.";
+  if (typeof action.text !== "string" || !action.text.trim())
+    return "Write an annotation before saving.";
+  if (action.text.trim().length > 2000)
+    return "An annotation can contain no more than 2,000 characters.";
+  return null;
+}
+
 export function reportEditError(episode, role, action) {
   if (role !== "Clinician") return "Only a clinician can edit this report.";
   if (!episode) return "This care period is unavailable.";

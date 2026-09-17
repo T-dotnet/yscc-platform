@@ -10,6 +10,33 @@ const displayValue = (value) =>
         ? "Not recorded."
         : String(value);
 
+const timelineTimestamp = (timestamp) => {
+  const value = new Date(timestamp);
+  const timeParts = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
+  }).formatToParts(value);
+  return {
+    date: value
+      .toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+      .replace("Sept", "Sep"),
+    time: timeParts
+      .filter(({ type }) =>
+        ["hour", "minute", "second", "literal"].includes(type),
+      )
+      .map(({ value: part }) => part)
+      .join("")
+      .trim(),
+    zone: timeParts.find(({ type }) => type === "timeZoneName")?.value || "",
+  };
+};
+
 export default function ActivityTimeline({
   episode,
   person,
@@ -24,34 +51,81 @@ export default function ActivityTimeline({
     >
       {(full ? entries : entries.slice(0, 4)).map((entry) => {
         const changes = activityChangeDetails(entry);
+        const entryTimestamp =
+          entry.timestamp || (entry.date?.includes("T") ? entry.date : null);
+        const timestampParts = entryTimestamp
+          ? timelineTimestamp(entryTimestamp)
+          : null;
+        const attemptDetails = entry.collectionLabel
+          ? [
+              ["Collection", entry.collectionLabel],
+              ["Respondent", personEventText(person, entry.attemptRespondent)],
+              ["Channel", entry.attemptChannel],
+              ["Status", entry.attemptStatus],
+            ].filter(([, value]) => value)
+          : [];
+        const historyDetails = [
+          ...(attemptDetails.length
+            ? attemptDetails
+            : changes.length === 0 && entry.detail
+              ? [["Details", personEventText(person, entry.detail)]]
+              : []),
+          [
+            "Recorded by",
+            `${entry.actor || "Editor not recorded"}${entry.role ? ` - ${entry.role}` : ""}`,
+          ],
+          ...(entry.scope ? [["Scope", entry.scope]] : []),
+          ...(entry.occurredAt
+            ? [["Event occurred", formatTimestamp(entry.occurredAt)]]
+            : []),
+          ...(entry.eventDate
+            ? [["Event date", formatDate(entry.eventDate)]]
+            : []),
+          ...(entry.reason ? [["Reason", entry.reason]] : []),
+          ...(entry.source ? [["Source", entry.source]] : []),
+          ...(!entryTimestamp ? [["Time", "Exact time not recorded"]] : []),
+        ];
         return (
           <li key={entry.id}>
             <span className="timeline-dot" />
-            <time dateTime={entry.timestamp || entry.date || undefined}>
-              {entry.timestamp
-                ? full
-                  ? formatTimestamp(entry.timestamp)
-                  : formatDate(entry.timestamp.slice(0, 10))
-                : entry.date
-                  ? formatDate(entry.date)
-                  : "Date not recorded"}
+            <time dateTime={entryTimestamp || entry.date || undefined}>
+              {full && timestampParts ? (
+                <>
+                  <strong>{timestampParts.date}</strong>
+                  <span>{timestampParts.time}</span>
+                  {timestampParts.zone && <small>{timestampParts.zone}</small>}
+                </>
+              ) : (
+                <strong>
+                  {entryTimestamp
+                    ? formatDate(entryTimestamp.slice(0, 10))
+                    : entry.date
+                      ? formatDate(entry.date.slice(0, 10))
+                      : "Date not recorded"}
+                </strong>
+              )}
             </time>
             <div>
               <strong>{entry.title}</strong>
-              <p>{personEventText(person, entry.detail)}</p>
-              {(full || entry.actor) && (
+              {full ? (
+                <dl className="activity-entry-details">
+                  {historyDetails.map(([label, value]) => (
+                    <div key={label}>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : changes.length === 0 ? (
+                <p>{personEventText(person, entry.detail)}</p>
+              ) : null}
+              {!full && entry.actor && (
                 <small>
-                  {entry.actor || "Editor not recorded"}
+                  {entry.actor}
                   {entry.role ? ` · ${entry.role}` : ""}
                   {entry.scope ? ` · ${entry.scope}` : ""}
-                  {full && !entry.timestamp ? " · Exact time not recorded" : ""}
                 </small>
               )}
-              {full && entry.occurredAt && (
-                <p>Event occurred: {formatTimestamp(entry.occurredAt)}</p>
-              )}
-              {full && entry.reason && <p>Reason: {entry.reason}</p>}
-              {full && entry.source && <p>Source: {entry.source}</p>}
               {full && changes.length > 0 && (
                 <details className="activity-change-details">
                   <summary>View changes · {changes.length}</summary>

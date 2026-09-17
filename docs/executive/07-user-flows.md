@@ -1,111 +1,174 @@
 # YSCC Platform - User flows
 
-Executive edition 1.2 | 15 September 2026 | Working proposal
+Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/07-user-flows-executive.pdf) | [Detailed original](../07-user-flows.md) | [Executive index](README.md)
 
-Three decision flows show who acts, where work stops, and where it returns. Boxes are actions; diamonds are questions. These are proposed interaction flows, not approved clinical pathways.
-
-## 1. From intake to next care.
+## From intake to next care.
 
 Clinical team | Boxes = actions; diamonds = decisions.
 
-```mermaid
-flowchart TD
-    intake["New patient: complete intake<br/>Register, check information and record triage."]
-    proceed{"Intake complete<br/>and proceed?"}
-    pause["Wait or exit<br/>Keep owner, reason and next review. Resume intake or track the referral."]
-    plan["Plan the assessment<br/>Assign core + eligible additional measures."]
-    collect["Collect the assigned responses<br/>Use an eligible channel - see Flow 2."]
-    review["Review evidence + unfinished work<br/>Check completion criteria separately."]
-    ready{"Ready for a<br/>care decision?"}
-    more["More evidence needed<br/>Identify missing evidence; add eligible measures."]
-    decision["Record the clinical decision<br/>Record admission, referral and handover."]
-    continue["Continue care<br/>Plan the next review in the same episode."]
-    leave["Agree the next care action<br/>Close the episode only if appropriate."]
-    intake --> proceed
-    proceed -->|"No"| pause
-    proceed -->|"Yes"| plan
-    plan --> collect
-    collect --> review
-    review --> ready
-    ready -->|"No"| more
-    more -->|"Return to planning"| plan
-    ready -->|"Yes"| decision
-    decision -->|"Continuing here"| continue
-    decision -->|"Not continuing here"| leave
-```
+### Steps
+
+- **New patient: complete intake:** Register, check information and record triage.
+
+- **Intake complete and proceed?:**
+
+- **Wait or exit:** Keep owner, reason and next review. Resume intake or track the referral.
+
+- **Plan the assessment:** Assign core + eligible additional measures.
+
+- **Collect the assigned responses:** Use an eligible channel - see Flow 2.
+
+- **Apply review rule + inspect work:** Record review when required; keep completion separate.
+
+- **Ready for a care decision?:**
+
+- **More evidence needed:** Identify missing evidence; add eligible measures.
+
+- **Record the clinical decision:** Record admission, referral and handover.
+
+- **Continue care:** Plan the next review in the same episode.
+
+- **Agree the next care action:** Close the episode only if appropriate.
+
+### Connections
+
+- New patient: complete intake -> Intake complete and proceed?
+
+- Intake complete and proceed? -- No --> Wait or exit
+
+- Intake complete and proceed? -- Yes --> Plan the assessment
+
+- Plan the assessment -> Collect the assigned responses
+
+- Collect the assigned responses -> Apply review rule + inspect work
+
+- Apply review rule + inspect work -> Ready for a care decision?
+
+- Ready for a care decision? -- No --> More evidence needed
+
+- More evidence needed -- Return to planning --> Plan the assessment
+
+- Ready for a care decision? -- Yes --> Record the clinical decision
+
+- Record the clinical decision -- Continuing here --> Continue care
+
+- Record the clinical decision -- Not continuing here --> Agree the next care action
 
 ### MANDATORY INTAKE AND NEXT STEPS
 
-Every new patient goes through intake (D-25); registration is not completion. Waiting and non-proceeding intakes retain an owner and next action. Clinical admission remains separate.
+The local prototype demonstrates intake, consent requests, channel-dependent review and the next-care loop with sample records. Registration, response and review state never imply admission or completion.
 
 Basis: F-01/F-02/F-05/F-08/F-09/F-17; U1/D-25. Intake detail D-26/D-27 remains proposed.
 
-## 2. Three channels. One response.
+## Three channels. One response.
 
 Staff set up the task; the eligible respondent or clinician completes it.
 
-```mermaid
-flowchart TD
-    setup["Confirm the assignment<br/>Person, version, respondent, support and owner."]
-    permission{"Permissions and<br/>channel checks pass?"}
-    blocker["Resolve the blocker<br/>Name the owner and next action; then return to setup."]
-    entry["Clinician entry<br/>Record a clinician rating or transcribed answers; retain who supplied them."]
-    sms["SMS link<br/>Send an expiring, account-free link. Check recipient; explain purpose and visibility."]
-    tablet["Clinic tablet<br/>Start an isolated session. Explain purpose, visibility and permitted assistance."]
-    submit["Answer, then submit<br/>Use pinned item rules; re-check current permission when submitting."]
-    accepted{"Response accepted<br/>and saved?"}
-    recover["Check the outcome<br/>Return to this decision. Retry only when safe; never create a duplicate."]
-    fulfilled["This assignment is fulfilled<br/>Clinical review is a separate step."]
-    reset["Tablet only<br/>End and reset; staff re-authenticate to return."]
-    setup --> permission
-    permission -->|"No"| blocker
-    blocker -->|"After resolution"| setup
-    permission -->|"Yes - eligible clinician entry"| entry
-    permission -->|"Yes - eligible SMS"| sms
-    permission -->|"Yes - eligible tablet"| tablet
-    entry --> submit
-    sms --> submit
-    tablet --> submit
-    submit --> accepted
-    accepted -->|"No or not known"| recover
-    recover -->|"Re-check outcome"| accepted
-    accepted -->|"Yes"| fulfilled
-    fulfilled -->|"Tablet only"| reset
-```
+### Steps
+
+- **Confirm the assignment:** Person, version, respondent, support and owner.
+
+- **Permissions and channel checks pass?:**
+
+- **Resolve the blocker:** Name the owner and next action; then return to setup.
+
+- **Clinician entry:** Record a clinician rating or transcribed answers; retain who supplied them.
+
+- **SMS link:** Send an expiring, account-free link. Check recipient; explain purpose and visibility.
+
+- **Clinic tablet:** Start an isolated session. Explain purpose, visibility and permitted assistance.
+
+- **Answer, then submit:** Use pinned item rules; re-check current permission when submitting.
+
+- **Response accepted and saved?:**
+
+- **Check the outcome:** Return to this decision. Retry only when safe; never create a duplicate.
+
+- **This assignment is fulfilled:** Apply the approved review rule; assessment remains separate.
+
+- **Tablet only:** End and reset; staff re-authenticate to return.
+
+### Connections
+
+- Confirm the assignment -> Permissions and channel checks pass?
+
+- Permissions and channel checks pass? -- No --> Resolve the blocker
+
+- Resolve the blocker -- After resolution --> Confirm the assignment
+
+- Permissions and channel checks pass? -- Yes - eligible clinician entry --> Clinician entry
+
+- Permissions and channel checks pass? -- Yes - eligible SMS --> SMS link
+
+- Permissions and channel checks pass? -- Yes - eligible tablet --> Clinic tablet
+
+- Clinician entry -> Answer, then submit
+
+- SMS link -> Answer, then submit
+
+- Clinic tablet -> Answer, then submit
+
+- Answer, then submit -> Response accepted and saved?
+
+- Response accepted and saved? -- No or not known --> Check the outcome
+
+- Check the outcome -- Re-check outcome --> Response accepted and saved?
+
+- Response accepted and saved? -- Yes --> This assignment is fulfilled
+
+- This assignment is fulfilled -- Tablet only --> Tablet only
 
 ### PARTICIPATION AND INTERRUPTION
 
-Family contribution does not grant guardian authority or access to another person's answers. A draft is not submitted. Tablet cancel/timeout clears local context under approved policy.
+Family contribution does not grant guardian authority. Sent consent is not accepted. Clinician entry and supported tablet are Review not required only under the prototype's sample rule.
 
 Basis: F-02/F-03/F-04/F-10. Eligibility, recovery and storage policies remain open; phase conflict D-21 remains.
 
-## 3. Correct, or ask the clinician?
+## Correct, or ask the clinician?
 
 Tom, Data Officer | Jess, authorised clinician | Different responsibilities.
 
-```mermaid
-flowchart TD
-    issue["Tom opens the issue<br/>Confirm scope, field, revision and source."]
-    source{"Approved verified<br/>source available?"}
-    direct["Tom prepares a correction<br/>Check authority; record the new value, source and reason."]
-    request["Tom requests clinician input<br/>Assign Jess an issue with context, evidence reference and next action."]
-    commit["Review and save the change<br/>Check the latest revision. If it changed, review again before saving."]
-    clinician["Jess investigates and responds<br/>Any change uses the audited correction route; otherwise record another resolution."]
-    audit["Confirm the correction + audit<br/>Retain prior/new value, source, actor, time and reason."]
-    resolution["Record the request outcome<br/>Keep the issue open until the responsible clinician resolves it."]
-    closed["Close the resolved issue"]
-    issue --> source
-    source -->|"Yes - direct correction"| direct
-    source -->|"No - request clinician input"| request
-    direct --> commit
-    request --> clinician
-    commit --> audit
-    clinician --> resolution
-    audit --> closed
-    resolution --> closed
-```
+### Steps
+
+- **Tom opens the issue:** Confirm scope, field, revision and source.
+
+- **Approved verified source available?:**
+
+- **Tom prepares a correction:** Check authority; record the new value, source and reason.
+
+- **Tom requests clinician input:** Assign Jess an issue with context, evidence reference and next action.
+
+- **Review and save the change:** Check the latest revision. If it changed, review again before saving.
+
+- **Jess investigates and responds:** Any change uses the audited correction route; otherwise record another resolution.
+
+- **Confirm the correction + audit:** Retain prior/new value, source, actor, time and reason.
+
+- **Record the request outcome:** Keep the issue open until the responsible clinician resolves it.
+
+- **Close the resolved issue:**
+
+### Connections
+
+- Tom opens the issue -> Approved verified source available?
+
+- Approved verified source available? -- Yes - direct correction --> Tom prepares a correction
+
+- Approved verified source available? -- No - request clinician input --> Tom requests clinician input
+
+- Tom prepares a correction -> Review and save the change
+
+- Tom requests clinician input -> Jess investigates and responds
+
+- Review and save the change -> Confirm the correction + audit
+
+- Jess investigates and responds -> Record the request outcome
+
+- Confirm the correction + audit -> Close the resolved issue
+
+- Record the request outcome -> Close the resolved issue
 
 ### CORRECTION IS NOT A NEW SUBMISSION
 
@@ -113,27 +176,27 @@ Keep the original response submitted and preserve provenance. Do not reissue an 
 
 Basis: F-06 / L-20 / AC-05 / AC-18. Cancel leaves the record unchanged. Only authorised actions are permitted.
 
-## 4. Other workflows at a glance.
+## Other workflows at a glance.
 
 Supporting processes stay separate from assessment collection.
 
 ### Preview before committing
 
-BASELINE / RECORD RESOLUTION
+**Tag:** BASELINE / RECORD RESOLUTION
 
-Ananya investigates duplicates or misalignment, records required centre support, previews impact and performs only approved recoverable actions. Suspicion is not identity proof.
+**Body:** Ananya investigates duplicates or misalignment, records required centre support, previews impact and performs only approved recoverable actions. Suspicion is not identity proof.
 
 ### Separate intention from success
 
-BASELINE / CONFIGURATION AND CLOSURE
+**Tag:** BASELINE / CONFIGURATION AND CLOSURE
 
-Configure approved versions. At closure, reconcile pending work and onward referrals. Failed, unanswered or declined referrals retain a YSCC follow-up owner.
+**Body:** Configure approved versions. At closure, reconcile pending work and onward referrals. Failed, unanswered or declined referrals retain a YSCC follow-up owner.
 
 ### Request, approve, release, learn
 
-CANDIDATE / EVIDENCE USE
+**Tag:** CANDIDATE / EVIDENCE USE
 
-Reporting, exchange and research specify purpose and minimum scope, obtain approval, validate and release, then return findings and close use. A request is not an access grant.
+**Body:** Reporting, exchange and research specify purpose and minimum scope, obtain approval, validate and release, then return findings and close use. A request is not an access grant.
 
 ### Collection recovery remains part of the design
 
@@ -144,10 +207,3 @@ Expired or wrong-recipient links lead to safe support, not exposed answers. Reis
 Who can act, on what evidence, within which scope, and how is the result verified? Require answers before implementing shortcuts or external data access.
 
 Basis: F-07/F-09/F-11 and candidate F-14 to F-16. These summaries do not replace the detailed F-01 to F-17 catalogue.
-
-## What changed in this revision
-
-- Replaced side-note tables and channel lists with explicit decisions, arrows, return paths and outcomes.
-- Separated a fulfilled assignment from clinical review, assessment completion and admission.
-- Made Tom's verified-source correction route distinct from a request for Jess to investigate.
-- Retained supporting operations and candidate evidence workflows on a separate page; the detailed flow catalogue remains authoritative.

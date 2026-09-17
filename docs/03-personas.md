@@ -1,6 +1,7 @@
 # YSCC Platform — CMDCS-based working personas
 
-Version 0.3 · 15 September 2026 · Eleven source personas plus three supporting capabilities  
+Version 0.5 · 16 September 2026 · Personas aligned to the current local prototype
+
 [Document index](README.md) · [Evidence, scope conflicts, and decisions](01-product-framing.md)
 
 ## 1. Source and status
@@ -15,12 +16,12 @@ The previous collection-focused profiles are mapped to the source personas. Stab
 
 ### Prototype role mapping and limit
 
-The current local prototype uses sample **Clinician** and **Data Manager** profiles to demonstrate role-sensitive tasks: clinician collection, clinical review, intake decisions, follow-up, episode actions and report editing; Data Manager response editing and data-quality history. It also presents fictional people, family-support context, intake/referral work and a participant questionnaire path. This is a task-coverage aid, not validation of the CMDCS personas, a production role model, centre/aggregate access, or permission to infer access from a job title.
+The current local prototype uses sample **Clinician** and **Data Manager** profiles to demonstrate role-sensitive tasks: clinician collection, policy-dependent clinical review, intake decisions, purpose-specific consent requests, follow-up, episode actions, Progress-dashboard interpretation, report editing and annotations; Data Manager response editing and data-quality history. It also presents fictional people, family-support context, intake/referral work, participant questionnaire paths and a scoped participant consent-decision path. This is a task-coverage aid, not validation of the CMDCS personas, a production role model, centre/aggregate access, decision-making authority, or permission to infer access from a job title.
 
 | Source group | ID and adopted profile | Source page | Scope distinction |
 | --- | --- | --- | --- |
 | Care Delivery | P-04 — Jess Tran, Treating Clinician | 4 | Baseline assessment plus candidate wider care/specialist workflow. |
-| Care Delivery | P-01 — Kai, Person | 5 | Baseline eligible contribution; dashboard and phase conflict need decision. |
+| Care Delivery | P-01 — Kai, Young person | 5 | Baseline eligible contribution; dashboard and phase conflict need decision. |
 | Care Delivery | P-02 — Deb, Family Carer | 6 | Baseline eligible family contribution; visibility/authority are separate. |
 | Service Improvement | P-08 — Rachel Nguyen, Centre Leader | 8 | Baseline scoped coordination; wider centre dashboard/fidelity is candidate. |
 | Service Improvement | P-06 — Tom Fletcher, Data Officer | 9 | Registration/quality capability and source-verified correction. |
@@ -72,9 +73,9 @@ These qualitative ratings are **unvalidated source hypotheses**, not measured us
 - **Evidence:** S1 supports clinician entry and channels; S2 proposes shared core, modules, and routing. Exact content and completion logic remain open.
 - **Validation:** Can a clinician resume a partial assessment, identify who answered, handle a missing permission, add a module after review, and hand over without reconstructing the workflow?
 
-### P-01 — Kai — Person
+### P-01 — Kai — Young person
 
-**Source profile — CP1 p. 5:** Kai, Person. Illustrative context: 19, metro/regional, 18 months with the service; the source describes a 12–25 service population, not a verified eligibility or consent-age rule. Draft traits include digital confidence, self-awareness, variable engagement, trust/privacy, and agency; do not assume all people are digital-native.
+**Source profile — CP1 p. 5:** Kai, Young person. Illustrative context: 19, metro/regional, 18 months with the service; the source describes a 12–25 service population, not a verified eligibility or consent-age rule. Draft traits include digital confidence, self-awareness, variable engagement, trust/privacy, and agency; do not assume all people are digital-native.
 
 **Source jobs and journey:** Entry → engagement → empowerment → transition. Understand progress, contribute to care decisions, share without retelling the story, and trust data handling. Relationships include clinician/coordinator and family/carers. Research consent is a separate purpose and must not be presumed given.
 

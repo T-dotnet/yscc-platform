@@ -90,8 +90,8 @@ export default function ClinicianQuestionnaire({
               </Button>
             }
           >
-            {respondent}’s answers were recorded by {c.recorderName}. Clinical
-            review is pending.
+            {respondent}’s answers were recorded by {c.recorderName}. No
+            separate clinical review is required.
           </Success>
         ) : (
           <>

@@ -34,7 +34,7 @@ export default function InstrumentLibrary({ onClose }) {
     >
       <div className="form-body instrument-library" hidden={!!preview}>
         <Notice>
-          Original sample questionnaires for exploring the prototype. These are
+          Original sample questionnaires for exploring the workspace. These are
           not validated clinical measures and do not calculate scores.
         </Notice>
         <SearchInput
@@ -55,6 +55,9 @@ export default function InstrumentLibrary({ onClose }) {
                   {instrument.version} · Up to {instrument.questions.length}{" "}
                   questions · {instrument.sections.length} sections
                 </small>
+                {instrument.responseFormat && (
+                  <small>{instrument.responseFormat}</small>
+                )}
                 <small>
                   {instrument.respondents.includes("Family respondent")
                     ? "Person or family contribution"

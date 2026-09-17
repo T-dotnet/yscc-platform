@@ -1,6 +1,6 @@
 # YSCC Platform - UX strategy
 
-Executive edition 1.0 | 15 September 2026 | Working proposal
+Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/06-ux-strategy-executive.pdf) | [Detailed original](../06-ux-strategy.md) | [Executive index](README.md)
 
@@ -10,43 +10,43 @@ Reduce avoidable effort while keeping participation informed, records trustworth
 
 ### 1. Safe participation
 
-Correct context, suitable access, clear visibility and support.
+**Body:** Correct context, suitable access, clear visibility and support.
 
 ### 2. Complete operations
 
-Review, exits, correction, ownership and handover.
+**Body:** Consent decisions, review rules, exits, correction, ownership and handover.
 
 ### 3. Useful continuity
 
-Approved follow-up, interpretable history and learning. The staff Progress tab leads with a clinician-editable report that summarises complex questionnaires and makes changes over time understandable.
+**Body:** Approved follow-up, interpretable history and learning.
 
 This orders design risk; it does not remove proposed baseline requirements or silently defer candidate scope.
 
 ### Name the actual action
 
-BE CLEAR
+**Tag:** BE CLEAR
 
-Use distinct language for save, submit, review, disposition and closure. Explain why extra work is requested.
+**Body:** Use distinct language for save, submit, review, disposition and closure. Explain why extra work is requested.
 
 ### Show the real state
 
-BE TRUSTWORTHY
+**Tag:** BE TRUSTWORTHY
 
-Visible source, version, owner and save outcome. No false confirmation or unsupported score comparison.
+**Body:** Visible source, version, owner and save outcome. No false confirmation or unsupported score comparison.
 
 ### Design for real contexts
 
-BE INCLUSIVE
+**Tag:** BE INCLUSIVE
 
-Mobile, shared devices, assistance, accessibility and culturally safe co-design. Avoid a digital-native default.
+**Body:** Mobile, shared devices, assistance, accessibility and culturally safe co-design. Avoid a digital-native default.
 
 ### Support interruption
 
-BE RECOVERABLE
+**Tag:** BE RECOVERABLE
 
-Clear blockers and next steps, safe tablet reset and approved resume. Do not promise persistence the system cannot deliver.
+**Body:** Clear blockers and next steps, safe tablet reset and approved resume. Do not promise persistence the system cannot deliver.
 
-### Quality bar
+### QUALITY BAR
 
 A shorter flow is not better if it hides permissions, loses source context or makes incomplete work appear finished. Validate understanding and task accuracy together.
 
@@ -56,11 +56,15 @@ Basis: Detailed brief 06, principles, priorities, content and accessibility; FR-
 
 Progress through evidence gates rather than treating visual polish as launch readiness.
 
-1. **Align.** Confirm scope, core journey, persona assumptions and accountable decision owners.
-2. **Structure.** Test labels, record relationships, navigation and high-risk rules.
-3. **Prototype.** Exercise clinician, SMS/tablet, family, recovery and operational handoffs.
-4. **Specify and implement.** Replace sample policy with approved content/rules; build traceable tests.
-5. **Verify release.** Test real access, persistence, delivery, accessibility and operational support.
+- 01 - Align - Confirm scope, core journey, persona assumptions and accountable decision owners.
+
+- 02 - Structure - Test labels, record relationships, navigation and high-risk rules.
+
+- 03 - Prototype - Exercise the implemented local intake, consent, collection, policy-dependent review, correction, referral and Progress-report tasks.
+
+- 04 - Specify and implement - Replace sample policy with approved content/rules; build traceable tests.
+
+- 05 - Verify release - Test real access, persistence, delivery, accessibility and operational support.
 
 | MEASURE | INTERPRET RESPONSIBLY |
 | --- | --- |
@@ -72,9 +76,8 @@ Progress through evidence gates rather than treating visual polish as launch rea
 
 Set denominators, periods, missingness handling and measured baselines before targets. Source pain-point percentages/delays are unverified. No delivery dates, costs or improvement claims are committed.
 
-### Fund the validation work
+### FUND THE VALIDATION WORK
 
 Nominate clinical, participant-research, operational, privacy/security and data owners. Resolve the phase conflict and required policies before production; test the wider evidence roles if their capabilities are adopted.
 
 Basis: Detailed brief 06, research, delivery sequence, M-01 to M-08 and quality gates.
-

@@ -9,6 +9,7 @@ import {
   LifeBuoy,
 } from "lucide-react";
 import { useStore } from "../store";
+import { displayFamilyName, displayPersonName } from "../model";
 import {
   DEMO_INSTRUMENT,
   getInstrument,
@@ -162,7 +163,8 @@ export default function Questionnaire({ session, navigate, onEnd }) {
                 <p className="intro-copy">
                   {session?.respondent === "Family respondent"
                     ? "Share your own experience as a family respondent. Your answers are a separate contribution."
-                    : "Your care team would like to understand how you’d prefer to take part. You can ask for help along the way."}
+                    : instrument.introduction ||
+                      `Your care team would like to hear your perspective. ${instrument.description}`}
                 </p>
                 <div className="request-facts">
                   <span>
@@ -190,11 +192,16 @@ export default function Questionnaire({ session, navigate, onEnd }) {
                         : "Requested by Northside Centre"}
                     </strong>
                     {p
-                      ? ` · ${session?.respondent === "Family respondent" ? p.family : p.name} · ${session?.respondent === "Family respondent" ? "family contribution" : "own answers"}`
+                      ? ` · ${session?.respondent === "Family respondent" ? displayFamilyName(p) : displayPersonName(p)} · ${session?.respondent === "Family respondent" ? "family contribution" : "own answers"}`
                       : " · no care record is updated"}
                   </p>
+                  {instrument.timeframe && (
+                    <p>
+                      <strong>Questions cover:</strong> {instrument.timeframe}
+                    </p>
+                  )}
                   <ul>
-                    <li>This is a prototype. Use sample answers only.</li>
+                    <li>Use sample answers only.</li>
                     <li>
                       {preview
                         ? "This preview does not update a person’s care record."

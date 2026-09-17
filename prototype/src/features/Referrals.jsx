@@ -2,7 +2,13 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Plus, ArrowRight } from "lucide-react";
 import { useStore } from "../store";
-import { TODAY, currentStaff, formatDate, formatTimestamp } from "../model";
+import {
+  TODAY,
+  currentStaff,
+  displayPersonName,
+  formatDate,
+  formatTimestamp,
+} from "../model";
 import { REFERRAL_EVENTS, referralOpen, intakeActionError } from "../intake";
 import { Badge, Button, Field, Modal, Notice, Panel } from "../components/UI";
 
@@ -41,7 +47,7 @@ export default function Referrals({ person, intake, episode, openModal }) {
         </Button>
       </div>
       <Notice>
-        Record events from the agreed service channel. This prototype does not
+        Record events from the agreed service channel. This workspace does not
         send referrals or contact another service.
       </Notice>
       {!referrals.length && (
@@ -172,7 +178,7 @@ export function ReferralForm({ modal, onClose, notify }) {
   return (
     <Modal
       title={creating ? "Add onward referral" : "Record referral event"}
-      subtitle={`${person.name}${referral ? ` · ${referral.destination}` : ""}`}
+      subtitle={`${displayPersonName(person)}${referral ? ` · ${referral.destination}` : ""}`}
       onClose={onClose}
     >
       <form

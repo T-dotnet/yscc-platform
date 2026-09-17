@@ -1,6 +1,7 @@
 # YSCC Platform — Value Proposition Canvas
 
-Version 0.3 · 15 September 2026 · CMDCS persona-aligned value hypotheses  
+Version 0.5 · 16 September 2026 · Value hypotheses aligned to the current local prototype
+
 [Document index](README.md) · [Product framing and evidence](01-product-framing.md)
 
 ## 1. Purpose
@@ -114,9 +115,9 @@ Related source personas: P-06 — Tom Fletcher, P-07 — Ananya Rao, and P-08 �
 
 ### Current prototype evidence, not validation
 
-The local prototype makes several hypotheses observable: Kai-style participant completion can use a clear introduction, help/exit, conditional sample questions, review and a neutral end state; Jess-style work can begin from an owned queue and continue through collection, review, follow-up and a report; and Tom/Ananya-style work can inspect a correction with provenance and history. Intake and referral queues also make ownership and waiting states visible. These are implemented sample interactions, not evidence that the personas, needs, gains, usability or operational impact have been validated with users.
+The local prototype makes several hypotheses observable: Kai-style participant completion can use a clear introduction, help/exit, conditional sample questions, review and a neutral end state; a purpose-specific consent request can be accepted, declined or later withdrawn without changing an unrelated purpose; Jess-style work can begin from an owned queue and continue through collection, policy-dependent review, follow-up, a questionnaire-based Progress dashboard, report editing and append-only annotations; and Tom/Ananya-style work can inspect a correction with provenance and history. Intake and referral queues also make ownership and waiting states visible. These are implemented sample interactions, not evidence that the personas, needs, gains, usability or operational impact have been validated with users.
 
-The prototype uses fictional records, browser-local state and sample policies. It has no live participant contact, external referral, authenticated role enforcement, real instrument/scoring or governed reporting/release workflow. Test the hypotheses with representative people and approved content before treating an observed demo path as product fit.
+The prototype uses fictional records, browser-local state and sample policies. It has no live participant contact or consent delivery, verified authority, external referral, authenticated role enforcement, real instrument/scoring or governed reporting/release workflow. Its clinician-entry/supported-tablet “review not required” behavior is a sample rule, not clinical approval. Test the hypotheses with representative people and approved content before treating an observed demo path as product fit.
 
 | ID | Hypothesis | Test | Evidence of fit / warning |
 | --- | --- | --- | --- |

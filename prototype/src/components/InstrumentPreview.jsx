@@ -8,7 +8,12 @@ import {
   questionnaireState,
 } from "../instruments";
 
-export default function InstrumentPreview({ instrument, respondent, onBack, backLabel }) {
+export default function InstrumentPreview({
+  instrument,
+  respondent,
+  onBack,
+  backLabel,
+}) {
   const [mode, setMode] = useState("path");
   const [answers, setAnswers] = useState([]);
   const [run, setRun] = useState(0);
@@ -21,20 +26,27 @@ export default function InstrumentPreview({ instrument, respondent, onBack, back
   };
   const footer = (
     <div className="modal-footer preview-footer">
-      {backLabel && <Button type="button" onClick={onBack}>{backLabel}</Button>}
+      {backLabel && (
+        <Button type="button" onClick={onBack}>
+          {backLabel}
+        </Button>
+      )}
       <Button type="button" variant="primary" onClick={onBack}>
         Done previewing
       </Button>
     </div>
   );
-  if (!instrument) return (
-    <>
-      <div className="form-body">
-        <Notice>This questionnaire version is unavailable in the prototype.</Notice>
-      </div>
-      {footer}
-    </>
-  );
+  if (!instrument)
+    return (
+      <>
+        <div className="form-body">
+          <Notice>
+            This questionnaire version is unavailable in the workspace.
+          </Notice>
+        </div>
+        {footer}
+      </>
+    );
   return (
     <>
       <div className="questionnaire-preview-body">
@@ -130,6 +142,12 @@ export default function InstrumentPreview({ instrument, respondent, onBack, back
                           {describeRule(instrument, question.when, respondent)}
                         </p>
                         <p className="muted">{question.hint}</p>
+                        {question.scale && (
+                          <p className="scale-summary">
+                            <strong>{question.scale.label}:</strong>{" "}
+                            {question.scale.instruction}
+                          </p>
+                        )}
                         <ul className="preview-answer-options">
                           {question.options.map((option) => (
                             <li key={option}>{option}</li>

@@ -8,7 +8,7 @@ const inter = localFont({
 export const metadata = {
   title: "YSCC — Care, connected",
   description:
-    "An interactive YSCC care and assessment prototype using sample data.",
+    "An interactive YSCC care and assessment workspace using sample data.",
   icons: { icon: "/favicon.svg" },
 };
 export default function RootLayout({ children }) {

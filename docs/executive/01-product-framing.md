@@ -1,6 +1,6 @@
 # YSCC Platform - Product framing
 
-Executive edition 1.2 | 15 September 2026 | Working proposal
+Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/01-product-framing-executive.pdf) | [Detailed original](../01-product-framing.md) | [Executive index](README.md)
 
@@ -8,41 +8,41 @@ Executive edition 1.2 | 15 September 2026 | Working proposal
 
 YSCC can connect assessment, participation and follow-up, then build towards a wider learning system.
 
-> Make it clear what is needed, who contributes, what has happened and who acts next.
+A local prototype now demonstrates sample intake, collection, consent requests, policy-dependent review, follow-up, correction and a questionnaire-based Progress report.
 
 ### Care delivery
 
-Collect and review useful person-level information.
+**Body:** Collect and review useful person-level information.
 
 ### Service improvement
 
-Resolve quality issues and turn evidence into action.
+**Body:** Resolve quality issues and turn evidence into action.
 
 ### System evidence
 
-Use governed outputs for oversight and research.
+**Body:** Use governed outputs for oversight and research.
 
 The wider learning cycle is an ambition: findings must return to services, not stop at reporting.
 
 ### Understand and contribute
 
-FOR PEOPLE
+**Tag:** FOR PEOPLE
 
-Eligible person and family tasks, clear visibility, suitable support and reliable confirmation.
+**Body:** Eligible person and family tasks, clear visibility, suitable support and reliable confirmation.
 
 ### Know the next action
 
-FOR TEAMS
+**Tag:** FOR TEAMS
 
-The right episode, interpretable evidence, outstanding work and accountable handover.
+**Body:** The right episode, interpretable evidence, outstanding work and accountable handover.
 
 ### What this is not
 
 Not an autonomous clinical decision-maker, an assumed EMR replacement or an unrestricted participant portal. Wider care and reporting capabilities still need scope approval.
 
-### Leadership takeaway
+### LEADERSHIP TAKEAWAY
 
-Align on the care-collection foundation and approve wider capabilities separately. The proposal is ready for review, not production authorisation.
+Use the local prototype to test the care-collection and Progress-report foundation, and approve consent, review and wider capabilities separately. It is not production authorisation.
 
 Basis: Detailed brief 01, sections 1-6. S1/S2 and CMDCS persona draft (CP1).
 
@@ -52,21 +52,21 @@ Keep reported capabilities, proposed delivery scope and broader ambitions visibl
 
 ### A complete collection loop
 
-PROPOSED BASELINE
+**Tag:** PROPOSED BASELINE
 
-Mandatory intake for every new patient, then assessment and repeat measures; eligible collection; permissions, correction, queues and owned referral follow-through.
+**Body:** Mandatory intake for every new patient, then assessment and repeat measures; eligible collection; purpose-specific consent requests, correction, queues and owned referral follow-through.
 
 ### Four explicit scope choices
 
-CONDITIONAL
+**Tag:** CONDITIONAL
 
-Satisfaction surveys, service logging, detailed discharge content and historical migration/export. Decide included, later or excluded for each.
+**Body:** Satisfaction surveys, service logging, detailed discharge content and historical migration/export. Decide included, later or excluded for each.
 
 ### The broader CMDCS ambition
 
-CANDIDATE EXPANSION
+**Tag:** CANDIDATE EXPANSION
 
-Ongoing care records, personal progress, centre dashboards, implementation learning, governed reporting, exchange and research. Phase and access remain open.
+**Body:** Ongoing care records, personal progress, centre dashboards, implementation learning, governed reporting, exchange and research. Phase and access remain open.
 
 ### Resolve the MVP / Stage 2 conflict
 
@@ -78,9 +78,8 @@ Oli's captured Slack message reports direct person/family collection in MVP. The
 | Approve permission, access and retention policy | Clinical + legal/privacy + data governance |
 | Choose scope, phases and named delivery owners | Product + programme leadership |
 
-### Ask at the next review
+### ASK AT THE NEXT REVIEW
 
 Resolve D-21, choose the D-15 scope items, and name accountable owners for the production decisions. Do not convert a persona ambition into a launch promise.
 
 Basis: Detailed brief 01, sections 5-8; U1/D-25 confirms intake; D-26/D-27 remain open.
-

@@ -41,11 +41,19 @@ export function Avatar({ name, tone = "", large = false }) {
     </span>
   );
 }
+export function PersonIdentity({ name, descriptor, className = "" }) {
+  return (
+    <span className={`person-identity ${className}`}>
+      <strong>{name}</strong>
+      {descriptor && <small>{descriptor}</small>}
+    </span>
+  );
+}
 export function Badge({ children }) {
   const t = String(children);
   return (
     <span
-      className={`badge ${/Overdue|Pending|Paused/.test(t) ? "amber" : /review|Draft/.test(t) ? "purple" : /Active|Reviewed|Recorded|Submitted|Fulfilled|Resolved/.test(t) ? "green" : "neutral"}`}
+      className={`badge ${/Declined|Withdrawn|Revoked|Cancelled/.test(t) ? "neutral" : /Overdue|Pending|Paused|Sent/.test(t) ? "amber" : /review|Draft/.test(t) ? "purple" : /Active|Accepted|Reviewed|Recorded|Submitted|Fulfilled|Resolved/.test(t) ? "green" : "neutral"}`}
     >
       <span />
       {children}

@@ -1,12 +1,19 @@
 import { createSampleAnswers } from "./sampleQuestionnaires.js";
-import { DEMO_INSTRUMENT, setQuestionAnswer } from "./instruments.js";
+import {
+  DEMO_INSTRUMENT,
+  LIKERT_INSTRUMENT,
+  questionnaireState,
+  setQuestionAnswer,
+} from "./instruments.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createSeed, reducer, TODAY } from "./model.js";
 import {
   patientProgress,
   questionnaireProgress,
+  questionnaireDashboardGroups,
   compareResponses,
+  reportEvidence,
   responseDate,
 } from "./progress.js";
 
@@ -38,6 +45,108 @@ test("progress compares original submitted dates and stays within the selected e
   assert.equal(historical.latest.label, "Discharge check-in");
   assert.equal(historical.pendingReviews.length, 0);
   assert.ok(historical.responses.every((c) => c.id.includes("history")));
+});
+
+test("Mia has four comparable Likert responses in one care episode", () => {
+  const state = createSeed();
+  const person = state.people.find((p) => p.name === "Mia Robinson");
+  const episode = person.episodes[0];
+  const result = questionnaireProgress(
+    person,
+    episode,
+    LIKERT_INSTRUMENT.version,
+  );
+  assert.equal(person.episodes.length, 1);
+  assert.equal(result.responses.length, 4);
+  assert.equal(result.dated.length, 4);
+  assert.equal(result.earlier.length, 3);
+  assert.equal(
+    result.baseline.label,
+    "Life and care check-in · Starting point",
+  );
+  assert.equal(result.latest.label, "Life and care check-in · 12 weeks");
+  assert.deepEqual(result.dated.map(responseDate), [
+    "2026-06-16",
+    "2026-07-14",
+    "2026-08-11",
+    "2026-09-08",
+  ]);
+  assert.ok(
+    result.responses.every(
+      (response) =>
+        questionnaireState(LIKERT_INSTRUMENT, response.answers).complete,
+    ),
+  );
+  const comparison = compareResponses(person, result.baseline, result.latest);
+  assert.equal(comparison.comparable, 6);
+  assert.equal(comparison.changed, 6);
+});
+
+test("dashboard data keeps each Likert question, scale and timepoint explicit", () => {
+  const state = createSeed();
+  const person = state.people.find((p) => p.name === "Mia Robinson");
+  const episode = person.episodes[0];
+  const groups = questionnaireDashboardGroups(reportEvidence(person, episode));
+  const group = groups.find(
+    (item) => item.version === LIKERT_INSTRUMENT.version,
+  );
+  assert.equal(group.instrumentName, LIKERT_INSTRUMENT.name);
+  assert.equal(group.likertTrends.length, 6);
+  assert.equal(group.qualitativeChanges.length, 0);
+  assert.equal(group.responseHistory.length, 4);
+  assert.equal(group.responseHistory[0].previous, null);
+  assert.equal(group.responseHistory[1].changedCount, 5);
+  assert.equal(group.responseHistory[1].likertChangedCount, 5);
+  assert.equal(group.responseHistory[1].qualitativeChanges.length, 0);
+  assert.equal(
+    group.likertTrends[0].question,
+    "In the past 2 weeks, how often did your daily routine work well enough for you?",
+  );
+  assert.deepEqual(group.likertTrends[0].scale.options, [
+    "Never",
+    "Rarely",
+    "Sometimes",
+    "Often",
+    "Always",
+  ]);
+  assert.deepEqual(
+    group.likertTrends[0].points.map(({ date, answer, value }) => ({
+      date,
+      answer,
+      value,
+    })),
+    [
+      { date: "2026-06-16", answer: "Rarely", value: 2 },
+      { date: "2026-07-14", answer: "Sometimes", value: 3 },
+      { date: "2026-08-11", answer: "Sometimes", value: 3 },
+      { date: "2026-09-08", answer: "Often", value: 4 },
+    ],
+  );
+});
+
+test("dashboard data separates changed qualitative answers from Likert trends", () => {
+  const { person, episode } = scenario();
+  const [group] = questionnaireDashboardGroups(reportEvidence(person, episode));
+  assert.equal(group.instrumentName, DEMO_INSTRUMENT.name);
+  assert.equal(group.likertTrends.length, 0);
+  assert.ok(group.qualitativeChanges.length > 0);
+  assert.ok(
+    group.qualitativeChanges.every(
+      (change) =>
+        change.question &&
+        change.comparison.before &&
+        change.comparison.after &&
+        change.comparison.change === "Changed",
+    ),
+  );
+  assert.equal(group.responseHistory.length, 2);
+  assert.ok(group.responseHistory[1].qualitativeChanges.length > 0);
+  assert.ok(
+    group.responseHistory[1].qualitativeChanges.every(
+      (change) =>
+        change.question && change.comparison.before && change.comparison.after,
+    ),
+  );
 });
 
 test("changes are per answer and never convert nonresponse or invalid data into a trend", () => {

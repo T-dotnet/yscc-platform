@@ -1,6 +1,10 @@
 import { Plus, ArrowRight } from "lucide-react";
 import { useStore } from "../store";
-import { getTasks, formatDate, currentStaff } from "../model";
+import {
+  getTasks,
+  formatDate,
+  currentStaff,
+} from "../model";
 import { ownedTasks, taskHref } from "../workflow";
 import useQueueView from "../useQueueView";
 import {

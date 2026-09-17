@@ -1,6 +1,8 @@
 # YSCC documentation gap review
 
-> **Historical review:** The local prototype was subsequently extended on 16 September 2026 with mandatory intake/referral follow-through, selected care periods, report editing and additional local workflow coverage. Read this review as its dated evidence, not as the current implementation status; see [the documentation index](README.md) for the aligned description and boundaries.
+> **Historical review:** The local prototype was subsequently extended on 16 September 2026 with mandatory intake/referral follow-through, selected care periods, purpose-specific consent requests, channel-dependent review handling, a questionnaire-based Progress dashboard, report versions/annotations and additional activity history. Read this review as its dated evidence, not as the current implementation status; see [the documentation index](README.md) for the aligned description and boundaries.
+
+> **Alignment note, 16 September 2026:** The current documentation/prototype mapping resolves the navigation contradictions recorded in G-02: collections live inside **Assessment** rather than a peer Measures tab; questionnaire preview is available from Current assessment, Assessment collection cards and Plan a follow-up; collection details retain metadata/delivery actions while submitted answers, review, editing and response history use the separate response/review view. G-09's documentation contract is now also demonstrated locally with fictional intake/referral state. These updates do not resolve the remaining clinical, authority, service-operation or production-readiness decisions in this review.
 
 15 September 2026 · Review findings and proposed follow-up · No requirements or product behaviour changed
 

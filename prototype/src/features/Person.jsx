@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Plus, ChevronDown, FileText } from "lucide-react";
 import { useStore } from "../store";
 import Progress from "./Progress";
+import CareEvents from "./CareEvents";
 import Timeline from "../components/ActivityTimeline";
 import { getInstrument } from "../instruments";
 import {
@@ -19,9 +20,10 @@ import {
   formatDate,
   collectionStatus,
   clinicalReviewStatus,
-  collectionActor,
+  collectionActorIdentity,
   formatTimestamp,
   currentStaff,
+  noClinicalReviewRequired,
 } from "../model";
 import {
   Button,
@@ -34,16 +36,18 @@ import {
   TextLink,
   Empty,
   Tabs,
+  PersonIdentity,
 } from "../components/UI";
 
 export default function Person({ id, navigate, openModal }) {
   const { state } = useStore();
   const p = state.people.find((p) => p.id === id);
   const searchParams = useSearchParams();
-  const tabs = [
+  const allTabs = [
     "Overview",
-    "Report",
     "Assessment",
+    "Events",
+    "Report",
     "Consent & respondents",
     "History",
   ];
@@ -51,11 +55,6 @@ export default function Person({ id, navigate, openModal }) {
   const contextualView = ["Intake", "Referrals"].find(
     (view) => view.toLowerCase() === searchParams.get("tab"),
   );
-  const tab =
-    contextualView ||
-    (searchParams.get("tab") === "progress" ? "Report" : null) ||
-    tabs.find((t) => t.toLowerCase() === searchParams.get("tab")) ||
-    "Overview";
   const setTab = (value) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value === "Overview") params.delete("tab");
@@ -82,6 +81,19 @@ export default function Person({ id, navigate, openModal }) {
       e.collections.find((col) => col.id === searchParams.get("collection")) ||
       currentCollection(e),
     nextStep = overviewNextStep(p, e, c, currentStaff(state));
+  const assessmentAvailable = canAssess(p, e);
+  const tabs = assessmentAvailable
+    ? allTabs
+    : allTabs.filter((item) => item !== "Assessment");
+  const requestedTab =
+    contextualView ||
+    (searchParams.get("tab") === "progress" ? "Report" : null) ||
+    tabs.find((t) => t.toLowerCase() === searchParams.get("tab")) ||
+    "Overview";
+  const tab =
+    requestedTab === "Assessment" && !assessmentAvailable
+      ? "Overview"
+      : requestedTab;
   const returnTo = safeReturnTo(searchParams.get("returnTo"));
   const returnLabel =
     returnTo.split("?")[0] === "/"
@@ -99,8 +111,11 @@ export default function Person({ id, navigate, openModal }) {
   );
   const context = { personId: p.id, episodeId: e.id, collectionId: c.id };
   const modal = (type) => openModal({ type, ...context });
+  const consentRequests = p.consentRequests || [];
   const reviewed =
-    c.response === "Submitted" && c.review === "Reviewed" && !c.needsReview;
+    c.response === "Submitted" &&
+    (noClinicalReviewRequired(c) ||
+      (c.review === "Reviewed" && !c.needsReview));
   return (
     <>
       <button className="back-link" onClick={() => navigate(returnTo)}>
@@ -110,7 +125,10 @@ export default function Person({ id, navigate, openModal }) {
       <div className="person-heading">
         <Avatar name={p.name} large />
         <div>
-          <h1>{p.name}</h1>
+          <h1 className="person-name-heading">
+            <span>{p.name}</span>
+            <small>Patient</small>
+          </h1>
           <p>
             {p.id}
             <span>·</span>
@@ -121,6 +139,7 @@ export default function Person({ id, navigate, openModal }) {
         </div>
         <div className="actions">
           <Button
+            variant="primary"
             disabled={e.status !== "Active" || !canAssess(p, e)}
             onClick={() => modal("plan")}
           >
@@ -325,9 +344,11 @@ export default function Person({ id, navigate, openModal }) {
                       </Button>
                     </div>
                     <Notice>
-                      {reviewed
-                        ? "The response and its clinical review are retained separately."
-                        : "A submitted response still needs clinical review."}
+                      {noClinicalReviewRequired(c)
+                        ? "The response is complete; no separate clinical review is required."
+                        : reviewed
+                          ? "The response and its clinical review are retained separately."
+                          : "A submitted response still needs clinical review."}
                     </Notice>
                   </section>
                 </div>
@@ -348,18 +369,19 @@ export default function Person({ id, navigate, openModal }) {
                 <div className="panel-body">
                   <div className="involved">
                     <Avatar name={p.owner} />
-                    <strong>{p.owner}</strong>
-                    <span>Care owner</span>
+                    <PersonIdentity name={p.owner} descriptor="Care owner" />
                   </div>
                   <div className="involved">
                     <Avatar name={p.name} />
-                    <strong>{p.name}</strong>
+                    <PersonIdentity name={p.name} descriptor="Patient" />
                   </div>
                   {p.family && (
                     <div className="involved">
                       <Avatar name={p.family} tone="blue" />
-                      <strong>{p.family}</strong>
-                      <span>Family respondent</span>
+                      <PersonIdentity
+                        name={p.family}
+                        descriptor="Family carer"
+                      />
                     </div>
                   )}
                   <p className="footnote">
@@ -389,6 +411,7 @@ export default function Person({ id, navigate, openModal }) {
               const isPrior =
                 !isOutstanding(col) &&
                 col.id !== searchParams.get("collection");
+              const respondent = collectionActorIdentity(p, col, "respondent");
               const card = (
                 <Panel
                   key={col.id}
@@ -407,9 +430,10 @@ export default function Person({ id, navigate, openModal }) {
                       <div className="prior-collection-context">
                         <div>
                           <small>Respondent</small>
-                          <strong>
-                            {collectionActor(p, col, "respondent")}
-                          </strong>
+                          <PersonIdentity
+                            name={respondent.name}
+                            descriptor={respondent.role}
+                          />
                         </div>
                         <p className="muted">
                           {getInstrument(col.version)?.questions.length ||
@@ -435,13 +459,18 @@ export default function Person({ id, navigate, openModal }) {
                           </div>
                           <div>
                             <small>Respondent</small>
-                            <strong>
-                              {collectionActor(p, col, "respondent")}
-                            </strong>
+                            <PersonIdentity
+                              name={respondent.name}
+                              descriptor={respondent.role}
+                            />
                           </div>
                           <div>
                             <small>Due date</small>
                             <strong>{formatDate(col.due)}</strong>
+                          </div>
+                          <div>
+                            <small>Collection method</small>
+                            <strong>{col.channel || "Not set up"}</strong>
                           </div>
                         </div>
                         <div className="assignment-status">
@@ -466,6 +495,40 @@ export default function Person({ id, navigate, openModal }) {
                         </span>
                       )}
                       <div className="actions">
+                        {col.response === "Submitted" &&
+                          !noClinicalReviewRequired(col) && (
+                            <Button
+                              onClick={() =>
+                                openModal({
+                                  type: "review",
+                                  personId: p.id,
+                                  episodeId: e.id,
+                                  collectionId: col.id,
+                                })
+                              }
+                            >
+                              {col.needsReview
+                                ? "Review updated answers"
+                                : col.review === "Reviewed"
+                                  ? "Review recorded"
+                                  : "Review responses"}
+                            </Button>
+                          )}
+                        {col.response !== "Submitted" && (
+                          <Button
+                            aria-haspopup="dialog"
+                            onClick={() =>
+                              openModal({
+                                type: "questionnaire-preview",
+                                personId: p.id,
+                                episodeId: e.id,
+                                collectionId: col.id,
+                              })
+                            }
+                          >
+                            Preview questionnaire
+                          </Button>
+                        )}
                         <Button
                           aria-haspopup="dialog"
                           onClick={() =>
@@ -480,37 +543,6 @@ export default function Person({ id, navigate, openModal }) {
                         >
                           View details
                         </Button>
-                        <Button
-                          aria-haspopup="dialog"
-                          onClick={() =>
-                            openModal({
-                              type: "questionnaire-preview",
-                              personId: p.id,
-                              episodeId: e.id,
-                              collectionId: col.id,
-                            })
-                          }
-                        >
-                          Preview questionnaire
-                        </Button>
-                        {col.response === "Submitted" && (
-                          <Button
-                            onClick={() =>
-                              openModal({
-                                type: "review",
-                                personId: p.id,
-                                episodeId: e.id,
-                                collectionId: col.id,
-                              })
-                            }
-                          >
-                            {col.needsReview
-                              ? "Review updated answers"
-                              : col.review === "Reviewed"
-                                ? "Review recorded"
-                                : "Review responses"}
-                          </Button>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -541,6 +573,14 @@ export default function Person({ id, navigate, openModal }) {
             </Notice>
           </div>
         )}
+        {tab === "Events" && (
+          <CareEvents
+            episode={e}
+            openModal={(eventModal) =>
+              openModal({ ...eventModal, personId: p.id })
+            }
+          />
+        )}
         {tab === "Report" && (
           <Progress key={e.id} person={p} episode={e} openModal={openModal} />
         )}
@@ -550,25 +590,93 @@ export default function Person({ id, navigate, openModal }) {
               <div>
                 <h2>Consent & respondents</h2>
                 <p>
-                  Record the purpose, appropriate contact, and each person’s
-                  role.
+                  Select a purpose, send a request, and keep every decision in
+                  its own history.
                 </p>
               </div>
-              <Button onClick={() => modal("consent")}>
-                Update sample settings
+              <Button onClick={() => modal("consent-send")}>
+                Send consent request
               </Button>
             </div>
             <Notice>
-              Illustrative policy behaviour. These sample settings demonstrate
-              an action-specific check; they are not approved consent wording.
+              Illustrative sample policy only. A sent request is not consent;
+              accept, decline and withdrawal remain purpose-specific.
             </Notice>
-            <Panel title="Participation & contact">
+            {consentRequests.map((request) => (
+              <details key={request.id} className="consent-request-accordion">
+                <summary>
+                  <span>
+                    <strong>{request.title}</strong>
+                    <small>
+                      {request.version} · {request.scope}
+                    </small>
+                  </span>
+                  <Badge>{request.status}</Badge>
+                  <ChevronDown size={18} aria-hidden="true" />
+                </summary>
+                <Panel className="consent-request-panel">
+                  <div className="panel-body">
+                    <dl className="metadata">
+                      <div>
+                        <dt>Version</dt>
+                        <dd>{request.version}</dd>
+                      </div>
+                      <div>
+                        <dt>Scope</dt>
+                        <dd>{request.scope}</dd>
+                      </div>
+                      <div>
+                        <dt>Delivery</dt>
+                        <dd>
+                          {request.channel} ·{" "}
+                          {request.sentAt
+                            ? formatDate(request.sentAt)
+                            : "Not sent"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Current decision</dt>
+                        <dd>{request.status}</dd>
+                      </div>
+                      {request.decisionMaker && (
+                        <div>
+                          <dt>Decision maker</dt>
+                          <dd>{request.decisionMaker}</dd>
+                        </div>
+                      )}
+                    </dl>
+                    <div className="assignment-footer">
+                      <span className="muted">
+                        {request.status === "Sent"
+                          ? "Waiting for the patient’s decision."
+                          : "Open request history and the permitted next action."}
+                      </span>
+                      <div className="actions">
+                        <Button
+                          variant="secondary"
+                          onClick={() =>
+                            openModal({
+                              ...context,
+                              type: "consent-detail",
+                              consentRequestId: request.id,
+                            })
+                          }
+                        >
+                          View request
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Panel>
+              </details>
+            ))}
+            <Panel title="Contact and participant context">
               <div className="panel-body">
                 <dl className="metadata">
                   <div>
-                    <dt>Assessment participation</dt>
+                    <dt>Name</dt>
                     <dd>
-                      <Badge>{p.consent}</Badge>
+                      <PersonIdentity name={p.name} descriptor="Patient" />
                     </dd>
                   </div>
                   <div>
@@ -576,54 +684,25 @@ export default function Person({ id, navigate, openModal }) {
                     <dd>{p.contact}</dd>
                   </div>
                   <div>
-                    <dt>Source</dt>
-                    <dd>
-                      {p.participationRecord?.source || "Source not recorded"}
-                    </dd>
+                    <dt>Guardian authority</dt>
+                    <dd>Not established</dd>
                   </div>
-                  <div>
-                    <dt>Recorded by</dt>
-                    <dd>
-                      {p.participationRecord?.actor || "Recorder not recorded"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Recorded at</dt>
-                    <dd>
-                      {p.participationRecord?.timestamp
-                        ? formatTimestamp(p.participationRecord.timestamp)
-                        : "Time not recorded"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Scope</dt>
-                    <dd>
-                      {p.participationRecord?.scope ||
-                        "Assessment participation and contact · sample settings only"}
-                    </dd>
-                  </div>
-                  {p.participationRecord?.reason && (
-                    <div>
-                      <dt>Reason</dt>
-                      <dd>{p.participationRecord.reason}</dd>
-                    </div>
-                  )}
                   <div>
                     <dt>Research participation</dt>
                     <dd>Not recorded · separate purpose</dd>
                   </div>
-                  <div>
-                    <dt>Guardian authority</dt>
-                    <dd>Not established in this prototype</dd>
-                  </div>
-                  <div>
-                    <dt>Name</dt>
-                    <dd>{p.name}</dd>
-                  </div>
                   {p.family && (
                     <div>
                       <dt>Family respondent</dt>
-                      <dd>{p.family} · own contribution only</dd>
+                      <dd>
+                        <PersonIdentity
+                          name={p.family}
+                          descriptor="Family carer"
+                        />
+                        <span className="identity-suffix">
+                          own contribution only
+                        </span>
+                      </dd>
                     </div>
                   )}
                 </dl>

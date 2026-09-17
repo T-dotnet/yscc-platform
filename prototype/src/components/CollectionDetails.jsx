@@ -1,7 +1,13 @@
-import { formatDate, clinicalReviewStatus, collectionActor } from "../model";
+import {
+  formatDate,
+  clinicalReviewStatus,
+  displayPersonName,
+  displayCollectionActor,
+} from "../model";
 import { canAssess } from "../intake";
 import { collectionSetupLabel } from "../overview";
-import { Modal, Button, Badge, Notice, Empty } from "./UI";
+import { Modal, Button, Badge, Notice } from "./UI";
+import { ChevronDown } from "lucide-react";
 
 export default function CollectionDetails({
   person,
@@ -21,17 +27,28 @@ export default function CollectionDetails({
   return (
     <Modal
       title={c.label}
-      subtitle={`${person.name} · Care episode ${episode.number}`}
+      subtitle={`${displayPersonName(person)} · Care episode ${episode.number}`}
       onClose={onClose}
     >
       <div className="form-body collection-details">
-        <section aria-label="Collection information">
-          <h3>Collection details</h3>
-          <dl className="metadata">
+        <section
+          className="collection-details-summary"
+          aria-label="Collection status"
+        >
+          <div className="collection-details-summary-heading">
             <div>
-              <dt>Instrument</dt>
-              <dd>{c.version}</dd>
+              <h3>Response status</h3>
+              <Badge>{c.response}</Badge>
             </div>
+          </div>
+          {!submitted && (
+            <p>
+              {c.response === "Draft"
+                ? "A draft is in progress. This sample draft cannot be resumed; check the collection arrangements before starting another attempt."
+                : "No response has been submitted. Check delivery activity and contact arrangements before deciding whether another attempt is needed."}
+            </p>
+          )}
+          <dl className="collection-details-status-facts">
             <div>
               <dt>Due date</dt>
               <dd>{formatDate(c.due)}</dd>
@@ -43,17 +60,11 @@ export default function CollectionDetails({
               </dd>
             </div>
             <div>
-              <dt>Response</dt>
+              <dt>Clinical review</dt>
               <dd>
-                <Badge>{c.response}</Badge>
+                <Badge>{clinicalReviewStatus(c)}</Badge>
               </dd>
             </div>
-            {!submitted && (
-              <div>
-                <dt>Link / session</dt>
-                <dd>{c.link || "Not recorded"}</dd>
-              </div>
-            )}
             {submitted && (
               <div>
                 <dt>Submitted on</dt>
@@ -62,91 +73,101 @@ export default function CollectionDetails({
                 </dd>
               </div>
             )}
-            <div>
-              <dt>Clinical review</dt>
-              <dd>
-                <Badge>{clinicalReviewStatus(c)}</Badge>
-              </dd>
-            </div>
-            <div>
-              <dt>Respondent</dt>
-              <dd>{collectionActor(person, c, "respondent")}</dd>
-            </div>
-            {!submitted && (
-              <>
-                <div>
-                  <dt>Participation</dt>
-                  <dd>{person.consent}</dd>
-                </div>
-                <div>
-                  <dt>Contact suitability</dt>
-                  <dd>{person.contact}</dd>
-                </div>
-              </>
-            )}
-            <div>
-              <dt>Recorder</dt>
-              <dd>
-                {submitted || c.attempts.length
-                  ? collectionActor(person, c, "recorder")
-                  : "Not recorded"}
-              </dd>
-            </div>
-            <div>
-              <dt>Assistance</dt>
-              <dd>
-                {submitted || c.attempts.length
-                  ? c.assistance || "Not recorded"
-                  : "Not recorded"}
-              </dd>
-            </div>
-            <div>
-              <dt>Channel</dt>
-              <dd>
-                {c.channel || (submitted ? "Not recorded" : "Not selected")}
-              </dd>
-            </div>
           </dl>
         </section>
-        {!submitted && (
-          <Empty
-            title={
-              c.response === "Draft"
-                ? "A draft is in progress"
-                : "No submitted response yet"
-            }
-          >
-            {c.response === "Draft"
-              ? "No response has been submitted. This sample draft cannot be resumed; check the collection arrangements before starting another attempt."
-              : "Check delivery activity and contact arrangements before deciding whether another attempt is needed."}
-          </Empty>
-        )}
-        <section aria-label="Delivery attempts">
-          <h3>Delivery attempts</h3>
-          {c.attempts.length ? (
-            c.attempts.map((a, i) => (
-              <div className="attempt" key={a.id}>
-                <div>
-                  <strong>
-                    Attempt {i + 1} · {a.channel}
-                  </strong>
-                  <small>{formatDate(a.date)}</small>
-                </div>
-                <Badge>{a.status}</Badge>
+        <details className="collection-details-accordion" open>
+          <summary>
+            <span>Questionnaire and respondent</span>
+            <ChevronDown size={18} aria-hidden="true" />
+          </summary>
+          <div className="collection-details-accordion-body">
+            <dl className="metadata">
+              <div>
+                <dt>Instrument</dt>
+                <dd>{c.version}</dd>
               </div>
-            ))
-          ) : (
-            <p className="muted">
-              {submitted
-                ? "Delivery history was not recorded for this response."
-                : "No delivery attempts recorded."}
-            </p>
-          )}
-          <Notice>
-            Reissuing a link adds an attempt to this assignment. It does not
-            create a new time point.
-          </Notice>
-        </section>
+              <div>
+                <dt>Respondent</dt>
+                <dd>{displayCollectionActor(person, c, "respondent")}</dd>
+              </div>
+              {(submitted || c.attempts.length > 0) && (
+                <>
+                  <div>
+                    <dt>Recorder</dt>
+                    <dd>{displayCollectionActor(person, c, "recorder")}</dd>
+                  </div>
+                  <div>
+                    <dt>Assistance</dt>
+                    <dd>{c.assistance || "Not recorded"}</dd>
+                  </div>
+                </>
+              )}
+            </dl>
+          </div>
+        </details>
+        <details className="collection-details-accordion" open>
+          <summary>
+            <span>Delivery and contact</span>
+            <ChevronDown size={18} aria-hidden="true" />
+          </summary>
+          <div className="collection-details-accordion-body">
+            <dl className="metadata">
+              <div>
+                <dt>Channel</dt>
+                <dd>
+                  {c.channel || (submitted ? "Not recorded" : "Not selected")}
+                </dd>
+              </div>
+              {!submitted && (
+                <>
+                  <div>
+                    <dt>Link / session</dt>
+                    <dd>{c.link || "Not recorded"}</dd>
+                  </div>
+                  <div>
+                    <dt>Participation</dt>
+                    <dd>{person.consent}</dd>
+                  </div>
+                  <div>
+                    <dt>Contact suitability</dt>
+                    <dd>{person.contact}</dd>
+                  </div>
+                </>
+              )}
+            </dl>
+          </div>
+        </details>
+        <details className="collection-details-accordion" open>
+          <summary>
+            <span>Delivery attempts</span>
+            <ChevronDown size={18} aria-hidden="true" />
+          </summary>
+          <div className="collection-details-accordion-body">
+            {c.attempts.length ? (
+              c.attempts.map((a, i) => (
+                <div className="attempt" key={a.id}>
+                  <div>
+                    <strong>
+                      Attempt {i + 1} · {a.channel}
+                    </strong>
+                    <small>{formatDate(a.date)}</small>
+                  </div>
+                  <Badge>{a.status}</Badge>
+                </div>
+              ))
+            ) : (
+              <p className="muted">
+                {submitted
+                  ? "Delivery history was not recorded for this response."
+                  : "No delivery attempts recorded."}
+              </p>
+            )}
+            <Notice>
+              Reissuing a link adds an attempt to this assignment. It does not
+              create a new time point.
+            </Notice>
+          </div>
+        </details>
       </div>
       <div className="modal-footer">
         <Button onClick={onClose}>Close</Button>

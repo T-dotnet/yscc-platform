@@ -1,7 +1,7 @@
 {
-  "version": "Executive edition 1.3",
+  "version": "Executive edition 1.5",
   "date": "16 September 2026",
-  "status": "Working proposal; local prototype demonstrates the care-collection foundation",
+  "status": "Working proposal; aligned to the current local prototype",
   "documents": [
     {
       "id": "01",
@@ -16,7 +16,7 @@
           "blocks": [
             {
               "type": "statement",
-              "text": "A local prototype now demonstrates sample intake, collection, review, follow-up and correction."
+              "text": "A local prototype now demonstrates sample intake, collection, consent requests, policy-dependent review, follow-up, correction and a questionnaire-based Progress report."
             },
             {
               "type": "path",
@@ -60,7 +60,7 @@
           ],
           "decision": {
             "title": "LEADERSHIP TAKEAWAY",
-            "text": "Use the local prototype to test the care-collection foundation, and approve wider capabilities separately. It is not production authorisation."
+            "text": "Use the local prototype to test the care-collection and Progress-report foundation, and approve consent, review and wider capabilities separately. It is not production authorisation."
           },
           "basis": "Detailed brief 01, sections 1-6. S1/S2 and CMDCS persona draft (CP1)."
         },
@@ -75,7 +75,7 @@
                 {
                   "tag": "PROPOSED BASELINE",
                   "title": "A complete collection loop",
-                  "body": "Mandatory intake for every new patient, then assessment and repeat measures; eligible collection; permissions, correction, queues and owned referral follow-through."
+                  "body": "Mandatory intake for every new patient, then assessment and repeat measures; eligible collection; purpose-specific consent requests, correction, queues and owned referral follow-through."
                 },
                 {
                   "tag": "CONDITIONAL",
@@ -139,10 +139,10 @@
               "type": "value",
               "items": [
                 {
-                  "name": "Kai / person",
+                  "name": "Kai / Young person",
                   "job": "Share how I am doing and understand the next step.",
                   "pain": "Repetition, unclear visibility and uncertainty about receipt.",
-                  "response": "Eligible self-report, plain explanations, support and confirmed submission.",
+                  "response": "Eligible self-report, scoped consent choices, plain explanations, support and confirmed submission.",
                   "gain": "A clearer, more manageable contribution to care."
                 },
                 {
@@ -156,7 +156,7 @@
                   "name": "Jess / treating clinician",
                   "job": "Collect, interpret and act on the right information.",
                   "pain": "Duplicate entry, fragmented context and ambiguous status.",
-                  "response": "An episode-centred plan, eligible channels and separate review/handover actions.",
+                  "response": "An episode-centred plan, eligible channels, policy-dependent review and a traceable Progress view.",
                   "gain": "Less avoidable coordination effort and clearer clinical context."
                 }
               ]
@@ -164,7 +164,7 @@
             {
               "type": "note",
               "title": "Scope distinction",
-              "body": "Kai's personal dashboard and Jess's full ongoing-care record are candidate capabilities. The current assessment/collection baseline does not deliver them by implication."
+              "body": "The staff Progress dashboard is current prototype direction. Kai's personal dashboard and Jess's full ongoing-care record remain candidate capabilities with separate access and phase decisions."
             }
           ],
           "decision": {
@@ -182,7 +182,7 @@
               "type": "value",
               "items": [
                 {
-                  "name": "Rachel, Tom and Ananya",
+                  "name": "Rachel, Tom and Ananya / Service improvement team",
                   "job": "Run the service and maintain reliable, comparable records.",
                   "pain": "Manual follow-up, unclear definitions and fragmented reporting.",
                   "response": "Owned quality work, verified-source correction and, if adopted, governed metrics and releases.",
@@ -196,7 +196,7 @@
                   "gain": "Evidence that leads to practical support and follow-up."
                 },
                 {
-                  "name": "Priya, David, Maya and Helen",
+                  "name": "Priya, David, Maya and Helen / System evidence stakeholders",
                   "job": "Commission, oversee, exchange or research for approved purposes.",
                   "pain": "Inconsistent data, weak comparisons and unclear access processes.",
                   "response": "Candidate governed reports, exchange contracts and study-specific request/release pathways.",
@@ -242,7 +242,7 @@
                 },
                 {
                   "name": "Kai",
-                  "role": "Person",
+                  "role": "Young person",
                   "id": "P-01",
                   "need": "Be heard, understand progress and take part in care decisions.",
                   "friction": "Retelling the story, unclear visibility and unsuitable digital contexts.",
@@ -261,7 +261,7 @@
             {
               "type": "note",
               "title": "Research must reflect real contexts",
-              "body": "Co-design with Aboriginal and Torres Strait Islander people and diverse lived experiences. Test shared devices, assistance and accessibility; do not assume every person is digitally confident."
+              "body": "The local prototype exercises clinician/data-manager work plus scoped participant questionnaire and consent decisions. This is not persona validation. Co-design with Aboriginal and Torres Strait Islander people and diverse lived experiences."
             }
           ],
           "decision": {
@@ -436,12 +436,12 @@
             {
               "type": "note",
               "title": "The journey includes loops and exits",
-              "body": "The local prototype demonstrates these states with fictional data. More evidence returns to steps 2-5; a pause or incomplete exit records reason, owner and next action. Only continuing care enters recurring collection."
+              "body": "The local prototype demonstrates these states with fictional data, including purpose-specific consent and policy-dependent review. More evidence returns to steps 2-5; a pause or incomplete exit retains owner and next action."
             }
           ],
           "decision": {
             "title": "WHAT LEADERSHIP MUST VALIDATE",
-            "text": "The local prototype demonstrates mandatory intake, referral follow-through and repeated reviews in one episode. Finalise intake/triage and external-handover rules (D-26/D-27)."
+            "text": "The local prototype demonstrates intake, referral follow-through, consent requests, review-required/not-required states and repeat collection in one episode. Finalise D-04-D-10 and D-26/D-27."
           },
           "basis": "Detailed brief 04, J-01 to J-09; U1/D-25 confirms intake. Clinical/service detail remains D-26/D-27."
         },
@@ -506,7 +506,7 @@
             {
               "type": "note",
               "title": "Across the lifecycle",
-              "body": "Support, permission changes, corrections and handover apply whenever needed. Services and satisfaction are conditional. Wider care plans and personal progress remain candidate capabilities."
+              "body": "Support, purpose-specific consent requests and withdrawals, corrections and handover apply whenever needed. Services and satisfaction are conditional. Wider care plans and participant progress remain candidate capabilities."
             }
           ],
           "decision": {
@@ -545,7 +545,7 @@
                 {
                   "tag": "03 / INFORMED ACCESS",
                   "title": "Check each purpose",
-                  "body": "Separate relationship, authority, permission and answer visibility. Do not make care depend on unrelated research agreement."
+                  "body": "Use a versioned purpose request: send is not consent; accept, decline and withdrawal retain history. Keep relationship, authority and answer visibility separate."
                 },
                 {
                   "tag": "04 / RECORD INTEGRITY",
@@ -567,12 +567,12 @@
             {
               "type": "note",
               "title": "Scope stays explicit",
-              "body": "The local prototype demonstrates intake, collection, review, correction and referral with sample data. Operational details remain proposed; satisfaction, services and the eight CR capabilities need separate scope decisions."
+              "body": "The local prototype demonstrates intake, collection, consent decisions, review-required/not-required states, correction, referral and the Progress report with sample data. Operational rules and wider scope remain proposed."
             }
           ],
           "decision": {
             "title": "APPROVAL STANDARD",
-            "text": "Approve clinical content, permissions, operational rules and in-scope tests before production. Local browser persistence and sample roles do not prove security, delivery, clinical scoring or server enforcement."
+            "text": "Approve clinical content, consent/authority, review requirements, operational rules and in-scope tests before production. Browser-local sample behavior does not prove security, delivery, scoring or server enforcement."
           },
           "basis": "Detailed brief 05: FR-01 to FR-46, L-01 to L-29 and AC-01 to AC-29; U1/D-25."
         },
@@ -610,8 +610,8 @@
               ],
               "rows": [
                 [
-                  "Sent / submitted / reviewed",
-                  "Delivery, accepted response and clinical review are different events."
+                  "Sent / accepted / submitted / reviewed / not required",
+                  "Consent delivery/decision, response acceptance and clinical review requirement/state are different facts."
                 ],
                 [
                   "Assessment / admission / referral",
@@ -630,7 +630,7 @@
             {
               "type": "note",
               "title": "Policy-dependent, not hard-coded assumptions",
-              "body": "Guardian pathways, withdrawal/retention, review cadence, episode boundaries and draft/concurrent-attempt handling remain open decisions. No new age rule, reminder interval or scoring threshold is invented here."
+              "body": "Guardian pathways, withdrawal/retention, review requirements/cadence, episode boundaries and draft/concurrent-attempt handling remain open decisions. Sample rules are not clinical or legal approval."
             }
           ],
           "decision": {
@@ -661,7 +661,7 @@
                 },
                 {
                   "title": "2. Complete operations",
-                  "body": "Review, exits, correction, ownership and handover."
+                  "body": "Consent decisions, review rules, exits, correction, ownership and handover."
                 },
                 {
                   "title": "3. Useful continuity",
@@ -724,7 +724,7 @@
                 [
                   "03",
                   "Prototype",
-                  "Exercise the implemented local intake, collection, review, correction, referral and report tasks."
+                  "Exercise the implemented local intake, consent, collection, policy-dependent review, correction, referral and Progress-report tasks."
                 ],
                 [
                   "04",
@@ -843,8 +843,8 @@
                   "y": 244,
                   "w": 270,
                   "h": 40,
-                  "title": "Review evidence + unfinished work",
-                  "body": "Check completion criteria separately.",
+              "title": "Apply review rule + inspect work",
+              "body": "Record review when required; keep completion separate.",
                   "kind": "action"
                 },
                 {
@@ -1136,7 +1136,7 @@
           ],
           "decision": {
             "title": "MANDATORY INTAKE AND NEXT STEPS",
-            "text": "The local prototype now demonstrates this gate with sample records. Registration is not completion; waiting and non-proceeding intakes retain an owner and next action. Clinical admission remains separate."
+            "text": "The local prototype demonstrates intake, consent requests, channel-dependent review and the next-care loop with sample records. Registration, response and review state never imply admission or completion."
           },
           "basis": "F-01/F-02/F-05/F-08/F-09/F-17; U1/D-25. Intake detail D-26/D-27 remains proposed."
         },
@@ -1244,7 +1244,7 @@
                   "w": 300,
                   "h": 52,
                   "title": "This assignment is fulfilled",
-                  "body": "Clinical review is a separate step.",
+              "body": "Apply the approved review rule; assessment remains separate.",
                   "kind": "outcome"
                 },
                 {
@@ -1562,7 +1562,7 @@
           ],
           "decision": {
             "title": "PARTICIPATION AND INTERRUPTION",
-            "text": "Family contribution does not grant guardian authority or access to another person's answers. A draft is not submitted. Tablet cancel/timeout clears local context under approved policy."
+            "text": "Family contribution does not grant guardian authority. Sent consent is not accepted. Clinician entry and supported tablet are Review not required only under the prototype's sample rule."
           },
           "basis": "F-02/F-03/F-04/F-10. Eligibility, recovery and storage policies remain open; phase conflict D-21 remains."
         },
@@ -1922,7 +1922,7 @@
                 },
                 {
                   "title": "Data quality",
-                  "body": "Corrections and record resolution."
+              "body": "Corrections, audit and record resolution."
                 },
                 {
                   "title": "Administration",
@@ -1941,30 +1941,38 @@
                   "Identity, dates, owner, timeline and next action."
                 ],
                 [
-                  "Assessment",
-                  "Core/modules, progress, evidence review and decision."
-                ],
-                [
-                  "Measures",
-                  "Assignments, delivery attempts, responses and trends."
-                ],
-                [
-                  "Consent and respondents",
-                  "Purpose decisions, relationship, authority and visibility."
-                ]
+              "Assessment",
+              "Core/modules, collections, delivery, response and policy-dependent review."
+            ],
+            [
+              "Events",
+              "Dated care-period changes and milestones, such as medication, service or significant life events."
+            ],
+            [
+              "Report",
+              "Progress dashboard, clinician narrative, annotations and questionnaire details."
+            ],
+            [
+              "Consent & respondents",
+              "Versioned purpose requests, decisions/history, relationship, authority and visibility."
+            ],
+            [
+              "History",
+              "Care-period activity, actors, times and before/after details."
+            ]
               ]
             },
             {
               "type": "note",
               "title": "Intake and contextual destinations",
-              "body": "Intake (ST-27) and referral detail (ST-28) open from My work or People. Services/Feedback remain conditional; correction/audit stays with its record."
+          "body": "Intake (ST-27) and referral detail (ST-28) open contextually. Assessment, Report (ST-29), Consent & respondents and History (ST-30) retain the selected care period."
             }
           ],
           "decision": {
             "title": "FINDABILITY TEST",
             "text": "Can staff find the right episode, distinguish a response from a reviewed assessment, and return to their work without losing context? Test labels and paths before visual sign-off."
           },
-          "basis": "Detailed brief 08, ST-00 to ST-28; intake rule U1/D-25. Core staff surfaces are demonstrated locally; production routes and access remain proposed."
+          "basis": "Detailed brief 08, ST-00 to ST-30; intake rule U1/D-25. Core staff surfaces are demonstrated locally; production routes and access remain proposed."
         },
         {
           "title": "Separate spaces. Governed connections.",
@@ -1980,14 +1988,14 @@
                 },
                 {
                   "title": "Understand + answer",
-                  "body": "Purpose, visibility, support and pinned questions."
+              "body": "Pinned questionnaire or consent purpose, visibility, support and explicit action."
                 },
                 {
                   "title": "Confirm + exit",
                   "body": "Real receipt, safe recovery and tablet reset."
                 }
               ],
-              "note": "Participant surfaces expose only permitted tasks. An invitation link is not a credential for an unrestricted progress portal."
+          "note": "Participant surfaces expose only the permitted questionnaire or consent task. An invitation link is not a credential for an unrestricted progress portal."
             },
             {
               "type": "scope",
@@ -2020,6 +2028,80 @@
             "text": "Approve capability and data scope first, then decide the appropriate surface or external output. Keep candidate destinations out of launch navigation until adopted."
           },
           "basis": "Detailed brief 08: PT-01 to PT-09 and candidate EX-01 to EX-08; D-12/D-21 to D-24."
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "slug": "ux-principles-and-ui-guidelines",
+      "title": "UX principles and UI guidelines",
+      "source": "09-ux-principles-and-ui-guidelines.md",
+      "pages": [
+        {
+          "title": "Make the next safe action clear.",
+          "subtitle": "A proposed cross-platform baseline for context, status, evidence, recovery and inclusive interaction.",
+          "label": "THE EXPERIENCE PROMISE",
+          "blocks": [
+            {
+              "type": "statement",
+              "text": "Keep the person and care episode in context, make the next authorised action clear, and preserve the evidence needed to understand what happened."
+            },
+            {
+              "type": "rows",
+              "headers": ["Principle", "What it means in the interface"],
+              "rows": [
+                ["Context first", "Show workspace, person, selected care episode, dates and owner."],
+                ["Work over data model", "Organise navigation around staff tasks and stable person-level views."],
+                ["Status and ownership", "Separate submitted, review, follow-up and episode states; show the next owner."],
+                ["Evidence with provenance", "Keep questionnaire/version, respondent, source, dates and before/after values."],
+                ["Progressive disclosure", "Lead with the decision summary; expose detail through predictable accessible accordions."],
+                ["Safe and inclusive", "Use plain language, scoped access, recoverable errors and accessible controls."]
+              ]
+            },
+            {
+              "type": "note",
+              "title": "Working proposal",
+              "body": "This guide does not approve clinical content, consent policy, permissions, scoring, retention or production readiness. Report and Events remain provisional prototype directions."
+            }
+          ],
+          "decision": {
+            "title": "ALIGNMENT QUESTION",
+            "text": "Which principles and status distinctions must be consistent across services, channels and future implementations?"
+          },
+          "basis": "Detailed brief 09, sections 1-3 and 6-8; linked to briefs 05, 06 and 08."
+        },
+        {
+          "title": "Turn principles into repeatable UI.",
+          "subtitle": "A small set of patterns protects hierarchy, longitudinal interpretation and safe participation.",
+          "label": "UI GUIDELINES AND VALIDATION",
+          "blocks": [
+            {
+              "type": "cards",
+              "columns": 2,
+              "items": [
+                {"tag": "HIERARCHY", "title": "Context to task to summary", "body": "Show location, purpose, status and next action before dense evidence."},
+                {"tag": "CONTENT", "title": "One term, one meaning", "body": "Use sentence case, specific verbs and approved participant language."},
+                {"tag": "REPORT", "title": "Question-level evidence", "body": "Separate selector, charts and qualitative Previous to New changes; do not infer clinical meaning."},
+                {"tag": "EVENTS", "title": "Timing is not causality", "body": "Use distinct accessible markers and describe events as contextual records."},
+                {"tag": "DISCLOSURE", "title": "Details without hiding risk", "body": "Use accessible accordions for secondary evidence, never for errors or required actions."},
+                {"tag": "RECOVERY", "title": "Explain the next safe step", "body": "Design empty, blocked, error, draft, submitted and unavailable states."}
+              ]
+            },
+            {
+              "type": "path",
+              "items": [
+                {"title": "Review", "body": "Clinical, operational, safeguarding, privacy and plain-language review."},
+                {"title": "Test", "body": "Tree, first-click and observed tasks across normal and recovery paths."},
+                {"title": "Verify", "body": "Accessibility, provenance, scope, audit, retry and concurrency evidence."}
+              ],
+              "note": "Record the evidence, unresolved assumption, owner and decision date before promoting a guideline to a production standard."
+            }
+          ],
+          "decision": {
+            "title": "VALIDATION GATE",
+            "text": "Confirm what belongs in Report, Assessment and History; which events are safe to surface; and what approved method supports claims about progress or influence."
+          },
+          "basis": "Detailed brief 09, sections 4-10; Report and Events directions remain subject to D-28/D-29 stakeholder decisions."
         }
       ]
     }

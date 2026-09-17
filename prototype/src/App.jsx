@@ -9,6 +9,7 @@ import People from "./features/People";
 import Person from "./features/Person";
 import { Quality, Administration, Help } from "./features/Operations";
 import Questionnaire from "./features/Questionnaire";
+import ConsentRequest from "./features/ConsentRequest";
 import { Empty, Button } from "./components/UI";
 export default function App() {
   const path = usePathname(),
@@ -42,11 +43,27 @@ export default function App() {
     } catch {}
     navigate("/questionnaire");
   };
+  const startConsentRequest = (context) => {
+    const value = { ...context, kind: "consent", id: crypto.randomUUID() };
+    setSession(value);
+    try {
+      sessionStorage.setItem("yscc-session", JSON.stringify(value));
+    } catch {}
+    navigate("/consent");
+  };
   const finishSession = () => {
     try {
       sessionStorage.removeItem("yscc-session");
     } catch {}
   };
+  if (path === "/consent")
+    return (
+      <ConsentRequest
+        session={session?.kind === "consent" ? session : null}
+        navigate={navigate}
+        onEnd={finishSession}
+      />
+    );
   if (path === "/preview" || path === "/questionnaire")
     return (
       <Questionnaire
@@ -112,6 +129,7 @@ export default function App() {
           }
           navigate={navigate}
           startQuestionnaire={startQuestionnaire}
+          startConsentRequest={startConsentRequest}
           notify={setToast}
         />
       )}

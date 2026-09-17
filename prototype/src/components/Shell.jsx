@@ -5,8 +5,10 @@ import {
   ChartNoAxesColumnIncreasing,
   Settings,
   CircleHelp,
+  ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Globe2,
   Menu,
   X,
 } from "lucide-react";
@@ -30,6 +32,7 @@ export default function Shell({
   const { state } = useStore();
   const staff = currentStaff(state);
   const [mobile, setMobile] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const menuRef = useRef(null);
   useEffect(() => {
     if (!mobile) return;
@@ -57,9 +60,21 @@ export default function Shell({
           onClick={() => setMobile(false)}
         />
       )}
-      <aside ref={menuRef} className={`sidebar ${mobile ? "open" : ""}`}>
+      <aside
+        ref={menuRef}
+        className={`sidebar ${mobile ? "open" : ""} ${collapsed ? "collapsed" : ""}`}
+      >
         <div className="brand-row">
           <Logo />
+          <button
+            className="icon-button sidebar-collapse"
+            aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+            aria-pressed={collapsed}
+            title={collapsed ? "Expand navigation" : "Collapse navigation"}
+            onClick={() => setCollapsed((value) => !value)}
+          >
+            {collapsed ? <ChevronRight /> : <ChevronLeft />}
+          </button>
           <button
             className="icon-button mobile-only"
             aria-label="Close navigation"
@@ -68,9 +83,14 @@ export default function Shell({
             <X />
           </button>
         </div>
-        <button className="scope" onClick={() => openModal({ type: "scope" })}>
+        <button
+          className="scope"
+          aria-label="Northside Centre · Your workspace"
+          title={collapsed ? "Northside Centre · Your workspace" : undefined}
+          onClick={() => openModal({ type: "scope" })}
+        >
           <strong>Northside Centre</strong>
-          <ChevronDown size={16} />
+          {collapsed ? <Globe2 size={20} /> : <ChevronDown size={16} />}
           <span>Your workspace</span>
         </button>
         <nav aria-label="Main navigation">
@@ -78,6 +98,7 @@ export default function Shell({
             <button
               key={href}
               className={`nav-item ${active === href ? "active" : ""}`}
+              title={collapsed ? label : undefined}
               onClick={() => go(href)}
               aria-current={active === href ? "page" : undefined}
             >
@@ -96,6 +117,7 @@ export default function Shell({
         <div className="sidebar-bottom">
           <button
             className={`nav-item ${active === "/help" ? "active" : ""}`}
+            title={collapsed ? "Help & guidance" : undefined}
             aria-current={active === "/help" ? "page" : undefined}
             onClick={() => go("/help")}
           >
@@ -138,10 +160,10 @@ export default function Shell({
             )}
           </div>
           <div className="topbar-right">
-            <span>Prototype · sample data</span>
+            <span>Sample data</span>
             <button
               className="icon-button"
-              aria-label="About this prototype"
+              aria-label="About this workspace"
               onClick={() => openModal({ type: "about" })}
             >
               <CircleHelp size={20} />

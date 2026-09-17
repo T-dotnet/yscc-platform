@@ -1,24 +1,33 @@
 import {
   DEMO_INSTRUMENT,
+  LIKERT_INSTRUMENT,
   questionnaireState,
   setQuestionAnswer,
 } from "./instruments.js";
 
-// Fictional fixture generation only. Never used to complete participant answers.
-export function createSampleAnswers(overrides = {}) {
+function createAnswers(instrument, overrides = {}) {
   let answers = [];
-  DEMO_INSTRUMENT.questions.forEach((question, index) => {
+  instrument.questions.forEach((question, index) => {
     if (
-      questionnaireState(DEMO_INSTRUMENT, answers).entries[index].status ===
+      questionnaireState(instrument, answers).entries[index].status ===
       "visible"
     ) {
       const value = question.options.includes(overrides[question.id])
         ? overrides[question.id]
         : question.options[0];
-      answers = setQuestionAnswer(DEMO_INSTRUMENT, answers, index, value);
+      answers = setQuestionAnswer(instrument, answers, index, value);
     }
   });
   return answers;
+}
+
+// Fictional fixture generation only. Never used to complete participant answers.
+export function createSampleAnswers(overrides = {}) {
+  return createAnswers(DEMO_INSTRUMENT, overrides);
+}
+
+export function createLikertSampleAnswers(overrides = {}) {
+  return createAnswers(LIKERT_INSTRUMENT, overrides);
 }
 
 const profiles = [

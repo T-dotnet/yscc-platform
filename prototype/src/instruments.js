@@ -60,6 +60,34 @@ const choice = (
 });
 const when = (questionId, ...oneOf) => ({ questionId, oneOf });
 
+const PREFER_NOT_TO_ANSWER = "Prefer not to answer";
+const FREQUENCY_SCALE = {
+  label: "Five-point frequency scale",
+  instruction: "Choose one answer from Never to Always.",
+  options: ["Never", "Rarely", "Sometimes", "Often", "Always"],
+};
+const AGREEMENT_SCALE = {
+  label: "Five-point agreement scale",
+  instruction: "Choose one answer from Strongly disagree to Strongly agree.",
+  options: [
+    "Strongly disagree",
+    "Disagree",
+    "Neither agree nor disagree",
+    "Agree",
+    "Strongly agree",
+  ],
+};
+const likert = (id, section, title, scale, hint, nonResponseOptions = []) => ({
+  id,
+  section,
+  title,
+  hint,
+  responseType: "likert",
+  scale: { ...scale, options: [...scale.options] },
+  nonResponseOptions: [...nonResponseOptions, PREFER_NOT_TO_ANSWER],
+  options: [...scale.options, ...nonResponseOptions, PREFER_NOT_TO_ANSWER],
+});
+
 // Original, nonclinical sample content. Rules reference stable IDs of earlier
 // questions; array positions are fixed within a pinned version for stored answers.
 export const DEMO_INSTRUMENT = {
@@ -275,6 +303,71 @@ export const DEMO_INSTRUMENT = {
 DEMO_INSTRUMENT.questions[0].family =
   "How would you prefer to share your perspective?";
 
+// Original, unscored sample content for demonstrating ordinal response scales.
+// It is not a validated outcome measure and has no score or clinical threshold.
+export const LIKERT_INSTRUMENT = {
+  name: "Life and care check-in",
+  version: "Life and care check-in v1.0",
+  description:
+    "Reflect on everyday life, connection and a recent care conversation.",
+  introduction:
+    "Your care team would like to hear how everyday life and your recent care experience have felt to you.",
+  timeframe: "Past 2 weeks, with a separate recent-care section",
+  responseFormat: "Two verbal five-point Likert scales",
+  respondents: ["Person"],
+  sections: [
+    { id: "daily-life", title: "Everyday life" },
+    { id: "connection", title: "Support and connection" },
+    { id: "care", title: "Your care experience" },
+  ],
+  questions: [
+    likert(
+      "routine-worked",
+      "daily-life",
+      "In the past 2 weeks, how often did your daily routine work well enough for you?",
+      FREQUENCY_SCALE,
+      "Think about the routine that matters to you, not what other people expect.",
+    ),
+    likert(
+      "meaningful-activity",
+      "daily-life",
+      "In the past 2 weeks, how often could you do something that mattered to you?",
+      FREQUENCY_SCALE,
+      "This could be learning, work, culture, family time, rest, or an activity you enjoy.",
+    ),
+    likert(
+      "felt-connected",
+      "connection",
+      "In the past 2 weeks, how often did you feel connected to people who matter to you?",
+      FREQUENCY_SCALE,
+      "Think about the relationships that are important to you.",
+    ),
+    likert(
+      "support-available",
+      "connection",
+      "In the past 2 weeks, how often did you have support when you needed it?",
+      FREQUENCY_SCALE,
+      "Support may come from family, friends, community, or services.",
+    ),
+    likert(
+      "felt-heard",
+      "care",
+      "I felt heard when I shared what mattered to me.",
+      AGREEMENT_SCALE,
+      "Think about your most recent care conversation.",
+      ["I have not had a care conversation"],
+    ),
+    likert(
+      "understood-next",
+      "care",
+      "I understood what would happen next in my care.",
+      AGREEMENT_SCALE,
+      "Think about your most recent care conversation.",
+      ["No next steps were discussed", "I have not had a care conversation"],
+    ),
+  ],
+};
+
 // These are original, unscored prototype questionnaires, not clinical measures.
 // Each version owns its question order; keep published versions unchanged.
 const sampleInstrument = (name, description, sections, questions) => ({
@@ -288,6 +381,7 @@ const sampleInstrument = (name, description, sections, questions) => ({
 
 export const INSTRUMENTS = [
   DEMO_INSTRUMENT,
+  LIKERT_INSTRUMENT,
   sampleInstrument(
     "Everyday life",
     "Explore daily routines, enjoyable activities and practical next steps.",
