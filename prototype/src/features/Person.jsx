@@ -512,77 +512,57 @@ export default function Person({ id, navigate, openModal }) {
                   }
                 >
                   <div className="panel-body">
-                    {isPrior ? (
-                      <div className="prior-collection-context">
-                        <div>
-                          <small>Respondent</small>
-                          <PersonIdentity
-                            name={respondent.name}
-                            descriptor={respondent.role}
-                          />
-                        </div>
-                        <p className="muted">
-                          {getInstrument(col.version)?.questions.length ||
-                            "Version-specific"}{" "}
-                          sample questions · no clinical score
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="assignment-grid">
-                          <div className="measure-title">
-                            <span className="measure-icon">
-                              <FileText size={24} />
-                            </span>
-                            <div>
-                              <h3>{col.version}</h3>
-                              <p>
-                                {getInstrument(col.version)?.questions.length ||
-                                  "Version-specific"}{" "}
-                                sample questions · no clinical score
-                              </p>
-                            </div>
-                          </div>
-                          <div>
-                            <small>Respondent</small>
-                            <PersonIdentity
-                              name={respondent.name}
-                              descriptor={respondent.role}
-                            />
-                          </div>
-                          <div>
-                            <small>Due date</small>
-                            <strong>{formatDate(col.due)}</strong>
-                          </div>
-                          <div>
-                            <small>Collection method</small>
-                            <strong>{col.channel || "Not set up"}</strong>
-                          </div>
-                        </div>
-                        <div className="assignment-status">
-                          <span>
-                            Assignment <Badge>{col.assignment}</Badge>
-                          </span>
-                          <span>
-                            Response <Badge>{col.response}</Badge>
-                          </span>
-                          <span>
-                            Review <Badge>{clinicalReviewStatus(col)}</Badge>
-                          </span>
-                        </div>
-                      </>
-                    )}
-                    <div className="assignment-footer">
-                      {!isPrior && (
-                        <span className="muted">
-                          {col.attempts.length} delivery{" "}
-                          {col.attempts.length === 1 ? "attempt" : "attempts"} ·
-                          version pinned at assignment
+                    <div className="assignment-grid">
+                      <div className="measure-title">
+                        <span className="measure-icon">
+                          <FileText size={24} />
                         </span>
-                      )}
+                        <div>
+                          <h3>{col.version}</h3>
+                          <p>
+                            {getInstrument(col.version)?.questions.length ||
+                              "Version-specific"}{" "}
+                            sample questions · no clinical score
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <small>Respondent</small>
+                        <PersonIdentity
+                          name={respondent.name}
+                          descriptor={respondent.role}
+                        />
+                      </div>
+                      <div>
+                        <small>Due date</small>
+                        <strong>{formatDate(col.due)}</strong>
+                      </div>
+                      <div>
+                        <small>Collection method</small>
+                        <strong>{col.channel || "Not set up"}</strong>
+                      </div>
+                    </div>
+                    <div className="assignment-status">
+                      <span>
+                        Assignment <Badge>{col.assignment}</Badge>
+                      </span>
+                      <span>
+                        Response <Badge>{col.response}</Badge>
+                      </span>
+                      <span>
+                        Review <Badge>{clinicalReviewStatus(col)}</Badge>
+                      </span>
+                    </div>
+                    <div className="assignment-footer">
+                      <span className="muted">
+                        {col.attempts.length} delivery{" "}
+                        {col.attempts.length === 1 ? "attempt" : "attempts"} ·
+                        version pinned at assignment
+                      </span>
                       <div className="actions">
                         {col.response === "Submitted" &&
-                          !noClinicalReviewRequired(col) && (
+                          (!noClinicalReviewRequired(col) ||
+                            collectionStatus(col) === "Completed") && (
                             <Button
                               onClick={() =>
                                 openModal({
@@ -595,7 +575,8 @@ export default function Person({ id, navigate, openModal }) {
                             >
                               {col.needsReview
                                 ? "Review updated answers"
-                                : col.review === "Reviewed"
+                                : col.review === "Reviewed" ||
+                                    collectionStatus(col) === "Completed"
                                   ? "Review recorded"
                                   : "Review responses"}
                             </Button>
@@ -669,12 +650,7 @@ export default function Person({ id, navigate, openModal }) {
           />
         )}
         {tab === "Report" && (
-          <Progress
-            key={e.id}
-            person={p}
-            episode={e}
-            openModal={openModal}
-          />
+          <Progress key={e.id} person={p} episode={e} openModal={openModal} />
         )}
         {tab === "Consent & respondents" && (
           <div className="stack">
@@ -805,7 +781,11 @@ export default function Person({ id, navigate, openModal }) {
         {tab === "History" && (
           <Panel
             title="History"
-            action={<span className="muted">Clinician view · Care episode {e.number}</span>}
+            action={
+              <span className="muted">
+                Clinician view · Care episode {e.number}
+              </span>
+            }
           >
             <ClinicalHistory
               episode={e}
@@ -819,7 +799,11 @@ export default function Person({ id, navigate, openModal }) {
         {tab === "Change log" && (
           <Panel
             title="Change log"
-            action={<span className="muted">Compliance view · Care episode {e.number}</span>}
+            action={
+              <span className="muted">
+                Compliance view · Care episode {e.number}
+              </span>
+            }
           >
             <ChangeLog episode={e} person={p} audit={state.audit} />
           </Panel>

@@ -5177,26 +5177,6 @@ form.has-validation-errors .check-field:has(:invalid) {
   border-top: 1px solid var(--line);
   border-radius: 0 0 var(--radius) var(--radius);
 }
-.prior-collection-context {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px 24px;
-}
-.prior-collection-context > div {
-  display: grid;
-  gap: 4px;
-  font-size: 14px;
-}
-.prior-collection-context small,
-.prior-collection-context p {
-  color: var(--muted);
-  font-size: 12px;
-}
-.prior-collection-context strong {
-  font-weight: 500;
-}
 .prior-collection .assignment-footer {
   padding-top: 20px;
 }
