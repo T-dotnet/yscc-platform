@@ -1,10 +1,12 @@
 import {
   CalendarDays,
   ClipboardList,
+  House,
   HeartHandshake,
+  Hospital,
   Pill,
   Plus,
-  Sparkles,
+  ShieldAlert,
 } from "lucide-react";
 import {
   careEventDetails,
@@ -15,9 +17,13 @@ import { formatDate, formatTimestamp } from "../model";
 import { Button, Panel } from "../components/UI";
 
 const EVENT_ICONS = {
+  harm: ShieldAlert,
+  inpatient: Hospital,
+  "medication-adverse": Pill,
+  housing: House,
+  "care-transition": HeartHandshake,
   medication: Pill,
   "care-service": HeartHandshake,
-  "life-event": Sparkles,
   other: ClipboardList,
 };
 
@@ -31,9 +37,7 @@ export default function CareEvents({ episode, openModal }) {
       <div className="section-toolbar">
         <div>
           <h2>Events</h2>
-          <p>
-            Contextual changes recorded during care episode {episode.number}.
-          </p>
+          <p>Contextual changes recorded during this care period.</p>
         </div>
         <Button variant="primary" onClick={recordEvent}>
           <Plus size={17} aria-hidden="true" /> Record event
@@ -46,8 +50,8 @@ export default function CareEvents({ episode, openModal }) {
             <CalendarDays size={30} aria-hidden="true" />
             <h3>No events recorded</h3>
             <p>
-              Add a medication, care or service, significant life, or other
-              event to start this timeline.
+              Add a safety, inpatient, medication, housing, care-transition or
+              other contextual event to start this timeline.
             </p>
             <Button onClick={recordEvent}>
               <Plus size={17} aria-hidden="true" /> Record first event
@@ -85,12 +89,31 @@ export default function CareEvents({ episode, openModal }) {
                       ))}
                     </dl>
                   )}
+                  {event.correctedEventId && (
+                    <p className="care-event-correction">
+                      This is an append-only correction of an earlier event.
+                    </p>
+                  )}
                   <footer>
-                    Recorded by {event.actor || "Staff member"}
-                    {event.role ? ` · ${event.role}` : ""}
-                    {event.timestamp
-                      ? ` · ${formatTimestamp(event.timestamp)}`
-                      : ""}
+                    <span>
+                      Recorded by {event.actor || "Staff member"}
+                      {event.role ? ` · ${event.role}` : ""}
+                      {event.timestamp
+                        ? ` · ${formatTimestamp(event.timestamp)}`
+                        : ""}
+                    </span>
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        openModal({
+                          type: "correct-care-event",
+                          episodeId: episode.id,
+                          eventId: event.id,
+                        })
+                      }
+                    >
+                      Correct event
+                    </Button>
                   </footer>
                 </article>
               </li>

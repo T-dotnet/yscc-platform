@@ -29,6 +29,7 @@ import {
   Modal,
   Notice,
   Panel,
+  StaffPicker,
   Tabs,
   ValidatedForm,
 } from "../components/UI";
@@ -133,7 +134,11 @@ export function RegisterPerson({ onClose, navigate, notify }) {
             </Field>
           </div>
           <Field label="Intake owner">
-            <input name="owner" defaultValue={staff?.name || ""} required />
+            <StaffPicker
+              name="owner"
+              defaultValue={staff?.name || ""}
+              required
+            />
           </Field>
           <Field label="Next action">
             <input
@@ -253,10 +258,22 @@ export function IntakePanel({ person, intake, navigate }) {
   const field = (
     key,
     label,
-    { type = "text", hint, multiline = false, required = false } = {},
+    {
+      type = "text",
+      hint,
+      multiline = false,
+      required = false,
+      staff = false,
+    } = {},
   ) => (
     <Field label={label} hint={hint}>
-      {multiline ? (
+      {staff ? (
+        <StaffPicker
+          value={draft[key] || ""}
+          onChange={(value) => change(key, value)}
+          required={required}
+        />
+      ) : multiline ? (
         <textarea
           rows={2}
           value={draft[key] || ""}
@@ -561,7 +578,7 @@ export function IntakePanel({ person, intake, navigate }) {
                 multiline: true,
                 required: draft.status === "Completed",
               })}
-              {field("reviewer", "Assigned triage reviewer")}
+              {field("reviewer", "Assigned triage reviewer", { staff: true })}
               {field("summary", "Triage summary / exit reason", {
                 multiline: true,
                 required:
@@ -584,7 +601,10 @@ export function IntakePanel({ person, intake, navigate }) {
                   ))}
                 </select>
               </Field>
-              {field("owner", "YSCC intake owner", { required: true })}
+              {field("owner", "YSCC intake owner", {
+                required: true,
+                staff: true,
+              })}
               {field("nextAction", "Next action", {
                 multiline: true,
                 required: true,
@@ -631,6 +651,7 @@ export function IntakePanel({ person, intake, navigate }) {
                   {draft.outcome === "Proceed" &&
                     field("assessmentOwner", "Receiving assessment owner", {
                       required: true,
+                      staff: true,
                     })}
                   <p className="muted">
                     Decision recorded as {staff?.name} · {staff?.role}.

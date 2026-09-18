@@ -17,6 +17,7 @@ import {
   Modal,
   Notice,
   Panel,
+  StaffPicker,
   ValidatedForm,
 } from "../components/UI";
 
@@ -230,7 +231,11 @@ export function ReferralForm({ modal, onClose, notify }) {
                 <textarea name="purpose" required rows={2} />
               </Field>
               <Field label="YSCC follow-up owner">
-                <input name="owner" defaultValue={staff?.name || ""} required />
+                <StaffPicker
+                  name="owner"
+                  defaultValue={staff?.name || ""}
+                  required
+                />
               </Field>
             </>
           ) : (

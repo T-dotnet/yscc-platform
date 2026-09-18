@@ -9,10 +9,12 @@ import {
   safeReturnTo,
 } from "../workflow";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { ArrowLeft, Plus, ChevronDown, FileText } from "lucide-react";
 import { useStore } from "../store";
 import Progress from "./Progress";
 import CareEvents from "./CareEvents";
+import ReviewPack from "../components/ReviewPack";
 import Timeline from "../components/ActivityTimeline";
 import { getInstrument } from "../instruments";
 import {
@@ -35,6 +37,7 @@ import {
   Continuity,
   TextLink,
   Empty,
+  Modal,
   Tabs,
   PersonIdentity,
 } from "../components/UI";
@@ -43,6 +46,7 @@ export default function Person({ id, navigate, openModal }) {
   const { state } = useStore();
   const p = state.people.find((p) => p.id === id);
   const searchParams = useSearchParams();
+  const [reviewPackOpen, setReviewPackOpen] = useState(false);
   const allTabs = [
     "Overview",
     "Assessment",
@@ -200,7 +204,7 @@ export default function Person({ id, navigate, openModal }) {
         </div>
         <Badge>{e.status}</Badge>
         <div>
-          <small>Care owner</small>
+          <small>Key clinician</small>
           <span>{p.owner}</span>
         </div>
         <div>
@@ -302,8 +306,11 @@ export default function Person({ id, navigate, openModal }) {
                       >
                         {nextStep.primary.label}
                       </Button>
-                      <TextLink onClick={() => setTab("Assessment")}>
-                        View assessment
+                      <TextLink
+                        aria-haspopup="dialog"
+                        onClick={() => setReviewPackOpen((open) => !open)}
+                      >
+                        View review pack
                       </TextLink>
                     </div>
                   </section>
@@ -354,6 +361,26 @@ export default function Person({ id, navigate, openModal }) {
                 </div>
               </div>
             </Panel>
+            {reviewPackOpen && (
+              <Modal
+                title="90-day review pack"
+                subtitle="Recorded context to prepare the next multidisciplinary review."
+                onClose={() => setReviewPackOpen(false)}
+                wide
+                className="review-pack-dialog"
+              >
+                <ReviewPack
+                  person={p}
+                  episode={e}
+                  owner={p.owner}
+                  nextStep={nextStep}
+                  onOpenAssessment={() => setTab("Assessment")}
+                  onOpenEvents={() => setTab("Events")}
+                  onPlanFollowUp={() => modal("plan")}
+                  inModal
+                />
+              </Modal>
+            )}
             <div className="person-grid">
               <Panel
                 title="Care timeline"
@@ -582,7 +609,12 @@ export default function Person({ id, navigate, openModal }) {
           />
         )}
         {tab === "Report" && (
-          <Progress key={e.id} person={p} episode={e} openModal={openModal} />
+          <Progress
+            key={e.id}
+            person={p}
+            episode={e}
+            openModal={openModal}
+          />
         )}
         {tab === "Consent & respondents" && (
           <div className="stack">

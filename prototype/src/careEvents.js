@@ -1,43 +1,58 @@
 export const CARE_EVENT_TYPES = [
   {
-    value: "medication",
-    label: "Medication change",
-    description: "A medication was started, stopped, or changed.",
+    value: "harm",
+    label: "Harm to self or others",
+    description:
+      "A factual contextual record. This does not replace an approved safety or risk-management record.",
   },
   {
-    value: "care-service",
-    label: "Care or service change",
-    description: "A change to care, support, service, or provider.",
+    value: "inpatient",
+    label: "Inpatient admission",
+    description:
+      "A contextual record of an admission, discharge or known inpatient change.",
   },
   {
-    value: "life-event",
-    label: "Significant life event",
-    description: "A change at home, education, relationships, or daily life.",
+    value: "medication-adverse",
+    label: "Medication adverse event",
+    description:
+      "A contextual record of an adverse medication event, not a medication chart or prescription instruction.",
+  },
+  {
+    value: "housing",
+    label: "Housing instability or homelessness",
+    description:
+      "A contextual record of a housing change that may affect care coordination.",
+  },
+  {
+    value: "care-transition",
+    label: "Major care or service transition",
+    description:
+      "A step-up, step-down or other major change in care coordination, support, service or provider.",
   },
   {
     value: "other",
-    label: "Other event",
+    label: "Other contextual event",
     description: "Another event that may help explain the care journey.",
   },
 ];
 
-export const MEDICATION_CHANGES = [
+const LEGACY_EVENT_TYPES = [
+  { value: "medication", label: "Medication change (legacy)" },
+  { value: "care-service", label: "Care or service change (legacy)" },
+  { value: "life-event", label: "Significant life event (legacy)" },
+];
+
+const LEGACY_MEDICATION_CHANGES = [
   "Started",
   "Stopped",
   "Dose changed",
   "Medication reviewed",
 ];
 
-export const LIFE_EVENT_AREAS = [
-  "Home",
-  "Education",
-  "Relationships",
-  "Health",
-  "Other",
-];
-
 export const careEventType = (value) =>
-  CARE_EVENT_TYPES.find((type) => type.value === value);
+  [...CARE_EVENT_TYPES, ...LEGACY_EVENT_TYPES].find(
+    (type) => type.value === value,
+  );
 
 export function careEventError(episode, action, today) {
   if (!episode) return "The selected care period is unavailable.";
@@ -54,21 +69,17 @@ export function careEventError(episode, action, today) {
   const latestDate = episode.end && episode.end < today ? episode.end : today;
   if (action.eventDate > latestDate)
     return "The event date cannot be after this care period or in the future.";
-
   if (action.eventType === "medication") {
     if (!action.medicationName?.trim()) return "Enter the medication name.";
-    if (!MEDICATION_CHANGES.includes(action.medicationChange))
+    if (!LEGACY_MEDICATION_CHANGES.includes(action.medicationChange))
       return "Choose what changed about the medication.";
   }
-  if (action.eventType === "care-service" && !action.summary?.trim())
-    return "Describe the care or service change.";
-  if (action.eventType === "life-event") {
-    if (!action.summary?.trim()) return "Enter a title for the life event.";
-    if (!LIFE_EVENT_AREAS.includes(action.lifeArea))
-      return "Choose the area of life affected.";
-  }
-  if (action.eventType === "other" && !action.summary?.trim())
-    return "Enter an event title.";
+  if (action.eventType === "medication-adverse" && !action.medicationName?.trim())
+    return "Enter the medication name if it is known.";
+  if (action.eventType !== "medication" && !action.summary?.trim())
+    return "Enter a factual event summary.";
+  if (action.type === "CORRECT_CARE_EVENT" && !action.correctionReason?.trim())
+    return "Explain why this event is being corrected.";
   return null;
 }
 
@@ -95,68 +106,34 @@ export function careEventContent(action) {
       },
     };
   }
-  if (action.eventType === "care-service") {
-    return {
-      title: action.summary.trim(),
-      detail:
-        clean(action.notes) ||
-        clean(action.serviceName) ||
-        "Care or service change recorded.",
-      fields: {
-        serviceName: clean(action.serviceName),
-        change: action.summary.trim(),
-        reason: clean(action.reason),
-        notes: clean(action.notes),
-      },
-    };
-  }
-  if (action.eventType === "life-event") {
-    return {
-      title: action.summary.trim(),
-      detail: clean(action.impact) || "Significant life event recorded.",
-      fields: {
-        area: action.lifeArea,
-        impact: clean(action.impact),
-        notes: clean(action.notes),
-      },
-    };
-  }
   return {
     title: action.summary.trim(),
-    detail: clean(action.notes) || "Other event recorded.",
-    fields: { notes: clean(action.notes) },
+    detail: clean(action.notes) || "Contextual care event recorded.",
+    fields: {
+      medicationName: clean(action.medicationName),
+      source: clean(action.source),
+      impact: clean(action.impact),
+      notes: clean(action.notes),
+    },
   };
 }
 
 export function careEventDetails(event) {
   const fields = event.fields ?? {};
-  if (event.eventType === "medication")
-    return [
-      ["Medication", fields.medicationName],
-      ["Change", fields.medicationChange],
-      ["Dose", fields.dose],
-      ["Reason", fields.reason],
-      ["Notes", fields.notes],
-    ].filter(([, value]) => value);
-  if (event.eventType === "care-service")
-    return [
-      ["Service or provider", fields.serviceName],
-      ["Change", fields.change],
-      ["Reason", fields.reason],
-      ["Notes", fields.notes],
-    ].filter(([, value]) => value);
-  if (event.eventType === "life-event")
-    return [
-      ["Area", fields.area],
-      ["Impact", fields.impact],
-      ["Notes", fields.notes],
-    ].filter(([, value]) => value);
-  return [["Notes", fields.notes]].filter(([, value]) => value);
+  return [
+    ["Medication", fields.medicationName],
+    ["Source or observer", fields.source],
+    ["Impact on care", fields.impact],
+    ["Notes", fields.notes],
+    ["Correction reason", event.correctionReason],
+  ].filter(([, value]) => value);
 }
 
 export function recordedCareEvents(episode) {
   return (episode?.events ?? [])
-    .filter((event) => event.actionType === "ADD_CARE_EVENT")
+    .filter((event) =>
+      ["ADD_CARE_EVENT", "CORRECT_CARE_EVENT"].includes(event.actionType),
+    )
     .toSorted(
       (a, b) =>
         (b.eventDate || b.date || "").localeCompare(

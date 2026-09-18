@@ -1,26 +1,30 @@
 import { useState } from "react";
 import { Field, Modal, Notice, Button, ValidatedForm } from "./UI";
-import {
-  CARE_EVENT_TYPES,
-  LIFE_EVENT_AREAS,
-  MEDICATION_CHANGES,
-  careEventType,
-} from "../careEvents";
+import { CARE_EVENT_TYPES, careEventType } from "../careEvents";
 import { formatDate, TODAY } from "../model";
 
 const formValues = (event) =>
   Object.fromEntries(new FormData(event.currentTarget));
 
-export default function CareEventForm({ episode, error, onClose, onSave }) {
-  const [eventType, setEventType] = useState("medication");
-  const [medicationChange, setMedicationChange] = useState("Started");
+export default function CareEventForm({
+  episode,
+  event: existingEvent,
+  error,
+  onClose,
+  onSave,
+}) {
+  const [eventType, setEventType] = useState(
+    CARE_EVENT_TYPES.some((type) => type.value === existingEvent?.eventType)
+      ? existingEvent.eventType
+      : "care-transition",
+  );
   const latestDate = episode.end && episode.end < TODAY ? episode.end : TODAY;
   const selectedType = careEventType(eventType);
 
   return (
     <Modal
-      title="Record an event"
-      subtitle={`Care episode ${episode.number} · ${formatDate(episode.start)}–${episode.end ? formatDate(episode.end) : "present"}`}
+      title={existingEvent ? "Correct event" : "Record an event"}
+      subtitle={`Care period ${episode.number} · ${formatDate(episode.start)}–${episode.end ? formatDate(episode.end) : "present"}`}
       onClose={onClose}
     >
       <ValidatedForm
@@ -31,8 +35,8 @@ export default function CareEventForm({ episode, error, onClose, onSave }) {
       >
         <div className="form-body care-event-form">
           <Notice>
-            Record contextual events only. This does not prescribe medication or
-            replace the source clinical record.
+            Record contextual events only. This does not replace a safety plan,
+            medication chart or source clinical record.
           </Notice>
           <div className="form-grid">
             <Field label="Event type">
@@ -53,113 +57,65 @@ export default function CareEventForm({ episode, error, onClose, onSave }) {
               <input
                 type="date"
                 name="eventDate"
-                defaultValue={latestDate}
+                defaultValue={existingEvent?.eventDate || latestDate}
                 min={episode.start}
                 max={latestDate}
                 required
               />
             </Field>
           </div>
-          <p className="event-type-description">{selectedType.description}</p>
-
-          {eventType === "medication" && (
-            <div className="care-event-fields" key="medication">
-              <div className="form-grid">
-                <Field label="Medication name">
-                  <input name="medicationName" autoFocus required />
-                </Field>
-                <Field label="What changed">
-                  <select
-                    name="medicationChange"
-                    value={medicationChange}
-                    onChange={(event) =>
-                      setMedicationChange(event.target.value)
-                    }
-                    required
-                  >
-                    {MEDICATION_CHANGES.map((change) => (
-                      <option key={change}>{change}</option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
-              {!["Stopped", "Medication reviewed"].includes(
-                medicationChange,
-              ) && (
-                <Field
-                  label={
-                    medicationChange === "Dose changed"
-                      ? "New dose (optional)"
-                      : "Dose (optional)"
-                  }
-                >
-                  <input name="dose" placeholder="For example, 25 mg daily" />
-                </Field>
-              )}
-              <Field label="Reason (optional)">
-                <input name="reason" />
-              </Field>
-              <Field label="Notes (optional)">
-                <textarea name="notes" rows="3" />
-              </Field>
-            </div>
-          )}
-
-          {eventType === "care-service" && (
-            <div className="care-event-fields" key="care-service">
-              <Field label="What changed">
+          <p className="event-type-description">
+            {selectedType?.description || "Choose an event type."}
+          </p>
+          <div className="care-event-fields">
+            {eventType === "medication-adverse" && (
+              <Field label="Medication name">
                 <input
-                  name="summary"
+                  name="medicationName"
                   autoFocus
-                  placeholder="For example, family support started"
+                  defaultValue={existingEvent?.fields?.medicationName || ""}
                   required
                 />
               </Field>
-              <Field label="Service or provider (optional)">
-                <input name="serviceName" />
+            )}
+            <Field label="Factual event summary">
+              <input
+                name="summary"
+                autoFocus={eventType !== "medication-adverse"}
+                defaultValue={existingEvent?.title?.replace(/^Correction: /, "") || ""}
+                placeholder="Describe what happened without interpreting its cause"
+                required
+              />
+            </Field>
+            <Field
+              label="Source or observer (optional)"
+              hint="For example, person, treating clinician, hospital update or documented source."
+            >
+              <input
+                name="source"
+                defaultValue={existingEvent?.fields?.source || ""}
+              />
+            </Field>
+            <Field label="Impact on care or coordination (optional)">
+              <textarea
+                name="impact"
+                rows="3"
+                defaultValue={existingEvent?.fields?.impact || ""}
+              />
+            </Field>
+            <Field label="Notes (optional)">
+              <textarea
+                name="notes"
+                rows="3"
+                defaultValue={existingEvent?.fields?.notes || ""}
+              />
+            </Field>
+            {existingEvent && (
+              <Field label="Reason for correction">
+                <textarea name="correctionReason" rows="2" required />
               </Field>
-              <Field label="Reason (optional)">
-                <input name="reason" />
-              </Field>
-              <Field label="Notes (optional)">
-                <textarea name="notes" rows="3" />
-              </Field>
-            </div>
-          )}
-
-          {eventType === "life-event" && (
-            <div className="care-event-fields" key="life-event">
-              <div className="form-grid">
-                <Field label="Event title">
-                  <input name="summary" autoFocus required />
-                </Field>
-                <Field label="Area of life">
-                  <select name="lifeArea" defaultValue="Home" required>
-                    {LIFE_EVENT_AREAS.map((area) => (
-                      <option key={area}>{area}</option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
-              <Field label="Impact on wellbeing or care (optional)">
-                <textarea name="impact" rows="3" />
-              </Field>
-              <Field label="Notes (optional)">
-                <textarea name="notes" rows="3" />
-              </Field>
-            </div>
-          )}
-
-          {eventType === "other" && (
-            <div className="care-event-fields" key="other">
-              <Field label="Event title">
-                <input name="summary" autoFocus required />
-              </Field>
-              <Field label="Description (optional)">
-                <textarea name="notes" rows="4" />
-              </Field>
-            </div>
-          )}
+            )}
+          </div>
         </div>
         <div className="modal-footer">
           {error && (
@@ -171,7 +127,7 @@ export default function CareEventForm({ episode, error, onClose, onSave }) {
             Cancel
           </Button>
           <Button type="submit" variant="primary">
-            Add to timeline
+            {existingEvent ? "Add correction" : "Add to timeline"}
           </Button>
         </div>
       </ValidatedForm>

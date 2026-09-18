@@ -1117,6 +1117,32 @@ export function reducer(state, action) {
       });
       break;
     }
+    case "CORRECT_CARE_EVENT": {
+      const correctedEvent = e?.events?.find(
+        (item) => item.id === action.correctedEventId,
+      );
+      if (!correctedEvent || careEventError(e, action, TODAY)) return state;
+      const content = careEventContent(action);
+      e.events.unshift({
+        id: uid(),
+        date: action.eventDate,
+        eventDate: action.eventDate,
+        timestamp: recordedAt,
+        title: `Correction: ${content.title}`,
+        detail: `Corrects “${correctedEvent.title}”. ${content.detail}`,
+        actionType: action.type,
+        eventType: action.eventType,
+        fields: content.fields,
+        correctedEventId: correctedEvent.id,
+        correctionReason: action.correctionReason.trim(),
+        personId: p.id,
+        episodeId: e.id,
+        actor: staff?.name || "Not recorded",
+        actorId: staff?.id || null,
+        role: staff?.role || null,
+      });
+      break;
+    }
     case "SAVE_PROGRESS_REPORT": {
       const staff = currentStaff(state);
       if (reportEditError(e, staff?.role, action)) return state;

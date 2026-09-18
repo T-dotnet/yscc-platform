@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { ArrowRight } from "lucide-react";
 import { formatDate } from "../model";
+import { Badge } from "./UI";
 
 const CHART_WIDTH = 520;
 const CHART_HEIGHT = 180;
@@ -52,12 +53,19 @@ function lineSegments(points, scaleLength) {
   return segments;
 }
 
-export default function LikertTrendCard({ questionnaire, trend, events = [] }) {
+export default function LikertTrendCard({ trend, events = [] }) {
   const titleId = useId();
   const descriptionId = useId();
   const options = trend.scale.options;
   const first = trend.points[0];
   const latest = trend.points.at(-1);
+  const change = trend.comparison?.change;
+  const changeLabel =
+    change === "Changed"
+      ? "Changed"
+      : change === "Unchanged"
+        ? "Unchanged"
+        : null;
   const eventMarkers = events
     .map((event) => ({
       ...event,
@@ -73,16 +81,13 @@ export default function LikertTrendCard({ questionnaire, trend, events = [] }) {
           <span>{trend.section?.title || "Question"}</span>
           <h5 id={titleId}>{trend.question}</h5>
         </div>
-        <span className="likert-response-count">
-          {trend.points.length} responses
-        </span>
+        <div className="likert-card-status">
+          {changeLabel && <Badge>{changeLabel}</Badge>}
+          <span className="likert-response-count">
+            {trend.points.length} responses
+          </span>
+        </div>
       </header>
-
-      <p className="likert-questionnaire-name">
-        <span>Questionnaire</span>
-        <strong>{questionnaire.version}</strong>
-      </p>
-
       <div
         className="likert-change-summary"
         aria-label="First and latest answer"

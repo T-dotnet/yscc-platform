@@ -33,6 +33,7 @@ import {
   Notice,
   Select,
   Badge,
+  StaffPicker,
   Success,
   ValidatedForm,
 } from "./UI";
@@ -147,6 +148,28 @@ export default function Forms({
         onSave={(action) => save(action, "Event added to the timeline.")}
       />
     );
+  if (modal.type === "correct-care-event") {
+    const event = e?.events?.find((item) => item.id === modal.eventId);
+    if (!event) return null;
+    return (
+      <CareEventForm
+        episode={e}
+        event={event}
+        error={formError}
+        onClose={onClose}
+        onSave={(action) =>
+          save(
+            {
+              ...action,
+              type: "CORRECT_CARE_EVENT",
+              correctedEventId: event.id,
+            },
+            "Event correction added to the timeline.",
+          )
+        }
+      />
+    );
+  }
   if (modal.type === "questionnaire-preview")
     return (
       <Modal
@@ -1047,7 +1070,11 @@ export default function Forms({
               />
             </Field>
             <Field label="Owner of the next step">
-              <input name="nextCareOwner" defaultValue={p.owner} required />
+              <StaffPicker
+                name="nextCareOwner"
+                defaultValue={p.owner}
+                required
+              />
             </Field>
             <div className="impact">
               <h3>Review the impact</h3>

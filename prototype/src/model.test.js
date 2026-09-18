@@ -104,25 +104,25 @@ test("a follow-up adds a pinned collection in the existing episode and preserves
     seed.people[0].episodes[0].collections[0],
   );
 });
-test("a care event is added to the selected episode with its event and recording dates", () => {
+test("a care event retains its factual summary, source and recording dates", () => {
   const seed = createSeed();
   const next = reducer(seed, {
     ...ctx,
     type: "ADD_CARE_EVENT",
-    eventType: "medication",
+    eventType: "housing",
     eventDate: TODAY,
-    medicationName: "Sample medication",
-    medicationChange: "Dose changed",
-    dose: "25 mg daily",
-    reason: "Reviewed after appointment",
+    summary: "Temporary accommodation ended",
+    source: "Treating clinician",
+    impact: "Confirm a safe route for the next review.",
     notes: "Monitor until the next review.",
   });
   const event = next.people[0].episodes[0].events[0];
   assert.equal(event.actionType, "ADD_CARE_EVENT");
-  assert.equal(event.eventType, "medication");
+  assert.equal(event.eventType, "housing");
   assert.equal(event.eventDate, TODAY);
-  assert.equal(event.fields.medicationName, "Sample medication");
-  assert.equal(event.fields.dose, "25 mg daily");
+  assert.equal(event.title, "Temporary accommodation ended");
+  assert.equal(event.fields.source, "Treating clinician");
+  assert.equal(event.fields.impact, "Confirm a safe route for the next review.");
   assert.equal(event.actor, "Jess Taylor");
   assert.ok(event.timestamp);
   assert.deepEqual(
@@ -130,15 +130,15 @@ test("a care event is added to the selected episode with its event and recording
     seed.people[0].episodes[0].collections,
   );
 });
-test("care events reject missing type-specific data and dates outside the episode", () => {
+test("care events reject missing required data and dates outside the episode", () => {
   const seed = createSeed();
   assert.deepEqual(
     reducer(seed, {
       ...ctx,
       type: "ADD_CARE_EVENT",
-      eventType: "medication",
+      eventType: "medication-adverse",
       eventDate: TODAY,
-      medicationChange: "Started",
+      summary: "Adverse effects reported",
     }),
     seed,
   );
@@ -162,6 +162,31 @@ test("care events reject missing type-specific data and dates outside the episod
     }),
     seed,
   );
+});
+test("a correction is appended without changing the original care event", () => {
+  const recorded = reducer(createSeed(), {
+    ...ctx,
+    type: "ADD_CARE_EVENT",
+    eventType: "housing",
+    eventDate: TODAY,
+    summary: "Temporary accommodation ended",
+  });
+  const original = recorded.people[0].episodes[0].events[0];
+  const corrected = reducer(recorded, {
+    ...ctx,
+    type: "CORRECT_CARE_EVENT",
+    correctedEventId: original.id,
+    eventType: "housing",
+    eventDate: TODAY,
+    summary: "Temporary accommodation ended and outreach arranged",
+    correctionReason: "The follow-up arrangement was omitted.",
+  });
+  const [correction, retainedOriginal] = corrected.people[0].episodes[0].events;
+  assert.equal(correction.actionType, "CORRECT_CARE_EVENT");
+  assert.equal(correction.correctedEventId, original.id);
+  assert.equal(correction.correctionReason, "The follow-up arrangement was omitted.");
+  assert.equal(retainedOriginal.id, original.id);
+  assert.equal(retainedOriginal.title, "Temporary accommodation ended");
 });
 test("reissue adds an attempt without creating another assignment or deleting the draft", () => {
   const seed = createSeed(),

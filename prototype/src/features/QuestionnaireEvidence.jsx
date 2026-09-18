@@ -8,7 +8,7 @@ import {
   questionnaireProgress,
   responseDate,
 } from "../progress";
-import { Notice, Select, TextLink } from "../components/UI";
+import { Badge, Notice, Select, TextLink } from "../components/UI";
 
 const dateLabel = (c) =>
   responseDate(c)
@@ -51,6 +51,8 @@ export default function QuestionnaireEvidence({
         .toLowerCase()
         .includes(questionSearch.toLowerCase()),
   );
+  const changeCountLabel =
+    comparison.changed === 1 ? "1 change" : `${comparison.changed} changes`;
   const show = (type, collection) =>
     openModal({
       type,
@@ -60,9 +62,13 @@ export default function QuestionnaireEvidence({
     });
   return (
     <div className="stack patient-progress questionnaire-details">
-      <details className="report-accordion questionnaire-comparison-panel" open>
+      <details
+        className="report-accordion questionnaire-comparison-panel"
+        open
+      >
         <summary>
           <span>Questionnaire comparison and details</span>
+          {latest && !comparison.reason && <Badge>{changeCountLabel}</Badge>}
           <ChevronDown size={18} aria-hidden="true" />
         </summary>
         <div className="panel-body progress-comparison">

@@ -10,7 +10,7 @@ import {
   Check,
   Clock3,
 } from "lucide-react";
-import { initials } from "../model";
+import { DEMO_STAFF, initials } from "../model";
 export function Logo() {
   return (
     <span className="brand">
@@ -104,6 +104,124 @@ export function Field({ label, hint, children }) {
         This field is required.
       </small>
     </label>
+  );
+}
+export function StaffPicker({
+  name,
+  value,
+  defaultValue = "",
+  onChange,
+  required = false,
+  placeholder = "Search team members",
+}) {
+  const controlled = value !== undefined;
+  const [internalValue, setInternalValue] = useState(defaultValue);
+  const selectedValue = controlled ? value : internalValue;
+  const [query, setQuery] = useState(selectedValue);
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef(null);
+  const rootRef = useRef(null);
+  const listId = useId();
+  const matches = DEMO_STAFF.filter((person) =>
+    `${person.name} ${person.role}`.toLowerCase().includes(query.toLowerCase()),
+  );
+
+  useEffect(() => {
+    if (!open) setQuery(selectedValue);
+  }, [selectedValue, open]);
+  useEffect(() => {
+    if (!open) return;
+    const close = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  const selectPerson = (person) => {
+    if (!controlled) setInternalValue(person.name);
+    onChange?.(person.name);
+    setQuery(person.name);
+    setOpen(false);
+    inputRef.current?.setCustomValidity("");
+  };
+  const updateQuery = (next) => {
+    setQuery(next);
+    setOpen(true);
+    const matchedPerson = DEMO_STAFF.find(
+      (person) => person.name.toLowerCase() === next.trim().toLowerCase(),
+    );
+    if (matchedPerson) {
+      if (!controlled) setInternalValue(matchedPerson.name);
+      onChange?.(matchedPerson.name);
+    }
+    inputRef.current?.setCustomValidity(
+      next && !matchedPerson ? "Select a team member from the results." : "",
+    );
+  };
+
+  return (
+    <div className="staff-picker" ref={rootRef}>
+      <input name={name} type="hidden" value={selectedValue} />
+      <div className="staff-picker-input">
+        <Search size={18} aria-hidden="true" />
+        <input
+          ref={inputRef}
+          value={query}
+          required={required}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls={listId}
+          placeholder={placeholder}
+          onFocus={() => {
+            setOpen(true);
+            if (query === selectedValue) setQuery("");
+          }}
+          onBlur={() => {
+            setTimeout(() => {
+              if (!rootRef.current?.contains(document.activeElement)) {
+                setOpen(false);
+              }
+            }, 0);
+          }}
+          onChange={(event) => updateQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setOpen(false);
+              event.currentTarget.blur();
+            }
+            if (event.key === "ArrowDown") setOpen(true);
+            if (event.key === "Enter" && matches.length === 1) {
+              event.preventDefault();
+              selectPerson(matches[0]);
+            }
+          }}
+        />
+        <ChevronDown size={18} aria-hidden="true" />
+      </div>
+      {open && (
+        <div className="staff-picker-menu" id={listId} role="listbox">
+          {matches.length ? (
+            matches.map((person) => (
+              <button
+                type="button"
+                role="option"
+                aria-selected={person.name === selectedValue}
+                className={person.name === selectedValue ? "selected" : ""}
+                key={person.id}
+                onClick={() => selectPerson(person)}
+              >
+                <span>{person.name}</span>
+                <small>{person.role}</small>
+              </button>
+            ))
+          ) : (
+            <p>No team members match “{query}”.</p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 export function ValidatedForm({
