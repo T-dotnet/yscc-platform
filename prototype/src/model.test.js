@@ -44,7 +44,7 @@ const submit = (s) =>
   });
 test("seed worklist counts represent actual open collection and review work", () => {
   const tasks = getTasks(createSeed());
-  assert.equal(tasks.length, 6);
+  assert.equal(tasks.length, 9);
   assert.equal(tasks.filter((t) => t.status === "Overdue").length, 2);
   assert.equal(tasks.filter((t) => t.status === "Ready for review").length, 2);
 });
@@ -63,7 +63,7 @@ test("Zoe has distinct current and closed care periods without adding historical
     ),
   );
   assert.equal(
-    getTasks(seed).some((t) => t.episode.id === previous.id),
+    getTasks(seed).some((t) => t.episode?.id === previous.id),
     false,
   );
   assert.equal(seed.people[0].episodes.length, 1);
@@ -78,7 +78,7 @@ test("older mock data is replaced once with the refreshed branching scenarios", 
   const updated = upgradeSampleData(old);
   assert.deepEqual(old, before);
   assert.equal(updated.people[0].name, "Kai Thompson");
-  assert.equal(updated.sampleRevision, 5);
+  assert.equal(updated.sampleRevision, 9);
   assert.equal(
     updated.audit.some((item) => item.id === "old-edit"),
     false,
@@ -201,7 +201,9 @@ test("supported tablet completion does not create a clinical review task", () =>
   });
   assert.equal(collection(next).review, "Not required");
   assert.equal(
-    getTasks(next).some((task) => task.collection.id === collection(next).id),
+    getTasks(next).some(
+      (task) => task.collection?.id === collection(next).id,
+    ),
     false,
   );
 });
@@ -459,7 +461,7 @@ test("edited reviewed answers re-enter review work while keeping prior clinical 
   assert.ok(
     getTasks(edited).some(
       (task) =>
-        task.collection.id === ctx.collectionId &&
+        task.collection?.id === ctx.collectionId &&
         task.status === "Ready for review",
     ),
   );
@@ -496,7 +498,7 @@ test("historical submitted responses can be corrected without reopening closed c
   assert.equal(history.collections[0].assignment, "Fulfilled");
   assert.equal(history.collections[0].answers[0], "On my own device");
   assert.equal(
-    getTasks(edited).some((task) => task.episode.id === episode.id),
+    getTasks(edited).some((task) => task.episode?.id === episode.id),
     false,
   );
 });
@@ -554,7 +556,7 @@ test("revision four mock data gains longitudinal Likert responses once", () => {
     (person) => person.name === "Mia Robinson",
   );
   assert.deepEqual(saved, before);
-  assert.equal(migrated.sampleRevision, 5);
+  assert.equal(migrated.sampleRevision, 9);
   assert.equal(
     migratedMia.episodes[0].collections.filter(
       (collection) => collection.version === LIKERT_INSTRUMENT.version,

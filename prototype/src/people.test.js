@@ -90,7 +90,9 @@ test("intake-only and empty collection states stay explicit", () => {
       },
     ],
   });
-  const intakeRow = peopleInEpisodes(state.people, "Intake")[0];
+  const intakeRow = peopleInEpisodes(state.people, "Intake").find(
+    (row) => row.person.name === "Sample Intake",
+  );
   assert.equal(intakeRow.person.name, "Sample Intake");
   assert.equal(intakeRow.episode, undefined);
   assert.equal(intakeRow.label, "Intake");
@@ -105,4 +107,28 @@ test("intake-only and empty collection states stay explicit", () => {
     "Not scheduled",
   );
   assert.equal(personStatus({ episodes: [] }).status, "Intake");
+});
+
+test("intake rows expose registration, triage and assessment stages", () => {
+  const intake = newIntake({
+    id: "stage-intake",
+    today: TODAY,
+    owner: "Jess Taylor",
+  });
+  const person = { episodes: [], intakes: [intake] };
+  assert.equal(personStatus(person).stage, "Registration");
+  intake.status = "Awaiting triage";
+  assert.equal(personStatus(person).stage, "Intake & triage");
+  Object.assign(intake, {
+    status: "Completed",
+    outcome: "Proceed",
+    identityChecked: true,
+    permissionChecked: true,
+    supportChecked: true,
+    triageChecked: true,
+    decisionBy: "Jess Taylor",
+    decisionAt: "2026-09-15T10:00",
+    assessmentOwner: "Jess Taylor",
+  });
+  assert.equal(personStatus(person).stage, "Assessment");
 });

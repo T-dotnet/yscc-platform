@@ -1,4 +1,5 @@
 import {
+  createQualitativeSampleAnswers,
   createLikertSampleAnswers,
   sampleAnswersFor,
 } from "./sampleQuestionnaires.js";
@@ -292,9 +293,82 @@ const longitudinalLikertPoints = [
   },
 ];
 
-function longitudinalLikertCollections(person) {
+const longitudinalQualitativePoints = [
+  {
+    key: "starting-point",
+    label: "Everyday life check-in · Starting point",
+    due: "2026-06-16",
+    submittedAt: "2026-06-16T09:30:00Z",
+    reviewDate: "2026-06-18",
+    answers: {
+      participation: "In person",
+      pace: "One sitting",
+      support: "A little support",
+      "support-kind": "Explaining the answer options",
+      activities: "Learning or work",
+      connection: "Yes",
+      who: "A family member",
+      next: "How taking part works",
+      takeaway: "One clear next step",
+    },
+  },
+  {
+    key: "four-weeks",
+    label: "Everyday life check-in · 4 weeks",
+    due: "2026-07-14",
+    submittedAt: "2026-07-14T09:30:00Z",
+    reviewDate: "2026-07-16",
+    answers: {
+      participation: "On my own device",
+      device: "Yes",
+      pace: "Short sections with breaks",
+      support: "I’d like someone alongside me",
+      "support-kind": "Reading the questions together",
+      activities: "Hobbies and free time",
+      connection: "I’m not sure",
+      next: "My next steps",
+      takeaway: "A summary to look back at",
+    },
+  },
+  {
+    key: "eight-weeks",
+    label: "Everyday life check-in · 8 weeks",
+    due: "2026-08-11",
+    submittedAt: "2026-08-11T09:30:00Z",
+    reviewDate: "2026-08-13",
+    answers: {
+      participation: "Together with a staff member",
+      pace: "Decide as I go",
+      support: "A little support",
+      "support-kind": "Explaining the answer options",
+      activities: "Managing my routine",
+      connection: "Not right now",
+      next: "Support available to me",
+    },
+  },
+  {
+    key: "twelve-weeks",
+    label: "Everyday life check-in · 12 weeks",
+    due: "2026-09-08",
+    submittedAt: "2026-09-08T09:30:00Z",
+    reviewDate: "2026-09-10",
+    answers: {
+      participation: "On my own device",
+      device: "Yes",
+      pace: "Short sections with breaks",
+      support: "I’m comfortable on my own",
+      activities: "Managing my routine",
+      connection: "Yes",
+      who: "A staff member",
+      next: "My next steps",
+      takeaway: "A summary to look back at",
+    },
+  },
+];
+
+function longitudinalLikertCollections(person, idPrefix = "A-5-life-care") {
   return longitudinalLikertPoints.map((point) => {
-    const id = `A-5-life-care-${point.key}`;
+    const id = `${idPrefix}-${point.key}`;
     const attemptId = `${id}-sample-session`;
     return {
       id,
@@ -331,6 +405,217 @@ function longitudinalLikertCollections(person) {
   });
 }
 
+function longitudinalQualitativeCollections(person) {
+  return longitudinalQualitativePoints.map((point) => {
+    const id = `A-6-everyday-life-${point.key}`;
+    const attemptId = `${id}-sample-session`;
+    return {
+      id,
+      label: point.label,
+      due: point.due,
+      version: VERSION,
+      assignment: "Fulfilled",
+      response: "Submitted",
+      review: "Reviewed",
+      reviewNote: "Sample qualitative response reviewed during the care period.",
+      reviewActor: "Jess Taylor",
+      reviewDate: point.reviewDate,
+      assessmentProgress: "Completed",
+      answers: createQualitativeSampleAnswers(point.answers),
+      attempts: [
+        {
+          id: attemptId,
+          date: point.submittedAt.slice(0, 10),
+          channel: "Clinic tablet",
+          status: "Session started (sample)",
+          respondentName: person.name,
+        },
+      ],
+      submittedAt: point.submittedAt,
+      submittedAttemptId: attemptId,
+      link: "Ended",
+      respondent: "Person",
+      respondentName: person.name,
+      recorder: "Person",
+      recorderName: person.name,
+      assistance: "Independent",
+      channel: "Clinic tablet",
+    };
+  });
+}
+
+function createMockIntakePerson() {
+  return {
+    id: "YS-1031",
+    name: "River Morgan",
+    dob: "2010-05-22",
+    pronouns: "They/them",
+    owner: "Jess Taylor",
+    consent: "Not recorded",
+    contact: "Not yet assessed",
+    family: null,
+    episodes: [],
+    intakes: [
+      {
+        ...newIntake({
+          id: "IN-YS-1031",
+          owner: "Jess Taylor",
+          today: TODAY,
+          actor: "Sample fixture",
+          timestamp: "2026-09-12T09:30:00",
+        }),
+        status: "In progress",
+        receivedAt: "2026-09-12T09:30:00",
+        source: "Community referral",
+        reason: "Initial support request",
+        contactMethod: "Phone",
+        contactValue: "Not recorded in demo",
+        safeContact: "To be confirmed",
+        nextAction: "Confirm identity and contact arrangements",
+        reviewDate: TODAY,
+      },
+    ],
+  };
+}
+
+function createMockIntakeOutcomePerson() {
+  return {
+    id: "YS-1032",
+    name: "Samira Khan",
+    dob: "2009-08-11",
+    pronouns: "She/her",
+    owner: "Jess Taylor",
+    consent: "Not recorded",
+    contact: "Suitable",
+    family: null,
+    episodes: [],
+    intakes: [
+      {
+        ...newIntake({
+          id: "IN-YS-1032",
+          owner: "Jess Taylor",
+          today: TODAY,
+          actor: "Sample fixture",
+          timestamp: "2026-09-10T10:15:00",
+        }),
+        status: "Completed",
+        outcome: "Proceed",
+        receivedAt: "2026-09-10T10:15:00",
+        source: "School wellbeing team",
+        reason: "Request for an initial assessment",
+        contactMethod: "SMS",
+        safeContact: "Confirmed",
+        identityChecked: true,
+        permissionChecked: true,
+        supportChecked: true,
+        triageChecked: true,
+        checkEvidence: "Fictional referral and identity checks reviewed.",
+        summary: "Intake checks complete; initial assessment can be planned.",
+        decisionBy: "Jess Taylor",
+        decisionAt: "2026-09-15T11:00:00",
+        assessmentOwner: "Jess Taylor",
+        nextAction: "Choose a due date and create the initial assessment plan",
+        history: [
+          {
+            id: "IN-YS-1032-completed",
+            timestamp: "2026-09-15T11:00:00",
+            actor: "Sample fixture",
+            title: "Intake completed · Proceed",
+            detail:
+              "Fictional demo outcome recorded; assessment planning remains a separate step.",
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function createMockIntakeAssessmentPerson() {
+  const episodeId = "EP-YS-1033-01";
+  return {
+    id: "YS-1033",
+    name: "Jordan Lee",
+    dob: "2008-12-03",
+    pronouns: "He/him",
+    owner: "Jess Taylor",
+    consent: "Recorded",
+    contact: "Suitable",
+    family: null,
+    intakes: [
+      {
+        ...newIntake({
+          id: "IN-YS-1033",
+          owner: "Jess Taylor",
+          today: TODAY,
+          actor: "Sample fixture",
+          timestamp: "2026-09-08T14:00:00",
+          episodeId,
+        }),
+        status: "Completed",
+        outcome: "Proceed",
+        receivedAt: "2026-09-08T14:00:00",
+        source: "Primary care referral",
+        reason: "Initial assessment requested",
+        contactMethod: "SMS",
+        safeContact: "Confirmed",
+        identityChecked: true,
+        permissionChecked: true,
+        supportChecked: true,
+        triageChecked: true,
+        checkEvidence: "Fictional referral and intake checks reviewed.",
+        summary: "Intake complete; initial assessment is scheduled.",
+        decisionBy: "Jess Taylor",
+        decisionAt: "2026-09-10T09:00:00",
+        assessmentOwner: "Jess Taylor",
+        history: [
+          {
+            id: "IN-YS-1033-completed",
+            timestamp: "2026-09-10T09:00:00",
+            actor: "Sample fixture",
+            title: "Intake completed · Proceed",
+            detail: "Fictional intake outcome recorded before assessment planning.",
+          },
+        ],
+      },
+    ],
+    episodes: [
+      {
+        id: episodeId,
+        number: "01",
+        status: "Active",
+        start: "2026-09-10",
+        disposition: "Undecided",
+        collections: [
+          {
+            id: "A-YS-1033-initial",
+            label: "Initial assessment",
+            due: "2026-09-22",
+            version: VERSION,
+            assignment: "Active",
+            response: "Not started",
+            review: "Pending",
+            link: "Not sent",
+            attempts: [],
+            answers: [],
+            respondent: "Person",
+            recorder: "Person",
+            assistance: "Independent",
+            channel: null,
+          },
+        ],
+        events: [
+          {
+            id: "E-YS-1033-started",
+            date: "2026-09-10",
+            title: "Care episode started",
+            detail: "Initial assessment · intake outcome was Proceed",
+          },
+        ],
+      },
+    ],
+  };
+}
+
 const LEGACY_PARTICIPANT_ROLE = "Young person";
 
 function updateParticipantRoles(value) {
@@ -359,7 +644,7 @@ export function upgradeSampleData(state) {
     ),
   );
   if (hasOldQuestionnaire) return createSeed();
-  if (state.sampleRevision < 5 || !state.sampleRevision)
+  if (state.sampleRevision < 9 || !state.sampleRevision)
     return prepareSeed(structuredClone(state));
   if (state.intakeRevision !== 1)
     state = prepareIntakes(structuredClone(state));
@@ -370,6 +655,15 @@ export function upgradeSampleData(state) {
 
 function prepareSeed(state) {
   const next = state;
+  next.people = next.people.filter((person) => person.id !== "YS-1030");
+  for (const fixture of [
+    createMockIntakePerson(),
+    createMockIntakeOutcomePerson(),
+    createMockIntakeAssessmentPerson(),
+  ]) {
+    if (!next.people.some((person) => person.id === fixture.id))
+      next.people.push(fixture);
+  }
   const zoe = next.people.find((p) => p.id === "YS-1027");
   const current = zoe?.episodes.find((e) => e.id === "EP-1027-01");
   if (current && !zoe.episodes.some((e) => e.id === "EP-1027-history-01")) {
@@ -380,7 +674,10 @@ function prepareSeed(state) {
   const mia = next.people.find((p) => p.id === "YS-1029");
   const miaEpisode = mia?.episodes.find((e) => e.id === "EP-1029-01");
   if (miaEpisode) {
-    const additions = longitudinalLikertCollections(mia).filter(
+    const additions = [
+      ...longitudinalLikertCollections(mia),
+      ...longitudinalQualitativeCollections(mia),
+    ].filter(
       (sample) => !miaEpisode.collections.some((c) => c.id === sample.id),
     );
     const currentIndex = miaEpisode.collections.findIndex(
@@ -435,7 +732,7 @@ function prepareSeed(state) {
       }
     }
   }
-  next.sampleRevision = 5;
+  next.sampleRevision = 9;
   return prepareConsentRequests(prepareIntakes(next));
 }
 
@@ -541,7 +838,8 @@ export function createSeed() {
   return prepareSeed({
     schema: 1,
     terminologyRevision: 1,
-    people: seeds.map((s, i) => ({
+    people: [
+      ...seeds.map((s, i) => ({
       id: `YS-${1024 + i}`,
       name: s[0],
       dob: s[1],
@@ -634,7 +932,11 @@ export function createSeed() {
           ],
         },
       ],
-    })),
+      })),
+      createMockIntakePerson(),
+      createMockIntakeOutcomePerson(),
+      createMockIntakeAssessmentPerson(),
+    ],
     issues: [
       {
         id: "DQ-001",
@@ -748,6 +1050,7 @@ export function reducer(state, action) {
       "ADD_PERSON",
       "SAVE_INTAKE",
       "START_ASSESSMENT",
+      "REOPEN_INTAKE",
       "ADD_REFERRAL",
       "REFERRAL_EVENT",
     ].includes(action.type)

@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { Pencil, ArrowLeft } from "lucide-react";
 import { useStore } from "../store";
 import { currentStaff, displayPersonName, responseEditError } from "../model";
-import { Modal, Button, Field, Notice } from "./UI";
+import { Modal, Button, Field, Notice, ValidatedForm } from "./UI";
 import SubmittedAnswers from "./SubmittedAnswers";
 import DiscardChanges from "./DiscardChanges";
 
@@ -65,7 +65,7 @@ export default function EditResponses({
       wide
       className="response-dialog"
     >
-      <form
+      <ValidatedForm
         hidden={discard}
         onSubmit={(event) => {
           event.preventDefault();
@@ -205,7 +205,7 @@ export default function EditResponses({
             Save changes
           </Button>
         </div>
-      </form>
+      </ValidatedForm>
       {discard && (
         <DiscardChanges
           onKeepEditing={keepEditing}

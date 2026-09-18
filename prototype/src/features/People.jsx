@@ -12,7 +12,11 @@ import {
   Avatar,
   Badge,
   Empty,
+  Pagination,
 } from "../components/UI";
+
+const PAGE_SIZE = 6;
+
 export default function People({ navigate, openModal }) {
   const { state } = useStore();
   const view = useQueueView();
@@ -22,8 +26,8 @@ export default function People({ navigate, openModal }) {
   )
     ? view.params.get("status")
     : "All episodes";
-  const setQuery = (value) => view.set("q", value, "");
-  const setStatus = (value) => view.set("status", value, "All episodes");
+  const setQuery = (value) => view.set("q", value, "", true);
+  const setStatus = (value) => view.set("status", value, "All episodes", true);
   const assessmentStatus = view.params.get("assessment") || "All statuses";
   const open = (href) => {
     view.remember();
@@ -44,6 +48,16 @@ export default function People({ navigate, openModal }) {
     (row) =>
       assessmentStatus === "All statuses" || row.status === assessmentStatus,
   );
+  const pageCount = Math.max(1, Math.ceil(people.length / PAGE_SIZE));
+  const requestedPage = Number(view.params.get("page"));
+  const page = Math.min(
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1,
+    pageCount,
+  );
+  const pageStart = (page - 1) * PAGE_SIZE;
+  const visiblePeople = people.slice(pageStart, pageStart + PAGE_SIZE);
+  const showingFrom = people.length ? pageStart + 1 : 0;
+  const showingTo = Math.min(pageStart + PAGE_SIZE, people.length);
   const personHref = ({ person, episode, collection }) => {
     const params = new URLSearchParams({ returnTo: view.href });
     if (episode) params.set("episode", episode.id);
@@ -65,6 +79,12 @@ export default function People({ navigate, openModal }) {
           <Plus size={18} />
           New person
         </Button>
+        <Button
+          variant="secondary"
+          onClick={() => openModal({ type: "import-people" })}
+        >
+          Import
+        </Button>
       </PageHeading>
       <Panel
         className="people-panel"
@@ -77,7 +97,7 @@ export default function People({ navigate, openModal }) {
             label="Assessment status"
             value={assessmentStatus}
             onChange={(e) =>
-              view.set("assessment", e.target.value, "All statuses")
+              view.set("assessment", e.target.value, "All statuses", true)
             }
           >
             <option value="All statuses">All statuses</option>
@@ -117,7 +137,7 @@ export default function People({ navigate, openModal }) {
               </tr>
             </thead>
             <tbody>
-              {people.map((row) => {
+              {visiblePeople.map((row) => {
                 const { person: p, episode } = row;
                 const href = personHref(row);
                 return (
@@ -149,7 +169,9 @@ export default function People({ navigate, openModal }) {
                       <Badge>{row.status}</Badge>
                     </td>
                     <td className="people-assessment">
-                      <span>{row.label}</span>
+                      <span>
+                        {row.stage ? `Intake - ${row.stage}` : row.label}
+                      </span>
                       <small
                         className={
                           row.status === "Overdue" ? "people-overdue" : ""
@@ -181,9 +203,15 @@ export default function People({ navigate, openModal }) {
         {!people.length && <Empty title="No matching people" />}
         <div className="table-footer" role="status">
           <span>
-            Showing {people.length} of {state.people.length} people
+            Showing {showingFrom}–{showingTo} of {people.length} people
           </span>
           <span>Highest-priority assessment shown first</span>
+          <Pagination
+            label="People"
+            page={page}
+            pageCount={pageCount}
+            onPageChange={(nextPage) => view.set("page", String(nextPage), "1")}
+          />
         </div>
       </Panel>
     </>

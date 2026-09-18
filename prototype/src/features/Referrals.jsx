@@ -10,7 +10,15 @@ import {
   formatTimestamp,
 } from "../model";
 import { REFERRAL_EVENTS, referralOpen, intakeActionError } from "../intake";
-import { Badge, Button, Field, Modal, Notice, Panel } from "../components/UI";
+import {
+  Badge,
+  Button,
+  Field,
+  Modal,
+  Notice,
+  Panel,
+  ValidatedForm,
+} from "../components/UI";
 
 export default function Referrals({ person, intake, episode, openModal }) {
   const params = useSearchParams();
@@ -181,7 +189,7 @@ export function ReferralForm({ modal, onClose, notify }) {
       subtitle={`${displayPersonName(person)}${referral ? ` · ${referral.destination}` : ""}`}
       onClose={onClose}
     >
-      <form
+      <ValidatedForm
         onSubmit={(event) => {
           event.preventDefault();
           const values = Object.fromEntries(new FormData(event.currentTarget));
@@ -336,7 +344,7 @@ export function ReferralForm({ modal, onClose, notify }) {
             {creating ? "Save referral draft" : "Record event"}
           </Button>
         </div>
-      </form>
+      </ValidatedForm>
     </Modal>
   );
 }

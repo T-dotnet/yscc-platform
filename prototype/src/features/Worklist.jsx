@@ -6,6 +6,7 @@ import {
   currentStaff,
 } from "../model";
 import { ownedTasks, taskHref } from "../workflow";
+import { intakeStage } from "../intake";
 import useQueueView from "../useQueueView";
 import {
   PageHeading,
@@ -16,6 +17,7 @@ import {
   Avatar,
   Badge,
   Empty,
+  Pagination,
   Tabs,
 } from "../components/UI";
 
@@ -26,6 +28,8 @@ const filters = [
   "Intake",
   "Referrals",
 ];
+const PAGE_SIZE = 6;
+
 const workRecord = (task) =>
   task.collection || {
     id: task.record.id,
@@ -66,6 +70,16 @@ export default function Worklist({ navigate, openModal }) {
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const requestedPage = Number(view.params.get("page"));
+  const page = Math.min(
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1,
+    pageCount,
+  );
+  const pageStart = (page - 1) * PAGE_SIZE;
+  const visibleTasks = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+  const showingFrom = filtered.length ? pageStart + 1 : 0;
+  const showingTo = Math.min(pageStart + PAGE_SIZE, filtered.length);
   const openTask = (task) => {
     view.remember();
     navigate(taskHref(task, view.href));
@@ -96,7 +110,9 @@ export default function Worklist({ navigate, openModal }) {
           <Select
             label="Work ownership"
             value={ownership}
-            onChange={(event) => view.set("owner", event.target.value, "me")}
+            onChange={(event) =>
+              view.set("owner", event.target.value, "me", true)
+            }
           >
             <option value="me">
               Assigned to me · {currentStaff(state)?.name}
@@ -111,7 +127,7 @@ export default function Worklist({ navigate, openModal }) {
           label="Work status"
           className="work-tabs"
           value={filter}
-          onChange={(value) => view.set("filter", value, "All work")}
+          onChange={(value) => view.set("filter", value, "All work", true)}
           items={filters.map((value) => ({
             value,
             count: tasks.filter((task) => matchesFilter(task, value)).length,
@@ -125,13 +141,18 @@ export default function Worklist({ navigate, openModal }) {
           <div className="work-toolbar">
             <SearchInput
               value={query}
-              onChange={(value) => view.set("q", value, "")}
+              onChange={(value) => view.set("q", value, "", true)}
             />
             <Select
               label="Collection point filter"
               value={point}
               onChange={(event) =>
-                view.set("point", event.target.value, "All collection points")
+                view.set(
+                  "point",
+                  event.target.value,
+                  "All collection points",
+                  true,
+                )
               }
             >
               <option>All collection points</option>
@@ -157,7 +178,7 @@ export default function Worklist({ navigate, openModal }) {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((task) => {
+                {visibleTasks.map((task) => {
                   const { person: p, status, action } = task;
                   const c = workRecord(task);
                   return (
@@ -179,7 +200,11 @@ export default function Worklist({ navigate, openModal }) {
                           </span>
                         </div>
                       </td>
-                      <td>{c.label}</td>
+                      <td>
+                        {task.kind === "intake"
+                          ? `Intake - ${intakeStage(task.record)}`
+                          : c.label}
+                      </td>
                       <td>
                         {c.response === "Submitted" ? (
                           <span className="muted">Response received</span>
@@ -207,7 +232,7 @@ export default function Worklist({ navigate, openModal }) {
             </table>
           </div>
           <div className="mobile-worklist">
-            {filtered.map((task) => {
+            {visibleTasks.map((task) => {
               const { person: p, status, action } = task;
               const c = workRecord(task);
               return (
@@ -219,7 +244,10 @@ export default function Worklist({ navigate, openModal }) {
                     <Badge>{status}</Badge>
                   </div>
                   <p>
-                    {p.id} · {c.label}
+                    {p.id} ·{" "}
+                    {task.kind === "intake" &&
+                      `Intake - ${intakeStage(task.record)}`}
+                    {task.kind !== "intake" && c.label}
                   </p>
                   <p>
                     {c.response === "Submitted"
@@ -252,10 +280,18 @@ export default function Worklist({ navigate, openModal }) {
           )}
           <div className="table-footer" role="status">
             <span>
-              Showing {filtered.length}{" "}
+              Showing {showingFrom}–{showingTo} of {filtered.length}{" "}
               {filtered.length === 1 ? "task" : "tasks"}
             </span>
             <span>Sorted by priority, then due / review date</span>
+            <Pagination
+              label="My work"
+              page={page}
+              pageCount={pageCount}
+              onPageChange={(nextPage) =>
+                view.set("page", String(nextPage), "1")
+              }
+            />
           </div>
         </div>
       </Panel>

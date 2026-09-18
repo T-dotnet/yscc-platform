@@ -55,6 +55,13 @@ const start = (s) =>
     revision: person(s).intakes[0].revision,
     due: TODAY,
   });
+const reopen = (s) =>
+  reducer(s, {
+    type: "REOPEN_INTAKE",
+    personId: person(s).id,
+    intakeId: person(s).intakes[0].id,
+    revision: person(s).intakes[0].revision,
+  });
 const addReferral = (s) =>
   reducer(s, {
     type: "ADD_REFERRAL",
@@ -164,6 +171,20 @@ test("AC-25: waiting resumes with history; proceed leaves an owned assessment qu
       .length,
     0,
   );
+});
+test("a completed intake can be reopened before assessment planning while retaining its decision history", () => {
+  const completed = complete(registered());
+  const reopened = reopen(completed);
+  const intake = person(reopened).intakes[0];
+  assert.notEqual(reopened, completed);
+  assert.equal(intake.status, "In progress");
+  assert.equal(intake.outcome, "");
+  assert.equal(intake.decisionAt, "");
+  assert.equal(intake.decisionBy, "");
+  assert.equal(intake.history[0].title, "Intake reopened");
+  assert.equal(intake.history[1].title, "Intake completed");
+  assert.equal(start(reopened), reopened);
+  assert.equal(reopen(reopened), reopened);
 });
 test("AC-26/27: external sending failures, retries, receipt, decision and handover remain separate after episode closure", () => {
   let s = addReferral(start(complete(registered())));

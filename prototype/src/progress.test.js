@@ -82,6 +82,27 @@ test("Mia has four comparable Likert responses in one care episode", () => {
   assert.equal(comparison.changed, 6);
 });
 
+test("Mia has multiple qualitative responses alongside the Likert series", () => {
+  const state = createSeed();
+  const person = state.people.find((p) => p.name === "Mia Robinson");
+  const episode = person.episodes[0];
+  const result = questionnaireProgress(
+    person,
+    episode,
+    DEMO_INSTRUMENT.version,
+  );
+  assert.equal(result.responses.length, 5);
+  assert.equal(result.dated.length, 5);
+  assert.equal(result.baseline.label, "Initial assessment");
+  assert.equal(result.latest.label, "Everyday life check-in · 12 weeks");
+  assert.ok(
+    result.responses.every(
+      (response) =>
+        questionnaireState(DEMO_INSTRUMENT, response.answers).complete,
+    ),
+  );
+});
+
 test("dashboard data keeps each Likert question, scale and timepoint explicit", () => {
   const state = createSeed();
   const person = state.people.find((p) => p.name === "Mia Robinson");
@@ -122,6 +143,19 @@ test("dashboard data keeps each Likert question, scale and timepoint explicit", 
       { date: "2026-09-08", answer: "Often", value: 4 },
     ],
   );
+});
+
+test("Mia's dashboard keeps Likert and qualitative series separate", () => {
+  const state = createSeed();
+  const person = state.people.find((p) => p.name === "Mia Robinson");
+  const episode = person.episodes[0];
+  const groups = questionnaireDashboardGroups(reportEvidence(person, episode));
+  const qualitative = groups.find(
+    (item) => item.version === DEMO_INSTRUMENT.version,
+  );
+  assert.equal(qualitative.responseHistory.length, 5);
+  assert.equal(qualitative.likertTrends.length, 0);
+  assert.ok(qualitative.qualitativeChanges.length > 0);
 });
 
 test("dashboard data separates changed qualitative answers from Likert trends", () => {

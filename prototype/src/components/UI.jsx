@@ -1,10 +1,12 @@
-import { useEffect, useRef, useId } from "react";
+import { useEffect, useRef, useId, useState } from "react";
 import {
   X,
   Search,
   ChevronDown,
   Info,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Check,
   Clock3,
 } from "lucide-react";
@@ -98,7 +100,43 @@ export function Field({ label, hint, children }) {
       <span>{label}</span>
       {children}
       {hint && <small>{hint}</small>}
+      <small className="field-required-hint" aria-live="polite">
+        This field is required.
+      </small>
     </label>
+  );
+}
+export function ValidatedForm({
+  children,
+  className = "",
+  onSubmit,
+  onInput,
+  ...props
+}) {
+  const [hasValidationErrors, setHasValidationErrors] = useState(false);
+  return (
+    <form
+      className={`${className} ${hasValidationErrors ? "has-validation-errors" : ""}`}
+      onInvalidCapture={() => setHasValidationErrors(true)}
+      onInput={(event) => {
+        if (hasValidationErrors && event.currentTarget.checkValidity()) {
+          setHasValidationErrors(false);
+        }
+        onInput?.(event);
+      }}
+      onSubmit={(event) => {
+        setHasValidationErrors(false);
+        onSubmit?.(event);
+      }}
+      {...props}
+    >
+      {hasValidationErrors && (
+        <p className="field-error form-validation-error" role="alert">
+          Complete the highlighted required fields before continuing.
+        </p>
+      )}
+      {children}
+    </form>
   );
 }
 export function Notice({ children, tone = "" }) {
@@ -116,6 +154,36 @@ export function Empty({ title = "No matching work", children }) {
       <h3>{title}</h3>
       <p>{children || "Try a different search or adjust your filters."}</p>
     </div>
+  );
+}
+export function Pagination({ page, pageCount, onPageChange, label }) {
+  if (pageCount <= 1) return null;
+  return (
+    <nav className="pagination" aria-label={`${label} pagination`}>
+      <Button
+        className="pagination-button"
+        type="button"
+        onClick={() => onPageChange(page - 1)}
+        disabled={page === 1}
+        aria-label={`Previous ${label.toLowerCase()} page`}
+      >
+        <ChevronLeft size={16} aria-hidden="true" />
+        Previous
+      </Button>
+      <span className="pagination-status" aria-live="polite">
+        Page {page} of {pageCount}
+      </span>
+      <Button
+        className="pagination-button"
+        type="button"
+        onClick={() => onPageChange(page + 1)}
+        disabled={page === pageCount}
+        aria-label={`Next ${label.toLowerCase()} page`}
+      >
+        Next
+        <ChevronRight size={16} aria-hidden="true" />
+      </Button>
+    </nav>
   );
 }
 export function Panel({ title, action, children, className = "" }) {

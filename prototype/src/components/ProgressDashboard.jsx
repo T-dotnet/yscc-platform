@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   MessageSquareText,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { formatDate } from "../model";
 import {
   questionnaireDashboardGroups,
@@ -22,6 +23,9 @@ export default function ProgressDashboard({
   onSelectedVersionChange,
   details,
 }) {
+  const [likertQuestionSearch, setLikertQuestionSearch] = useState("");
+  const [likertSectionFilter, setLikertSectionFilter] = useState("all");
+  const [likertChangeFilter, setLikertChangeFilter] = useState("all");
   const evidence = reportEvidence(person, episode);
   const questionnaireGroups = questionnaireDashboardGroups(evidence);
   const questionnaireOptions = Array.from(
@@ -37,6 +41,11 @@ export default function ProgressDashboard({
   const visibleQuestionnaireGroups = questionnaireGroups.filter(
     (group) => group.version === activeVersion,
   );
+  useEffect(() => {
+    setLikertQuestionSearch("");
+    setLikertSectionFilter("all");
+    setLikertChangeFilter("all");
+  }, [person.id, episode.id, activeVersion]);
   const likertQuestionCount = questionnaireGroups.reduce(
     (total, group) => total + group.likertTrends.length,
     0,
@@ -104,6 +113,26 @@ export default function ProgressDashboard({
               firstDate,
               lastDate,
             };
+            const likertSections = Array.from(
+              new Map(
+                group.likertTrends.map((trend) => [
+                  trend.section?.id,
+                  trend.section?.title || "Question",
+                ]),
+              ),
+            );
+            const visibleLikertTrends = group.likertTrends.filter((trend) => {
+              const change = trend.comparison?.change || "Not comparable";
+              return (
+                (likertSectionFilter === "all" ||
+                  trend.section?.id === likertSectionFilter) &&
+                (likertChangeFilter === "all" ||
+                  change.toLowerCase() === likertChangeFilter) &&
+                `${trend.question} ${trend.section?.title || ""}`
+                  .toLowerCase()
+                  .includes(likertQuestionSearch.toLowerCase())
+              );
+            });
             return (
               <section className="questionnaire-dashboard-group" key={group.id}>
                 <header className="questionnaire-series-header">
@@ -134,8 +163,54 @@ export default function ProgressDashboard({
                         One chart per question. Each line connects the same
                         question across submitted questionnaire responses.
                       </p>
+                      <div className="answer-tools comparison-tools">
+                        <label>
+                          Find a question
+                          <input
+                            type="search"
+                            placeholder="Search Likert questions"
+                            value={likertQuestionSearch}
+                            onChange={(event) =>
+                              setLikertQuestionSearch(event.target.value)
+                            }
+                          />
+                        </label>
+                        <label>
+                          Section
+                          <select
+                            value={likertSectionFilter}
+                            onChange={(event) =>
+                              setLikertSectionFilter(event.target.value)
+                            }
+                          >
+                            <option value="all">All sections</option>
+                            {likertSections.map(([id, title]) => (
+                              <option key={id} value={id}>
+                                {title}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          Change
+                          <select
+                            value={likertChangeFilter}
+                            onChange={(event) =>
+                              setLikertChangeFilter(event.target.value)
+                            }
+                          >
+                            <option value="all">All questions</option>
+                            <option value="changed">Changed</option>
+                            <option value="unchanged">Unchanged</option>
+                          </select>
+                        </label>
+                      </div>
+                      <p className="muted">
+                        Showing {visibleLikertTrends.length} of{" "}
+                        {group.likertTrends.length} Likert questions.
+                      </p>
                       <div className="likert-trend-grid">
-                        {group.likertTrends.map((trend) => (
+                        {visibleLikertTrends.map((trend) => (
                           <LikertTrendCard
                             key={trend.id}
                             questionnaire={questionnaire}
@@ -143,6 +218,11 @@ export default function ProgressDashboard({
                             events={episode.events}
                           />
                         ))}
+                        {!visibleLikertTrends.length && (
+                          <p className="dashboard-empty">
+                            No Likert questions match these filters.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </details>
@@ -154,7 +234,7 @@ export default function ProgressDashboard({
                     open
                   >
                     <summary>
-                      <span>Qualitative answer changes</span>
+                      <span>Likert question changes</span>
                       <Badge>{group.qualitativeChanges.length} changed</Badge>
                       <ChevronDown size={18} aria-hidden="true" />
                     </summary>

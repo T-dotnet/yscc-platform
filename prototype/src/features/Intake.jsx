@@ -20,6 +20,7 @@ import {
   INTAKE_CHECKS,
   intakeReady,
   intakeActionError,
+  intakeStage,
 } from "../intake";
 import useDraft from "../useDraft";
 import { safeReturnTo } from "../workflow";
@@ -32,6 +33,7 @@ import {
   Notice,
   Panel,
   Tabs,
+  ValidatedForm,
 } from "../components/UI";
 import Referrals from "./Referrals";
 
@@ -55,7 +57,7 @@ export function RegisterPerson({ onClose, navigate, notify }) {
       subtitle="Every new patient starts with an owned intake."
       onClose={onClose}
     >
-      <form
+      <ValidatedForm
         onSubmit={(event) => {
           event.preventDefault();
           const values = Object.fromEntries(new FormData(event.currentTarget));
@@ -169,7 +171,7 @@ export function RegisterPerson({ onClose, navigate, notify }) {
             Register and open intake
           </Button>
         </div>
-      </form>
+      </ValidatedForm>
     </Modal>
   );
 }
@@ -234,7 +236,7 @@ export function IntakeHistory({ intake }) {
 export function IntakePanel({ person, intake, navigate }) {
   const { state, commit } = useStore(),
     staff = currentStaff(state);
-  const [draft, setDraft, clearDraft, draftError] = useDraft(
+  const [draft, setDraft, _clearDraft, draftError] = useDraft(
     `intake:${intake.id}:${intake.revision}`,
     {
       ...intake,
@@ -244,25 +246,33 @@ export function IntakePanel({ person, intake, navigate }) {
     },
   );
   const [error, setError] = useState(""),
+    [saveMessage, setSaveMessage] = useState(""),
     [due, setDue] = useState(TODAY);
   const finalised = ["Completed", "Closed incomplete"].includes(intake.status);
-  const change = (key, value) => setDraft((d) => ({ ...d, [key]: value }));
+  const activeStage = intakeStage(intake);
+  const intakeStages = ["Registration", "Intake & triage", "Assessment"];
+  const change = (key, value) => {
+    setSaveMessage("");
+    setDraft((d) => ({ ...d, [key]: value }));
+  };
   const field = (
     key,
     label,
-    { type = "text", hint, multiline = false } = {},
+    { type = "text", hint, multiline = false, required = false } = {},
   ) => (
     <Field label={label} hint={hint}>
       {multiline ? (
         <textarea
           rows={2}
           value={draft[key] || ""}
+          required={required}
           onChange={(e) => change(key, e.target.value)}
         />
       ) : (
         <input
           type={type}
           value={draft[key] || ""}
+          required={required}
           onChange={(e) => change(key, e.target.value)}
         />
       )}
@@ -285,8 +295,25 @@ export function IntakePanel({ person, intake, navigate }) {
       setError(result.error);
       return;
     }
-    clearDraft();
     setError("");
+    if (action.type === "REOPEN_INTAKE") {
+      const reopenedPerson = result.state.people.find((p) => p.id === person.id);
+      const reopenedIntake = reopenedPerson?.intakes.find(
+        (i) => i.id === intake.id,
+      );
+      if (reopenedPerson && reopenedIntake) {
+        setDraft({
+          ...reopenedIntake,
+          displayName: reopenedPerson.nameUnknown ? "" : reopenedPerson.name,
+          dob: reopenedPerson.dob || "",
+          changeReason: "",
+        });
+      }
+      setSaveMessage("Intake reopened. Update it before completing intake again.");
+    }
+    if (action.type === "SAVE_INTAKE") {
+      setSaveMessage("Intake saved. This update is recorded in intake history.");
+    }
     if (action.type === "START_ASSESSMENT")
       navigate(`/people/${person.id}?tab=assessment`);
   };
@@ -350,7 +377,7 @@ export function IntakePanel({ person, intake, navigate }) {
                   Open assessment plan
                 </Button>
               ) : (
-                <form
+                <ValidatedForm
                   className="stack"
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -374,7 +401,7 @@ export function IntakePanel({ person, intake, navigate }) {
                   <Button type="submit" variant="primary">
                     Create assessment plan
                   </Button>
-                </form>
+                </ValidatedForm>
               )
             ) : (
               <Notice>
@@ -382,6 +409,19 @@ export function IntakePanel({ person, intake, navigate }) {
                 Assessment cannot start from this intake outcome.
               </Notice>
             )}
+            {intake.status === "Completed" &&
+              !intake.episodeId &&
+              !person.episodes.length && (
+                <div className="stack">
+                  <Button onClick={() => submit({ type: "REOPEN_INTAKE" })}>
+                    Reopen intake
+                  </Button>
+                  <p className="muted">
+                    Return to intake and triage before creating an assessment
+                    plan. The completed decision remains in intake history.
+                  </p>
+                </div>
+              )}
             {error && (
               <p role="alert" className="field-error">
                 {error}
@@ -393,9 +433,8 @@ export function IntakePanel({ person, intake, navigate }) {
       </div>
     );
   return (
-    <form
+    <ValidatedForm
       className="stack intake-form"
-      noValidate
       onSubmit={(e) => {
         e.preventDefault();
         submit({ type: "SAVE_INTAKE", values: draft });
@@ -412,17 +451,33 @@ export function IntakePanel({ person, intake, navigate }) {
         </div>
         <Badge>{intake.status}</Badge>
       </div>
-      <div className="intake-steps" aria-label="Intake steps">
-        <span className="complete">
-          <CheckCircle2 size={17} />
-          Registration
-        </span>
-        <span className="current">2 · Intake & triage</span>
-        <span>
-          <LockKeyhole size={16} />
-          Assessment
-        </span>
-      </div>
+      <ol className="intake-steps" aria-label="Intake stages">
+        {intakeStages.map((stage, index) => {
+          const current = stage === activeStage;
+          const complete = intakeStages.indexOf(activeStage) > index;
+          return (
+            <li
+              key={stage}
+              className={complete ? "complete" : current ? "current" : ""}
+              aria-current={current ? "step" : undefined}
+            >
+              <span className="intake-step-marker" aria-hidden="true">
+                {complete ? (
+                  <CheckCircle2 size={17} />
+                ) : current ? (
+                  index + 1
+                ) : (
+                  <LockKeyhole size={15} />
+                )}
+              </span>
+              <span>
+                {stage}
+                {current && <small>Current step</small>}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
       {draftError && (
         <Notice tone="amber">
           This browser cannot keep an intake draft. Keep this page open until
@@ -528,6 +583,7 @@ export function IntakePanel({ person, intake, navigate }) {
                   <input
                     type="checkbox"
                     checked={draft[key] === true}
+                    required={draft.status === "Completed"}
                     onChange={(e) => change(key, e.target.checked)}
                   />
                   {label}
@@ -535,10 +591,14 @@ export function IntakePanel({ person, intake, navigate }) {
               ))}
               {field("checkEvidence", "Source and outcome of the checks", {
                 multiline: true,
+                required: draft.status === "Completed",
               })}
               {field("reviewer", "Assigned triage reviewer")}
               {field("summary", "Triage summary / exit reason", {
                 multiline: true,
+                required:
+                  draft.status === "Completed" ||
+                  draft.status === "Closed incomplete",
               })}
             </div>
           </Panel>
@@ -556,9 +616,15 @@ export function IntakePanel({ person, intake, navigate }) {
                   ))}
                 </select>
               </Field>
-              {field("owner", "YSCC intake owner")}
-              {field("nextAction", "Next action", { multiline: true })}
-              {field("reviewDate", "Next review date", { type: "date" })}
+              {field("owner", "YSCC intake owner", { required: true })}
+              {field("nextAction", "Next action", {
+                multiline: true,
+                required: true,
+              })}
+              {field("reviewDate", "Next review date", {
+                type: "date",
+                required: true,
+              })}
               {["Awaiting information", "Awaiting triage", "Waiting"].includes(
                 draft.status,
               ) && (
@@ -566,9 +632,11 @@ export function IntakePanel({ person, intake, navigate }) {
                   {field(
                     "waitingReason",
                     "Waiting reason / missing information",
-                    { multiline: true },
+                    { multiline: true, required: true },
                   )}
-                  {field("waitingOn", "Who owns the outstanding step?")}
+                  {field("waitingOn", "Who owns the outstanding step?", {
+                    required: true,
+                  })}
                 </>
               )}
               {field("communication", "Next step communicated / pending", {
@@ -580,6 +648,7 @@ export function IntakePanel({ person, intake, navigate }) {
                   <Field label="Intake outcome">
                     <select
                       value={draft.outcome || ""}
+                      required
                       onChange={(e) => change("outcome", e.target.value)}
                     >
                       <option value="">Select an outcome</option>
@@ -589,9 +658,12 @@ export function IntakePanel({ person, intake, navigate }) {
                   </Field>
                   {field("decisionAt", "Actual decision time", {
                     type: "datetime-local",
+                    required: true,
                   })}
                   {draft.outcome === "Proceed" &&
-                    field("assessmentOwner", "Receiving assessment owner")}
+                    field("assessmentOwner", "Receiving assessment owner", {
+                      required: true,
+                    })}
                   <p className="muted">
                     Decision recorded as {staff?.name} · {staff?.role}.
                     Finalised decisions remain in history.
@@ -600,12 +672,14 @@ export function IntakePanel({ person, intake, navigate }) {
               )}
               {field("changeReason", "Reason for this update", {
                 multiline: true,
+                required: true,
               })}
               {error && (
                 <p className="field-error" role="alert">
                   {error}
                 </p>
               )}
+              {saveMessage && <p className="form-save-success">{saveMessage}</p>}
               <Button type="submit" variant="primary">
                 {draft.status === "Completed"
                   ? "Complete intake"
@@ -627,7 +701,7 @@ export function IntakePanel({ person, intake, navigate }) {
         </div>
       </div>
       <IntakeHistory intake={intake} />
-    </form>
+    </ValidatedForm>
   );
 }
 
@@ -688,7 +762,6 @@ export default function IntakeWorkspace({ person, navigate, openModal }) {
       >
         {tab === "Intake" && (
           <IntakePanel
-            key={`${intake.id}:${intake.revision}`}
             person={person}
             intake={intake}
             navigate={navigate}

@@ -18,7 +18,7 @@ import {
   displayPersonName,
   displayCollectionActor,
 } from "../model";
-import { Modal, Button, Badge, Field, Notice } from "./UI";
+import { Modal, Button, Badge, Field, Notice, ValidatedForm } from "./UI";
 import SubmittedAnswers from "./SubmittedAnswers";
 import ResponseHistory from "./ResponseHistory";
 import DiscardChanges from "./DiscardChanges";
@@ -87,7 +87,7 @@ export default function ReviewResponses({
       wide
       className="response-dialog"
     >
-      <form
+      <ValidatedForm
         hidden={discard}
         onSubmit={(event) => {
           event.preventDefault();
@@ -311,7 +311,7 @@ export default function ReviewResponses({
             </Button>
           )}
         </div>
-      </form>
+      </ValidatedForm>
       {discard && (
         <DiscardChanges
           onKeepEditing={keepEditing}

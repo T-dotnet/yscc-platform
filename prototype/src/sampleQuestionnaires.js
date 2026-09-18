@@ -26,6 +26,10 @@ export function createSampleAnswers(overrides = {}) {
   return createAnswers(DEMO_INSTRUMENT, overrides);
 }
 
+export function createQualitativeSampleAnswers(overrides = {}) {
+  return createSampleAnswers(overrides);
+}
+
 export function createLikertSampleAnswers(overrides = {}) {
   return createAnswers(LIKERT_INSTRUMENT, overrides);
 }

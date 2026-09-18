@@ -39,7 +39,7 @@ test("ownership filters use the current staff member and the episode owner", () 
   assert.ok(
     mine.every(
       ({ person, episode }) =>
-        (episode.owner || person.owner) === "Jess Taylor",
+        (episode?.owner || person.owner) === "Jess Taylor",
     ),
   );
   state.staffId = "ananya";
@@ -49,7 +49,7 @@ test("ownership filters use the current staff member and the episode owner", () 
   );
   assert.ok(
     ownedTasks(tasks, state, "unassigned").every(
-      (t) => !t.person.owner && !t.episode.owner,
+      (t) => !t.person.owner && !t.episode?.owner,
     ),
   );
   assert.equal(ownedTasks(tasks, state, "team").length, tasks.length);
@@ -57,7 +57,7 @@ test("ownership filters use the current staff member and the episode owner", () 
 
 test("task links preserve exact collection, episode and filtered return view", () => {
   const state = createSeed();
-  const task = getTasks(state)[0];
+  const task = getTasks(state).find((item) => item.kind !== "intake");
   const from = "/?q=Kai&filter=Needs+attention&owner=team";
   const url = new URL(taskHref(task, from), "http://prototype.local");
   assert.equal(url.searchParams.get("collection"), task.collection.id);

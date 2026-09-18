@@ -46,6 +46,11 @@ export const intakeReady = (i) =>
   text(i.decisionBy) &&
   validTime(i.decisionAt) &&
   text(i.assessmentOwner);
+export const intakeStage = (i) => {
+  if (!i || i.status === "Received") return "Registration";
+  if (intakeReady(i)) return "Assessment";
+  return "Intake & triage";
+};
 export const canAssess = (person, episode) =>
   !!episode && intakeReady(intakeFor(person, episode));
 export const referralOpen = (r) =>
@@ -144,10 +149,21 @@ export function intakeActionError(state, action, staff) {
     return "";
   }
   if (!p) return "The person record is unavailable.";
-  if (["SAVE_INTAKE", "START_ASSESSMENT"].includes(action.type)) {
+  if (
+    ["SAVE_INTAKE", "START_ASSESSMENT", "REOPEN_INTAKE"].includes(
+      action.type,
+    )
+  ) {
     if (!i) return "The intake record is unavailable.";
     if (action.revision !== i.revision)
       return "This intake changed. Reopen it before saving.";
+    if (action.type === "REOPEN_INTAKE") {
+      if (i.status !== "Completed")
+        return "Only a completed intake can be reopened.";
+      if (i.episodeId || p.episodes.length)
+        return "Assessment planning has already started. The completed intake is retained in history.";
+      return "";
+    }
     if (action.type === "START_ASSESSMENT") {
       if (!intakeReady(i))
         return "Complete intake with a proceed decision and assessment owner first.";
@@ -328,6 +344,25 @@ export function applyIntakeAction(
       episodes: [],
       intakes: [intake],
       referrals: [],
+    });
+  } else if (action.type === "REOPEN_INTAKE") {
+    const previous = structuredClone(i);
+    i.status = "In progress";
+    i.outcome = "";
+    i.decisionAt = "";
+    i.decisionBy = "";
+    i.revision += 1;
+    i.history.unshift({
+      ...history(
+        "Intake reopened",
+        "Completed intake reopened for update before assessment planning.",
+      ),
+      changes: recordFieldChanges(previous, i, [
+        ["status", "Status"],
+        ["outcome", "Outcome"],
+        ["decisionAt", "Decision time"],
+        ["decisionBy", "Decision recorded by"],
+      ]),
     });
   } else if (action.type === "SAVE_INTAKE") {
     const f = action.values;

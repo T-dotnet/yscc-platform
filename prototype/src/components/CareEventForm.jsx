@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Field, Modal, Notice, Button } from "./UI";
+import { Field, Modal, Notice, Button, ValidatedForm } from "./UI";
 import {
   CARE_EVENT_TYPES,
   LIFE_EVENT_AREAS,
@@ -23,7 +23,7 @@ export default function CareEventForm({ episode, error, onClose, onSave }) {
       subtitle={`Care episode ${episode.number} · ${formatDate(episode.start)}–${episode.end ? formatDate(episode.end) : "present"}`}
       onClose={onClose}
     >
-      <form
+      <ValidatedForm
         onSubmit={(event) => {
           event.preventDefault();
           onSave({ type: "ADD_CARE_EVENT", ...formValues(event) });
@@ -174,7 +174,7 @@ export default function CareEventForm({ episode, error, onClose, onSave }) {
             Add to timeline
           </Button>
         </div>
-      </form>
+      </ValidatedForm>
     </Modal>
   );
 }

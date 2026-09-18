@@ -1,5 +1,5 @@
 import { collectionStatus, formatDate, TODAY } from "./model.js";
-import { canAssess, intakeReady, intakeTasks } from "./intake.js";
+import { canAssess, intakeReady, intakeStage, intakeTasks } from "./intake.js";
 import { currentCollection } from "./workflow.js";
 
 const openIntake = (intake) =>
@@ -33,6 +33,7 @@ export function personStatus(person, episode) {
     return {
       status: task?.status || intake?.status || "Intake",
       label: "Intake",
+      stage: intakeStage(intake),
       detail: intake?.reviewDate
         ? `Review due ${formatDate(intake.reviewDate)}`
         : "Assessment not yet planned",

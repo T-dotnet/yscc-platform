@@ -26,7 +26,16 @@ import {
   CONSENT_LIBRARY,
 } from "../model";
 import { DEMO_INSTRUMENT, INSTRUMENTS, getInstrument } from "../instruments";
-import { Modal, Field, Button, Notice, Select, Badge, Success } from "./UI";
+import {
+  Modal,
+  Field,
+  Button,
+  Notice,
+  Select,
+  Badge,
+  Success,
+  ValidatedForm,
+} from "./UI";
 import CollectionDetails from "./CollectionDetails";
 import InstrumentPreview from "./InstrumentPreview";
 import InstrumentLibrary from "./InstrumentLibrary";
@@ -110,6 +119,23 @@ export default function Forms({
       </Button>
     </div>
   );
+  if (modal.type === "import-people")
+    return (
+      <Modal
+        title="Import people"
+        onClose={onClose}
+        className="import-people-modal"
+      >
+        <div className="import-placeholder">
+          <p>Feature to be defined.</p>
+        </div>
+        <div className="modal-footer">
+          <Button variant="secondary" type="button" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </Modal>
+    );
   if (modal.type === "instrument")
     return <InstrumentLibrary onClose={onClose} />;
   if (modal.type === "care-event")
@@ -243,7 +269,7 @@ export default function Forms({
         closeLabel={previewOpen ? "Close preview" : "Close dialog"}
         className={previewOpen ? "questionnaire-preview-modal" : ""}
       >
-        <form
+        <ValidatedForm
           hidden={previewOpen}
           onSubmit={(ev) => {
             ev.preventDefault();
@@ -376,7 +402,7 @@ export default function Forms({
               <ArrowRight size={18} aria-hidden="true" />
             </Button>
           </div>
-        </form>
+        </ValidatedForm>
         {previewOpen && (
           <InstrumentPreview
             key={selectedInstrument.version}
@@ -465,7 +491,7 @@ export default function Forms({
             </Notice>
           </div>
         ) : (
-          <form
+          <ValidatedForm
             noValidate
 
             onSubmit={(ev) => {
@@ -728,7 +754,7 @@ export default function Forms({
                   : "Start sample session",
               !allowed,
             )}
-          </form>
+          </ValidatedForm>
         )}
       </Modal>
     );
@@ -768,7 +794,7 @@ export default function Forms({
         subtitle={`${displayPersonName(p)} · Care episode ${e.number}`}
         onClose={onClose}
       >
-        <form
+        <ValidatedForm
           onSubmit={(event) => {
             event.preventDefault();
             save(
@@ -803,7 +829,7 @@ export default function Forms({
             </p>
           </div>
           {footer("Send sample request", sendableConsents.length === 0)}
-        </form>
+        </ValidatedForm>
       </Modal>
     );
   }
@@ -896,7 +922,7 @@ export default function Forms({
         subtitle={request.title}
         onClose={onClose}
       >
-        <form
+        <ValidatedForm
           onSubmit={(event) => {
             event.preventDefault();
             save(
@@ -912,7 +938,7 @@ export default function Forms({
             </Notice>
           </div>
           {footer("Record withdrawal")}
-        </form>
+        </ValidatedForm>
       </Modal>
     );
   }
@@ -923,7 +949,7 @@ export default function Forms({
         subtitle={displayPersonName(p)}
         onClose={onClose}
       >
-        <form
+        <ValidatedForm
           onSubmit={(ev) => {
             ev.preventDefault();
             save(
@@ -975,7 +1001,7 @@ export default function Forms({
             </p>
           </div>
           {footer("Save sample settings")}
-        </form>
+        </ValidatedForm>
       </Modal>
     );
   if (modal.type === "episode")
@@ -985,7 +1011,7 @@ export default function Forms({
         subtitle={`${displayPersonName(p)} · Care episode ${e.number}`}
         onClose={onClose}
       >
-        <form
+        <ValidatedForm
           onSubmit={(ev) => {
             ev.preventDefault();
             save(
@@ -1052,7 +1078,7 @@ export default function Forms({
             episodeAction === "Paused" ? "Pause episode" : "Close episode",
             e.status !== "Active",
           )}
-        </form>
+        </ValidatedForm>
       </Modal>
     );
   if (modal.type === "correct") {
@@ -1063,7 +1089,7 @@ export default function Forms({
         subtitle={`${displayPersonName(p)} · ${issue.title}`}
         onClose={onClose}
       >
-        <form
+        <ValidatedForm
           onSubmit={(ev) => {
             ev.preventDefault();
             const action = {
@@ -1161,7 +1187,7 @@ export default function Forms({
                 ? "Confirm unchanged"
                 : "Save correction",
           )}
-        </form>
+        </ValidatedForm>
       </Modal>
     );
   }
