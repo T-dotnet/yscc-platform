@@ -12,8 +12,10 @@ import {
   responseDate,
 } from "../progress";
 import { recordedCareEvents } from "../careEvents";
-import { Badge, Panel, Select } from "./UI";
+import { Badge, Select } from "./UI";
 import LikertTrendCard from "./LikertTrendCard";
+import CareContextVisuals from "./CareContextVisuals";
+import ReportEvidenceCard from "./ReportEvidenceCard";
 
 export default function ProgressDashboard({
   person,
@@ -40,6 +42,9 @@ export default function ProgressDashboard({
     : questionnaireOptions.at(-1)?.version || "";
   const visibleQuestionnaireGroups = questionnaireGroups.filter(
     (group) => group.version === activeVersion,
+  );
+  const hasVisibleLikertQuestions = visibleQuestionnaireGroups.some(
+    (group) => group.likertQuestions.length > 0,
   );
   useEffect(() => {
     setLikertQuestionSearch("");
@@ -68,7 +73,14 @@ export default function ProgressDashboard({
           <strong>{likertQuestionCount}</strong>
           <span>Likert questions charted</span>
         </article>
+        <article>
+          <CalendarDays size={18} aria-hidden="true" />
+          <strong>{contextualEvents.length}</strong>
+          <span>Recorded contextual events</span>
+        </article>
       </div>
+
+      <CareContextVisuals episode={episode} />
 
       {questionnaireOptions.length > 0 && (
         <div className="dashboard-questionnaire-selector">
@@ -134,93 +146,133 @@ export default function ProgressDashboard({
                   </Badge>
                 </header>
 
-                {group.likertTrends.length > 0 && (
+                {group.qualitativeQuestions.length > 0 && details}
+
+                {group.likertQuestions.length > 0 && (
                   <details
                     className="report-accordion questionnaire-likert-panel"
                     open
                   >
                     <summary>
-                      <span>Likert changes over time</span>
+                      <span>Likert score and changes over time</span>
+                      <Badge>
+                        {group.likertQuestions.length} question
+                        {group.likertQuestions.length === 1 ? "" : "s"}
+                      </Badge>
                       <ChevronDown size={18} aria-hidden="true" />
                     </summary>
                     <div className="panel-body">
-                      <p className="questionnaire-likert-panel-copy">
-                        One chart per question. Each line connects the same
-                        question across submitted questionnaire responses.
-                      </p>
-                      {contextualEvents.length > 0 && (
-                        <p className="likert-context-key">
-                          <span aria-hidden="true" />
-                          Contextual events are marked at their recorded date.
-                          Markers show timing only; they do not indicate a
-                          cause of an answer change.
-                        </p>
-                      )}
-                      <div className="answer-tools comparison-tools">
-                        <label>
-                          Find a question
-                          <input
-                            type="search"
-                            placeholder="Search Likert questions"
-                            value={likertQuestionSearch}
-                            onChange={(event) =>
-                              setLikertQuestionSearch(event.target.value)
-                            }
-                          />
-                        </label>
-                        <label>
-                          Section
-                          <select
-                            value={likertSectionFilter}
-                            onChange={(event) =>
-                              setLikertSectionFilter(event.target.value)
-                            }
+                      <ReportEvidenceCard
+                        variant="score"
+                        title="Overall questionnaire score"
+                        metric={
+                          <div
+                            className="report-evidence-metric score"
+                            aria-label={`Overall Likert score ${group.likertScore?.latest.value} out of 100`}
                           >
-                            <option value="all">All sections</option>
-                            {likertSections.map(([id, title]) => (
-                              <option key={id} value={id}>
-                                {title}
-                              </option>
+                            <strong>{group.likertScore?.latest.value}</strong>
+                            <span>/100</span>
+                            <small>Latest response</small>
+                            {group.likertScore?.change !== null && (
+                              <span className="report-evidence-change">
+                                {group.likertScore.change >= 0 ? "+" : ""}
+                                {group.likertScore.change} points since baseline
+                              </span>
+                            )}
+                          </div>
+                        }
+                      >
+                        Based on {group.likertScore?.latest.answered} of{" "}
+                        {group.likertScore?.latest.total} scored questions in
+                        the latest response.
+                      </ReportEvidenceCard>
+                      {group.likertTrends.length > 0 && (
+                        <>
+                          <div className="answer-tools comparison-tools">
+                            <label>
+                              Find a question
+                              <input
+                                type="search"
+                                placeholder="Search Likert questions"
+                                value={likertQuestionSearch}
+                                onChange={(event) =>
+                                  setLikertQuestionSearch(event.target.value)
+                                }
+                              />
+                            </label>
+                            <label>
+                              Section
+                              <select
+                                value={likertSectionFilter}
+                                onChange={(event) =>
+                                  setLikertSectionFilter(event.target.value)
+                                }
+                              >
+                                <option value="all">All sections</option>
+                                {likertSections.map(([id, title]) => (
+                                  <option key={id} value={id}>
+                                    {title}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label>
+                              Change
+                              <select
+                                value={likertChangeFilter}
+                                onChange={(event) =>
+                                  setLikertChangeFilter(event.target.value)
+                                }
+                              >
+                                <option value="all">All questions</option>
+                                <option value="changed">Changed</option>
+                                <option value="unchanged">Unchanged</option>
+                              </select>
+                            </label>
+                          </div>
+                          <div className="likert-results-header">
+                            <p className="muted">
+                              Showing {visibleLikertTrends.length} of{" "}
+                              {group.likertTrends.length} Likert questions.
+                            </p>
+                            <details className="chart-information">
+                              <summary>How to read these charts</summary>
+                              <div>
+                                <p>
+                                  Each chart tracks one question across
+                                  submitted responses.
+                                </p>
+                                {contextualEvents.length > 0 && (
+                                  <p className="likert-context-key">
+                                    <span aria-hidden="true" />
+                                    Contextual events appear on the date they
+                                    were recorded. They show timing only and do
+                                    not imply that an event caused a response to
+                                    change.
+                                  </p>
+                                )}
+                              </div>
+                            </details>
+                          </div>
+                          <div className="likert-trend-grid">
+                            {visibleLikertTrends.map((trend) => (
+                              <LikertTrendCard
+                                key={trend.id}
+                                trend={trend}
+                                events={contextualEvents}
+                              />
                             ))}
-                          </select>
-                        </label>
-                        <label>
-                          Change
-                          <select
-                            value={likertChangeFilter}
-                            onChange={(event) =>
-                              setLikertChangeFilter(event.target.value)
-                            }
-                          >
-                            <option value="all">All questions</option>
-                            <option value="changed">Changed</option>
-                            <option value="unchanged">Unchanged</option>
-                          </select>
-                        </label>
-                      </div>
-                      <p className="muted">
-                        Showing {visibleLikertTrends.length} of{" "}
-                        {group.likertTrends.length} Likert questions.
-                      </p>
-                      <div className="likert-trend-grid">
-                        {visibleLikertTrends.map((trend) => (
-                          <LikertTrendCard
-                            key={trend.id}
-                            trend={trend}
-                            events={contextualEvents}
-                          />
-                        ))}
-                        {!visibleLikertTrends.length && (
-                          <p className="dashboard-empty">
-                            No Likert questions match these filters.
-                          </p>
-                        )}
-                      </div>
+                            {!visibleLikertTrends.length && (
+                              <p className="dashboard-empty">
+                                No Likert questions match these filters.
+                              </p>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </details>
                 )}
-
-                {details}
               </section>
             );
           })
@@ -231,11 +283,13 @@ export default function ProgressDashboard({
         )}
       </div>
 
-      <footer className="dashboard-method-note">
-        Likert positions represent their questionnaire&rsquo;s labelled ordinal
-        choices only. The dashboard does not calculate a combined score or infer
-        improvement, deterioration or clinical meaning.
-      </footer>
+      {hasVisibleLikertQuestions && (
+        <footer className="dashboard-method-note">
+          Likert positions are normalised to a 0–100 score and averaged within
+          each questionnaire version. The score is not combined with qualitative
+          responses and does not infer clinical meaning.
+        </footer>
+      )}
     </section>
   );
 }

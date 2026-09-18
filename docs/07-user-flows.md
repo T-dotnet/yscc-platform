@@ -1,6 +1,6 @@
 # YSCC Platform — User flows
 
-Version 0.5 · 16 September 2026 · Flows aligned to the current local prototype
+Version 0.6 · 18 September 2026 · Flows aligned to the current local prototype
 
 [Document index](README.md) · [Requirements and logic](05-requirements-and-logic.md) · [Screen inventory and IA](08-information-architecture.md)
 
@@ -315,9 +315,9 @@ For confirmation overlays, announce purpose, manage focus, and return focus to t
 
 Before wireframe sign-off, ensure each in-scope action has an entry, permission decision, success state, interruption/recovery, and exit. Before production, replace sample policies with approved rules and repeat applicable tests against real persistence, scope enforcement, and delivery.
 
-## 18. Clinician Progress report flow — 16 September 2026
+## 18. Clinician Progress report flow — 18 September 2026
 
-Select person and care period → **Report** → read the overall patient-progress dashboard → use the separate questionnaire/version selector → review the selected Likert or qualitative answer changes → inspect **Questionnaire comparison and details** → open a dated response when review detail is needed. Submitted response history, Clinical notes and the clinician-authored narrative are hidden from this flow; use Assessment or History for the complete collection, follow-up and annotation trail. Charts describe changed comparable answers, never a clinical score or direction. The Edit report action and visible report change log are hidden from this flow. See [the report requirements](05-requirements-and-logic.md#9-clinician-progress-report).
+Select person and care period → **Report** → read the overall patient-progress dashboard → read **Care coordination context** when sample event or goal data is present → use the separate questionnaire/version selector → review the selected Likert question cards or answer-level comparison → inspect **Questionnaire comparison and details** where the selected instrument contains non-Likert questions → open a dated response when review detail is needed. Risk and status history distinguishes a dated recorded event from **Not recorded**; Goals and functioning contains dated milestones, not a continuous score. The local Likert accordion may display a normalised average of valid authored ordinal positions for the selected version, but that descriptive value is not a clinical score or direction. On narrow screens, the care-context cards stack, Likert cards reflow before question labels collapse, and comparison rows retain labels for each dated answer. Submitted response history, Clinical notes and the clinician-authored narrative are hidden from this flow; use Assessment or History for the complete collection, follow-up and annotation trail. The Edit report action and visible report change log are hidden from this flow. See [the report requirements](05-requirements-and-logic.md#9-clinician-progress-report) and the [implementation status](prototype-report-and-responsive-status-2026-09-18.md).
 
 ## 19. Events flow — provisional prototype direction
 

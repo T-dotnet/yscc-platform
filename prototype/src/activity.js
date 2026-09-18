@@ -129,6 +129,7 @@ export function activityEntries(person, episode, audit = []) {
     ) {
       entries.push({
         id: `${collection.id}-submitted`,
+        collectionId: collection.id,
         date: collection.submittedAt,
         timestamp: collection.submittedTimestamp,
         title: "Questionnaire response received",
@@ -144,6 +145,7 @@ export function activityEntries(person, episode, audit = []) {
     ) {
       entries.push({
         id: `${collection.id}-review`,
+        collectionId: collection.id,
         date: collection.reviewDate,
         title: `${collection.label} reviewed`,
         detail: collection.needsReview
@@ -165,6 +167,7 @@ export function activityEntries(person, episode, audit = []) {
       entries.push({
         ...review,
         id: `${collection.id}-review-${index}`,
+        collectionId: collection.id,
         title: `${collection.label} · earlier review`,
         detail: review.note,
       });
@@ -234,4 +237,16 @@ export function activityChangeDetails(entry) {
       after: change.newDisplay ?? change.newValue,
     }));
   return entry.changes ?? [];
+}
+
+// Compliance logs show only retained field-level deltas. Clinical history uses
+// the wider activity stream so clinicians can also see delivery and care events.
+export function changeLogEntries(person, episode, audit = []) {
+  return activityEntries(person, episode, audit).filter(
+    (entry) => activityChangeDetails(entry).length > 0,
+  );
+}
+
+export function clinicalHistoryEntries(person, episode, audit = []) {
+  return activityEntries(person, episode, audit).filter((entry) => !entry.type);
 }

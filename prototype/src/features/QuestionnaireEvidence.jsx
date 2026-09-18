@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, ChevronDown, MessagesSquare } from "lucide-react";
 import { getInstrument } from "../instruments";
 import SubmittedAnswers from "../components/SubmittedAnswers";
+import ReportEvidenceCard from "../components/ReportEvidenceCard";
 import { formatDate, collectionActor } from "../model";
 import {
   compareResponses,
@@ -43,6 +44,34 @@ export default function QuestionnaireEvidence({
   const selected = earlier.find((c) => c.id === earlierId) || baseline;
   const comparison = compareResponses(person, selected, latest);
   const instrument = getInstrument(latest?.version);
+  const qualitativeQuestions =
+    instrument?.questions.filter(
+      (question) => question.responseType !== "likert",
+    ) || [];
+  const qualitativeQuestionIds = new Set(
+    qualitativeQuestions.map((question) => question.id),
+  );
+  const qualitativeRows = comparison.rows.filter((row) =>
+    qualitativeQuestionIds.has(row.id),
+  );
+  const qualitativeChanged = qualitativeRows.filter(
+    (row) => row.change === "Changed",
+  ).length;
+  const qualitativeComparable = qualitativeRows.filter(
+    (row) => row.change !== "Not comparable",
+  ).length;
+  const qualitativeSignalRow = qualitativeRows.find(
+    (row) => row.change === "Changed",
+  );
+  const qualitativeResponsesRecorded = qualitativeQuestions.filter(
+    (question) => {
+      const questionIndex = instrument.questions.findIndex(
+        (item) => item.id === question.id,
+      );
+      const answer = latest?.answers?.[questionIndex];
+      return answer !== "" && answer != null;
+    },
+  ).length;
   const comparisonRows = comparison.rows.filter(
     (row) =>
       (sectionFilter === "all" || sectionFilter === row.section) &&
@@ -62,10 +91,7 @@ export default function QuestionnaireEvidence({
     });
   return (
     <div className="stack patient-progress questionnaire-details">
-      <details
-        className="report-accordion questionnaire-comparison-panel"
-        open
-      >
+      <details className="report-accordion questionnaire-comparison-panel" open>
         <summary>
           <span>Questionnaire comparison and details</span>
           {latest && !comparison.reason && <Badge>{changeCountLabel}</Badge>}
@@ -81,6 +107,54 @@ export default function QuestionnaireEvidence({
           )}
           {latest ? (
             <>
+              {qualitativeQuestions.length > 0 && (
+                <ReportEvidenceCard
+                  variant="qualitative"
+                  title="Overall signal"
+                  metric={
+                    !comparison.reason &&
+                    qualitativeChanged > 0 &&
+                    qualitativeSignalRow ? (
+                      <div
+                        className="report-evidence-metric qualitative"
+                        aria-label={`Latest changed answer: ${qualitativeSignalRow.after}`}
+                      >
+                        <q>{qualitativeSignalRow.after}</q>
+                        <small>Latest changed answer</small>
+                      </div>
+                    ) : null
+                  }
+                >
+                  {comparison.reason ? (
+                    <>
+                      <strong className="report-evidence-signal">
+                        Latest response recorded
+                      </strong>
+                      <span className="report-evidence-detail">
+                        {qualitativeResponsesRecorded} of{" "}
+                        {qualitativeQuestions.length} responses recorded. A
+                        second submitted response is needed to compare change.
+                      </span>
+                    </>
+                  ) : qualitativeChanged > 0 ? (
+                    <span className="report-evidence-detail">
+                      {qualitativeChanged} answer
+                      {qualitativeChanged === 1 ? "" : "s"} changed across{" "}
+                      {qualitativeComparable} comparable questions.
+                    </span>
+                  ) : (
+                    <>
+                      <strong className="report-evidence-signal">
+                        No changes noted
+                      </strong>
+                      <span className="report-evidence-detail">
+                        {qualitativeComparable} comparable answers match the
+                        earlier response.
+                      </span>
+                    </>
+                  )}
+                </ReportEvidenceCard>
+              )}
               {progress.latestOptions.length > 1 && (
                 <div className="progress-comparison-heading">
                   <label className="progress-compare-control">
@@ -220,8 +294,13 @@ export default function QuestionnaireEvidence({
                         {comparisonRows.map((row) => (
                           <tr key={row.question}>
                             <th scope="row">{row.question}</th>
-                            <td>{row.before}</td>
                             <td
+                              data-label={`${selected.label} · ${dateLabel(selected)}`}
+                            >
+                              {row.before}
+                            </td>
+                            <td
+                              data-label={`${latest.label} · ${dateLabel(latest)} · Latest`}
                               className={
                                 row.change === "Changed"
                                   ? "progress-answer-changed"
@@ -230,7 +309,7 @@ export default function QuestionnaireEvidence({
                             >
                               {row.after}
                             </td>
-                            <td>
+                            <td data-label="Change">
                               <span
                                 className={`progress-change ${row.change === "Changed" ? "changed" : ""}`}
                               >

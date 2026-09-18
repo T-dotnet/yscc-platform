@@ -42,6 +42,7 @@ export const intakeReady = (i) =>
   !!i &&
   i.status === "Completed" &&
   i.outcome === "Proceed" &&
+  i.consentRecorded === true &&
   INTAKE_CHECKS.every(([key]) => i[key] === true) &&
   text(i.decisionBy) &&
   validTime(i.decisionAt) &&
@@ -91,6 +92,10 @@ export function newIntake({
     supportNeeds: "",
     supporter: "",
     authority: "Not yet reviewed",
+    consentRecorded: false,
+    consentReference: "",
+    respondentPreference: "Person",
+    respondentName: "",
     legalName: "",
     sourceIdentifiers: "",
     identityChecked: false,
@@ -211,6 +216,14 @@ export function intakeActionError(state, action, staff) {
     if (f.status === "Completed") {
       if (staff.role !== "Clinician")
         return "The demo Clinician profile records intake decisions.";
+      if (f.consentRecorded !== true || !text(f.consentReference))
+        return "Record consent and its source in the Consent & respondents tab before completing intake.";
+      if (
+        !["Person", "Family respondent"].includes(f.respondentPreference) ||
+        (f.respondentPreference === "Family respondent" &&
+          !text(f.respondentName))
+      )
+        return "Record the initial assessment respondent in the Consent & respondents tab before completing intake.";
       if (
         !INTAKE_CHECKS.every(([key]) => f[key] === true) ||
         !text(f.checkEvidence) ||
@@ -385,6 +398,10 @@ export function applyIntakeAction(
       "supportNeeds",
       "supporter",
       "authority",
+      "consentRecorded",
+      "consentReference",
+      "respondentPreference",
+      "respondentName",
       "legalName",
       "sourceIdentifiers",
       "checkEvidence",
@@ -406,6 +423,13 @@ export function applyIntakeAction(
       p.nameUnknown = !text(f.displayName);
     }
     if (f.dob !== undefined) p.dob = f.dob || null;
+    if (f.consentRecorded !== undefined)
+      p.consent = f.consentRecorded ? "Recorded" : "Not recorded";
+    if (
+      f.respondentPreference === "Family respondent" &&
+      text(f.respondentName)
+    )
+      p.family = f.respondentName.trim();
     i.revision += 1;
     if (i.status === "Completed") {
       i.outcome = f.outcome;
@@ -462,8 +486,16 @@ export function applyIntakeAction(
           link: "Not sent",
           attempts: [],
           answers: [],
-          respondent: "Person",
-          recorder: "Person",
+          respondent: i.respondentPreference || "Person",
+          respondentName:
+            i.respondentPreference === "Family respondent"
+              ? i.respondentName
+              : p.name,
+          recorder: i.respondentPreference || "Person",
+          recorderName:
+            i.respondentPreference === "Family respondent"
+              ? i.respondentName
+              : p.name,
           assistance: "Independent",
         },
       ],

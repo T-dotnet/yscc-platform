@@ -27,7 +27,7 @@ const EVENT_ICONS = {
   other: ClipboardList,
 };
 
-export default function CareEvents({ episode, openModal }) {
+export default function CareEvents({ episode, openModal, eventId }) {
   const events = recordedCareEvents(episode);
   const recordEvent = () =>
     openModal({ type: "care-event", episodeId: episode.id });
@@ -72,7 +72,10 @@ export default function CareEvents({ episode, openModal }) {
                 <span className="care-event-marker" aria-hidden="true">
                   <Icon size={17} />
                 </span>
-                <article>
+                <article
+                  className={event.id === eventId ? "care-event-selected" : ""}
+                  id={`event-${event.id}`}
+                >
                   <header>
                     <div>
                       <span className="care-event-type">{type?.label}</span>

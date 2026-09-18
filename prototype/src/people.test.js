@@ -122,6 +122,9 @@ test("intake rows expose registration, triage and assessment stages", () => {
   Object.assign(intake, {
     status: "Completed",
     outcome: "Proceed",
+    consentRecorded: true,
+    consentReference: "Demo consent record",
+    respondentPreference: "Person",
     identityChecked: true,
     permissionChecked: true,
     supportChecked: true,

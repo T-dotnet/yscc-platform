@@ -694,10 +694,120 @@ export function IntakePanel({ person, intake, navigate }) {
   );
 }
 
+function ConsentRespondentsPanel({ person, intake }) {
+  const { state, commit } = useStore(),
+    staff = currentStaff(state);
+  const [draft, setDraft] = useState(() => ({
+    ...intake,
+    consentRecorded: intake.consentRecorded === true,
+    consentReference: intake.consentReference || "",
+    respondentPreference: intake.respondentPreference || "Person",
+    respondentName: intake.respondentName || person.family || "",
+    changeReason: "",
+  }));
+  const [error, setError] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
+  const change = (key, value) => {
+    setError("");
+    setSaveMessage("");
+    setDraft((current) => ({ ...current, [key]: value }));
+  };
+  const save = (event) => {
+    event.preventDefault();
+    const action = {
+      type: "SAVE_INTAKE",
+      personId: person.id,
+      intakeId: intake.id,
+      revision: intake.revision,
+      values: draft,
+    };
+    const problem = intakeActionError(state, action, staff);
+    if (problem) return setError(problem);
+    const result = commit(action);
+    if (result.error) return setError(result.error);
+    setSaveMessage("Consent and respondent details saved in intake history.");
+  };
+  return (
+    <ValidatedForm className="stack" onSubmit={save}>
+      <Panel title="Consent for assessment participation">
+        <div className="panel-body stack">
+          <Notice>
+            Record the approved consent source before completing intake. This
+            is a prototype record, not the consent policy itself.
+          </Notice>
+          <label className="check-field">
+            <input
+              type="checkbox"
+              checked={draft.consentRecorded}
+              onChange={(event) => change("consentRecorded", event.target.checked)}
+            />
+            Consent for assessment participation has been recorded
+          </label>
+          <Field
+            label="Consent source / reference"
+            hint="For example, approved form reference or recorded discussion."
+          >
+            <textarea
+              rows={2}
+              value={draft.consentReference}
+              required={draft.consentRecorded}
+              onChange={(event) => change("consentReference", event.target.value)}
+            />
+          </Field>
+          <p className="muted">
+            Consent is required to complete intake. A decision remains
+            purpose-specific and can be reviewed later.
+          </p>
+        </div>
+      </Panel>
+      <Panel title="Initial assessment respondent">
+        <div className="panel-body stack">
+          <Field label="Who will complete the initial assessment?">
+            <select
+              value={draft.respondentPreference}
+              onChange={(event) => change("respondentPreference", event.target.value)}
+            >
+              <option value="Person">Person</option>
+              <option value="Family respondent">Family respondent</option>
+            </select>
+          </Field>
+          {draft.respondentPreference === "Family respondent" && (
+            <Field
+              label="Family respondent name"
+              hint="This identifies their own contribution; it does not establish authority."
+            >
+              <input
+                value={draft.respondentName}
+                required
+                onChange={(event) => change("respondentName", event.target.value)}
+              />
+            </Field>
+          )}
+        </div>
+      </Panel>
+      <Panel title="Save this update">
+        <div className="panel-body stack">
+          <Field label="Reason for this update">
+            <textarea
+              rows={2}
+              value={draft.changeReason}
+              required
+              onChange={(event) => change("changeReason", event.target.value)}
+            />
+          </Field>
+          {error && <p className="field-error" role="alert">{error}</p>}
+          {saveMessage && <p className="form-save-success">{saveMessage}</p>}
+          <Button type="submit" variant="primary">Save consent & respondents</Button>
+        </div>
+      </Panel>
+    </ValidatedForm>
+  );
+}
+
 export default function IntakeWorkspace({ person, navigate, openModal }) {
   const params = useSearchParams(),
     intake = person.intakes[0];
-  const tabs = ["Intake", "Referrals", "History"];
+  const tabs = ["Intake", "Consent & respondents", "Referrals", "History"];
   const tab =
     tabs.find((t) => t.toLowerCase() === params.get("tab")) || "Intake";
   const returnTo = safeReturnTo(params.get("returnTo"));
@@ -754,6 +864,13 @@ export default function IntakeWorkspace({ person, navigate, openModal }) {
             person={person}
             intake={intake}
             navigate={navigate}
+          />
+        )}
+        {tab === "Consent & respondents" && (
+          <ConsentRespondentsPanel
+            key={intake.revision}
+            person={person}
+            intake={intake}
           />
         )}
         {tab === "Referrals" && (

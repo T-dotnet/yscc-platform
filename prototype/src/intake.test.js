@@ -41,6 +41,9 @@ const complete = (s, outcome = "Proceed") =>
   save(s, {
     status: "Completed",
     outcome,
+    consentRecorded: true,
+    consentReference: "Demo consent record",
+    respondentPreference: "Person",
     ...Object.fromEntries(INTAKE_CHECKS.map(([key]) => [key, true])),
     checkEvidence: "Fictional source checked",
     summary: "Sample intake reviewed",
@@ -134,6 +137,28 @@ test("AC-24: partial save works; required checks, waiting ownership and non-proc
   const stopped = complete(s, "Do not proceed");
   assert.equal(start(stopped), stopped);
   assert.equal(person(stopped).intakes[0].outcome, "Do not proceed");
+});
+test("consent and an initial respondent are required before intake can complete", () => {
+  const s = registered();
+  const withoutConsent = save(s, {
+    status: "Completed",
+    outcome: "Proceed",
+    ...Object.fromEntries(INTAKE_CHECKS.map(([key]) => [key, true])),
+    checkEvidence: "Fictional source checked",
+    summary: "Sample intake reviewed",
+    decisionAt: "2026-09-15T10:00",
+    assessmentOwner: "Jess Taylor",
+    respondentPreference: "Person",
+  });
+  assert.equal(
+    withoutConsent,
+    s,
+    "completion stays blocked until consent is recorded",
+  );
+  const done = complete(s);
+  assert.notEqual(done, s);
+  assert.equal(person(done).consent, "Recorded");
+  assert.equal(intakeReady(person(done).intakes[0]), true);
 });
 test("AC-25: waiting resumes with history; proceed leaves an owned assessment queue until explicit planning", () => {
   const waiting = save(registered(), {
@@ -320,6 +345,20 @@ test("Migration preserves saved assessments and adds pending intake for earlier 
   assert.equal(p.intakes[0].status, "Awaiting information");
   assert.equal(canAssess(p, p.episodes[0]), false);
   assert.equal(upgradeSampleData(migrated), migrated);
+});
+test("legacy mock records with a completed intake are upgraded for assessment work", () => {
+  const legacy = createSeed();
+  const mia = legacy.people.find((item) => item.name === "Mia Robinson");
+  legacy.intakeRevision = 2;
+  mia.intakes[0].consentRecorded = false;
+  mia.intakes[0].consentReference = "";
+  const upgraded = upgradeSampleData(legacy);
+  const migratedMia = upgraded.people.find(
+    (item) => item.name === "Mia Robinson",
+  );
+  assert.equal(upgraded.intakeRevision, 3);
+  assert.equal(migratedMia.intakes[0].consentRecorded, true);
+  assert.ok(canAssess(migratedMia, migratedMia.episodes[0]));
 });
 test("Only the sample clinician can record a triage decision; malformed dates fail closed", () => {
   const s = registered();

@@ -78,7 +78,7 @@ test("older mock data is replaced once with the refreshed branching scenarios", 
   const updated = upgradeSampleData(old);
   assert.deepEqual(old, before);
   assert.equal(updated.people[0].name, "Kai Thompson");
-  assert.equal(updated.sampleRevision, 9);
+  assert.equal(updated.sampleRevision, 14);
   assert.equal(
     updated.audit.some((item) => item.id === "old-edit"),
     false,
@@ -581,7 +581,7 @@ test("revision four mock data gains longitudinal Likert responses once", () => {
     (person) => person.name === "Mia Robinson",
   );
   assert.deepEqual(saved, before);
-  assert.equal(migrated.sampleRevision, 9);
+  assert.equal(migrated.sampleRevision, 14);
   assert.equal(
     migratedMia.episodes[0].collections.filter(
       (collection) => collection.version === LIKERT_INSTRUMENT.version,

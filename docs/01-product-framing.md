@@ -1,6 +1,6 @@
 # YSCC Platform — Product framing
 
-Version 0.5 · 16 September 2026 · Aligned to the current interactive prototype
+Version 0.6 · 18 September 2026 · Aligned to the current interactive prototype
 
 [Document index](README.md) · Owns scope, source register, and open decisions
 
@@ -53,7 +53,7 @@ Primary evaluation measures are specified in [UX strategy](06-ux-strategy.md). T
 
 ### Current prototype boundary
 
-The local prototype now demonstrates the proposed care-collection foundation with fictional people and a fixed sample date: new-person registration and mandatory intake; intake decisions and referral follow-through; a care-period workspace and worklist; version-pinned sample questionnaires; SMS/tablet/clinician-entry collection; purpose-specific consent requests with accept/decline/withdraw history; submitted-response review, correction and audit; channel-dependent review handling; follow-up planning; pause/close actions; and a Progress dashboard with clinician report versions, annotations and source evidence. The prototype is useful evidence of the interaction model, not a production implementation or approval of clinical policy.
+The local prototype now demonstrates the proposed care-collection foundation with fictional people and a fixed sample date: new-person registration and mandatory intake; intake decisions and referral follow-through; a care-period workspace and worklist; version-pinned sample questionnaires; SMS/tablet/clinician-entry collection; purpose-specific consent requests with accept/decline/withdraw history; submitted-response review, correction and audit; channel-dependent review handling; follow-up planning; pause/close actions; and a Report with source-limited care context, question-level trends and answer-level evidence. Its selected-version normalised Likert value is descriptive only, not clinical scoring. The prototype is useful evidence of the interaction model, not a production implementation or approval of clinical policy.
 
 It deliberately remains browser-local. Its local storage, sample staff roles, sample permission/contact/review rules, referral and consent-request event recording and questionnaire content do not establish real identity or decision-making authority, server-side access enforcement, external sending, clinical scoring, official content, data retention, interoperability or multi-user safety. The proposed baseline below remains the target for approved delivery.
 

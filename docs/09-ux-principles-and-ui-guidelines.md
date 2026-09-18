@@ -1,6 +1,6 @@
 # YSCC Platform — UX principles and UI guidelines
 
-Version 0.1 · 16 September 2026 · Working proposal for stakeholder validation
+Version 0.2 · 18 September 2026 · Working proposal for stakeholder validation
 
 [Document index](README.md) · [UX strategy](06-ux-strategy.md) · [Information architecture](08-information-architecture.md) · [Requirements and logic](05-requirements-and-logic.md)
 
@@ -132,14 +132,14 @@ Do not put a selector in the same visual container as the summary it controls if
 
 ### 5.5 Report and longitudinal evidence
 
-- Lead with a compact summary: latest response date, submitted responses, questionnaire series, Likert questions charted and qualitative changes.
-- Place the questionnaire/version selector in a separate, clearly labelled area below the summary. The selected questionnaire name should be a heading, not buried in a control label.
+- Lead with a compact summary: latest response date, submitted responses, questionnaire series, Likert questions charted and recorded contextual events. When source data exists, follow it with a clearly labelled care-context block: **Risk and status history** must distinguish a factual dated event from **Not recorded**, and **Goals and functioning** must show dated structured milestones rather than an inferred trajectory.
+- Place the questionnaire/version selector in a separate, clearly labelled area below the summary and care-context block. The selected questionnaire name should be a heading, not buried in a control label.
 - Scope all content below the selector to the selected questionnaire/version and identify respondent and care-period date range.
-- Use one chart per comparable Likert question. Show response dates and authored ordinal labels; do not turn positions into an unapproved clinical score.
-- Render qualitative answer changes as cards with the question, previous value, new value and relevant dates. Keep **Questionnaire comparison and details** separate from Likert charts when it does not apply to those questions.
+- Use one chart per comparable Likert question. Show response dates and authored ordinal labels. If a prototype displays a normalised average of valid Likert positions, identify its method, version and exclusions; never present it as an approved clinical score, threshold or interpretation.
+- Keep **Questionnaire comparison and details** as the answer-level evidence surface for non-Likert questions. It must retain the question, prior/latest dated values and comparison limits, rather than substituting an interpreted status.
 - If events appear on charts, use a distinct marker style and an accessible event label/tooltip. A marker communicates timing only; it does not establish influence.
 - Keep clinician notes, narrative, response history and annotations in their approved destinations. A hidden module must not be silently treated as unavailable data.
-- Use a table only when side-by-side comparison improves a decision. Wrap question text, keep column headings visible, and put actions such as **View latest response** or **View earlier response** in the relevant response cell.
+- Use a table only when side-by-side comparison improves a decision. Wrap question text, keep column headings visible, and put actions such as **View latest response** or **View earlier response** in the relevant response cell. At narrow widths, retain those headings semantically and show each dated answer with a visible label rather than leaving a compressed or horizontally clipped table.
 
 ### 5.6 Events and activity history
 
@@ -179,7 +179,8 @@ Write helper text as a short explanation of why the information matters. Avoid c
 
 - At narrow widths, preserve the care-context header and make the active section clear before collapsing secondary navigation.
 - Allow tables to scroll or transform into labelled records; do not shrink question text below comfortable reading size.
-- Reflow chart cards to one column when labels or tooltips would otherwise collide. Keep the question heading and scale legend attached to its chart.
+- Reflow chart cards to one column when labels or tooltips would otherwise collide. Keep the question heading and scale legend attached to its chart; allow the heading/status row to wrap before reducing the question to word-by-word lines.
+- Stack Risk and status history above Goals and functioning before their parallel cards make category labels or milestone content unreadable. Within a narrow risk card, stack the category label above its dated track.
 - Maintain a minimum touch target of approximately 44 by 44 CSS pixels for primary controls, subject to the approved accessibility standard.
 - Test keyboard-only, screen reader, zoom, high-contrast and reduced-motion use. Include supported completion, shared-device and low-confidence digital contexts.
 - Do not infer age, culture, language, disability, guardian authority or preferred channel from a name, device or role. Ask only what the approved workflow needs.
@@ -211,9 +212,11 @@ Record evidence, unresolved assumptions, owner and decision date. A visually coh
 - [ ] Status text explains the actual state and does not rely on colour alone.
 - [ ] Each primary action has a specific verb, owner and recoverable outcome.
 - [ ] Questionnaire/version, respondent, recorder/source and dates remain visible wherever answers are compared.
-- [ ] Likert charts and qualitative changes are question-level and do not infer clinical meaning.
+- [ ] Likert charts and non-Likert answer comparisons are question-level and do not infer clinical meaning.
+- [ ] Any normalised Likert aggregate is labelled as a prototype-only descriptive calculation, with its scope and exclusions visible; it is not presented as an approved clinical score.
 - [ ] Event markers communicate timing only and have an accessible label.
 - [ ] Accordions expose secondary detail without hiding required actions or scope.
+- [ ] Report comparison cards, care-context cards and Likert cards retain their core labels without horizontal overflow at narrow widths.
 - [ ] Empty, blocked, error, draft, submitted, corrected and unavailable states have clear next steps.
 - [ ] Tables wrap long questions and keep response actions in the relevant cell.
 - [ ] Keyboard, screen-reader, zoom, contrast, reflow and reduced-motion behaviour has been tested.

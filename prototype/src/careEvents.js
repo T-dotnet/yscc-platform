@@ -141,3 +141,14 @@ export function recordedCareEvents(episode) {
         ) || (b.timestamp || "").localeCompare(a.timestamp || ""),
     );
 }
+
+// The overview shows the latest recorded instance of each current event type.
+// Historical event labels remain available in the Events timeline, but are not
+// presented as current event categories.
+export function latestCareEventsByType(episode) {
+  const events = recordedCareEvents(episode);
+  return CARE_EVENT_TYPES.map((type) => ({
+    ...type,
+    event: events.find((event) => event.eventType === type.value) || null,
+  }));
+}

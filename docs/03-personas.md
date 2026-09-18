@@ -1,6 +1,6 @@
 # YSCC Platform — CMDCS-based working personas
 
-Version 0.5 · 16 September 2026 · Personas aligned to the current local prototype
+Version 0.6 · 18 September 2026 · Personas aligned to the current local prototype
 
 [Document index](README.md) · [Evidence, scope conflicts, and decisions](01-product-framing.md)
 
@@ -16,7 +16,7 @@ The previous collection-focused profiles are mapped to the source personas. Stab
 
 ### Prototype role mapping and limit
 
-The current local prototype uses sample **Clinician** and **Data Manager** profiles to demonstrate role-sensitive tasks: clinician collection, policy-dependent clinical review, intake decisions, purpose-specific consent requests, follow-up, episode actions, Progress-dashboard interpretation, report editing and annotations; Data Manager response editing and data-quality history. It also presents fictional people, family-support context, intake/referral work, participant questionnaire paths and a scoped participant consent-decision path. This is a task-coverage aid, not validation of the CMDCS personas, a production role model, centre/aggregate access, decision-making authority, or permission to infer access from a job title.
+The current local prototype uses sample **Clinician** and **Data Manager** profiles to demonstrate role-sensitive tasks: clinician collection, policy-dependent clinical review, intake decisions, purpose-specific consent requests, follow-up, episode actions, interpretation of the Report's contextual and answer-level evidence, and annotations; Data Manager response editing and data-quality history. It also presents fictional people, family-support context, intake/referral work, participant questionnaire paths and a scoped participant consent-decision path. This is a task-coverage aid, not validation of the CMDCS personas, a production role model, centre/aggregate access, decision-making authority, or permission to infer access from a job title.
 
 | Source group | ID and adopted profile | Source page | Scope distinction |
 | --- | --- | --- | --- |

@@ -8,6 +8,14 @@ This document translates the clinical feedback provided in response to the early
 
 The central shift is that the clinician's first view should support care coordination through the **Current assessment** and an on-demand 90-day review pack. Questionnaire trends and answer-level comparison remain important evidence, but should not be the first orientation point.
 
+## Current prototype implementation — 18 September 2026
+
+The local prototype now includes a deliberately limited **Care coordination context** block in Report. It contains sample Risk and status history and Goals and functioning cards, both derived from fictional episode records. A missing status is labelled **Not recorded**, not “no concern”; goals are dated milestones, not a continuous score or trajectory. This is implementation evidence for the reading path, not approval of categories, data sources, access rules or clinical use.
+
+Report also now shows a version-scoped descriptive normalisation of valid Likert answers: it maps ordinal positions to 0–100 and averages valid Likert items for the selected version. It excludes qualitative/nonresponse values and is not an overall clinical score, threshold, severity band or clinical interpretation. The current answer-level **Questionnaire comparison and details** remains open for non-Likert questions and has responsive labelled records on narrow screens; the context and Likert cards likewise reflow without hiding source labels.
+
+These implemented sample states do not resolve the proposed directions below. In particular, they do not establish a review-pack workflow, governed event taxonomy, functional measure, clinical scoring rule, correction policy or production access model. See the factual [prototype Report and responsive implementation status](prototype-report-and-responsive-status-2026-09-18.md) for the exact current behaviour.
+
 ## Feedback distilled
 
 - Care begins with assessment and ends only when the person is fully discharged and the care team no longer has clinical responsibility. The eventual name for this period is still under discussion.
@@ -43,6 +51,8 @@ The review pack is progressively disclosed from an explicit **Open 90-day review
 ### P0 Report outcomes and answer detail
 
 Retain the existing questionnaire comparison capability in **Report**. Keep the Report heading and purpose unchanged; do not introduce Care journey, Review preparation, or a separate Qualitative answer changes area there.
+
+The current prototype keeps answer-level comparison in that scope and adds only compact, source-limited context cards. Treat their current placement and labels as validation material, not a decision to promote Report into a care-journey or review-preparation surface.
 
 Use progressive disclosure so the review-preparation view remains easy to scan. Show a compact trend or changed-answer summary first; open the full response provenance, literal answer history and raw questionnaire detail only on request, for example in a response-detail modal or expandable panel. Do not place every provenance field or all raw answers on the main care-journey screen.
 

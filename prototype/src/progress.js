@@ -256,8 +256,11 @@ export function questionnaireDashboardGroups(evidence) {
       return {
         ...group,
         instrumentName: group.version || "Unknown questionnaire",
+        likertQuestions: [],
         likertTrends: [],
         likertChanges: [],
+        likertScore: null,
+        qualitativeQuestions: [],
         qualitativeChanges: [],
         responseHistory: group.responseHistory.map((entry) => ({
           ...entry,
@@ -299,6 +302,29 @@ export function questionnaireDashboardGroups(evidence) {
     const questionsById = new Map(
       questions.map((question) => [question.id, question]),
     );
+    const likertQuestions = questions.filter(
+      (question) => question.responseType === "likert",
+    );
+    const scoreAt = (pointIndex) => {
+      const values = likertQuestions
+        .map((question) => {
+          const point = question.points.at(pointIndex);
+          const optionCount = question.scale?.options.length || 0;
+          if (!point || point.value === null || optionCount < 2) return null;
+          return ((point.value - 1) / (optionCount - 1)) * 100;
+        })
+        .filter((value) => value !== null);
+      if (!values.length) return null;
+      return {
+        value: Math.round(
+          values.reduce((sum, value) => sum + value, 0) / values.length,
+        ),
+        answered: values.length,
+        total: likertQuestions.length,
+      };
+    };
+    const latestLikertScore = scoreAt(-1);
+    const baselineLikertScore = scoreAt(0);
     const responseHistory = group.responseHistory.map((entry) => {
       const changedRows =
         entry.comparison?.rows.filter((row) => row.change === "Changed") || [];
@@ -330,6 +356,7 @@ export function questionnaireDashboardGroups(evidence) {
     return {
       ...group,
       instrumentName: instrument.name || group.version,
+      likertQuestions,
       likertTrends: questions.filter(
         (question) =>
           question.responseType === "likert" &&
@@ -339,6 +366,19 @@ export function questionnaireDashboardGroups(evidence) {
         (question) =>
           question.responseType === "likert" &&
           question.comparison?.change === "Changed",
+      ),
+      likertScore: latestLikertScore
+        ? {
+            latest: latestLikertScore,
+            baseline: baselineLikertScore,
+            change:
+              !group.comparison.reason && baselineLikertScore
+                ? latestLikertScore.value - baselineLikertScore.value
+                : null,
+          }
+        : null,
+      qualitativeQuestions: questions.filter(
+        (question) => question.responseType !== "likert",
       ),
       qualitativeChanges: questions.filter(
         (question) =>

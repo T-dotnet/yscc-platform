@@ -2,6 +2,7 @@ import IntakeWorkspace, { IntakePanel } from "./Intake";
 import Referrals from "./Referrals";
 import { intakeFor, canAssess } from "../intake";
 import { overviewNextStep } from "../overview";
+import { latestCareEventsByType } from "../careEvents";
 import {
   currentCollection,
   compareCollections,
@@ -10,12 +11,21 @@ import {
 } from "../workflow";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, Plus, ChevronDown, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Plus,
+  ChevronDown,
+  FileText,
+} from "lucide-react";
 import { useStore } from "../store";
 import Progress from "./Progress";
 import CareEvents from "./CareEvents";
 import ReviewPack from "../components/ReviewPack";
-import Timeline from "../components/ActivityTimeline";
+import Timeline, {
+  ChangeLog,
+  ClinicalHistory,
+} from "../components/ActivityTimeline";
 import { getInstrument } from "../instruments";
 import {
   age,
@@ -54,6 +64,7 @@ export default function Person({ id, navigate, openModal }) {
     "Report",
     "Consent & respondents",
     "History",
+    "Change log",
   ];
   // Existing worklist links open these workflows outside the record tab bar.
   const contextualView = ["Intake", "Referrals"].find(
@@ -63,9 +74,19 @@ export default function Person({ id, navigate, openModal }) {
     const params = new URLSearchParams(searchParams.toString());
     if (value === "Overview") params.delete("tab");
     else params.set("tab", value.toLowerCase());
+    if (value !== "History") params.delete("historyView");
     navigate(`/people/${p.id}${params.size ? `?${params}` : ""}`, {
       scroll: false,
     });
+  };
+  const historyView =
+    searchParams.get("historyView") === "timeline" ? "timeline" : "grouped";
+  const setHistoryView = (value) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", "history");
+    if (value === "timeline") params.set("historyView", "timeline");
+    else params.delete("historyView");
+    navigate(`/people/${p.id}?${params}`, { scroll: false });
   };
   const episodeId = searchParams.get("episode");
   if (!p)
@@ -116,6 +137,7 @@ export default function Person({ id, navigate, openModal }) {
   const context = { personId: p.id, episodeId: e.id, collectionId: c.id };
   const modal = (type) => openModal({ type, ...context });
   const consentRequests = p.consentRequests || [];
+  const eventSummary = latestCareEventsByType(e);
   const reviewed =
     c.response === "Submitted" &&
     (noClinicalReviewRequired(c) ||
@@ -386,11 +408,48 @@ export default function Person({ id, navigate, openModal }) {
                 title="Care timeline"
                 action={
                   <TextLink onClick={() => setTab("History")}>
-                    View all history
+                    View history
                   </TextLink>
                 }
               >
                 <Timeline episode={e} person={p} audit={state.audit} />
+              </Panel>
+              <Panel
+                title="Events"
+                action={
+                  <TextLink onClick={() => setTab("Events")}>
+                    View all events
+                  </TextLink>
+                }
+              >
+                <ul className="overview-events" aria-label="Event summary">
+                  {eventSummary.map(({ value, label, event }) => (
+                    <li key={value}>
+                      <span>{label}</span>
+                      {event ? (
+                        <span className="overview-event-recorded">
+                          <time dateTime={event.eventDate || event.date}>
+                            {formatDate(event.eventDate || event.date)}
+                          </time>
+                          <button
+                            className="icon-button overview-event-details"
+                            aria-label={`View details for ${label}`}
+                            onClick={() =>
+                              navigate(
+                                `/people/${p.id}?tab=events&event=${event.id}`,
+                                { scroll: false },
+                              )
+                            }
+                          >
+                            <ArrowRight size={18} aria-hidden="true" />
+                          </button>
+                        </span>
+                      ) : (
+                        <span className="muted">Not present</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               </Panel>
               <Panel title="People involved">
                 <div className="panel-body">
@@ -603,6 +662,7 @@ export default function Person({ id, navigate, openModal }) {
         {tab === "Events" && (
           <CareEvents
             episode={e}
+            eventId={searchParams.get("event")}
             openModal={(eventModal) =>
               openModal({ ...eventModal, personId: p.id })
             }
@@ -744,10 +804,24 @@ export default function Person({ id, navigate, openModal }) {
         )}
         {tab === "History" && (
           <Panel
-            title="History & change log"
-            action={<span className="muted">Care episode {e.number}</span>}
+            title="History"
+            action={<span className="muted">Clinician view · Care episode {e.number}</span>}
           >
-            <Timeline episode={e} person={p} audit={state.audit} full />
+            <ClinicalHistory
+              episode={e}
+              person={p}
+              audit={state.audit}
+              view={historyView}
+              onViewChange={setHistoryView}
+            />
+          </Panel>
+        )}
+        {tab === "Change log" && (
+          <Panel
+            title="Change log"
+            action={<span className="muted">Compliance view · Care episode {e.number}</span>}
+          >
+            <ChangeLog episode={e} person={p} audit={state.audit} />
           </Panel>
         )}
       </div>

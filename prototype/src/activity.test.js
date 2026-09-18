@@ -2,7 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createSeed, reducer } from "./model.js";
 import { createSampleAnswers } from "./sampleQuestionnaires.js";
-import { activityEntries, activityChangeDetails } from "./activity.js";
+import {
+  activityEntries,
+  activityChangeDetails,
+  changeLogEntries,
+  clinicalHistoryEntries,
+} from "./activity.js";
 
 const context = {
   personId: "YS-1024",
@@ -146,6 +151,10 @@ test("legacy reviews remain visible after a new review and unknown dates remain 
     entries.find((entry) => entry.id === `${collection.id}-submitted`).date,
     undefined,
   );
+  assert.equal(
+    entries.find((entry) => entry.id === `${collection.id}-review`).collectionId,
+    collection.id,
+  );
   collection.reviewHistory = [
     {
       note: "Earlier preserved note",
@@ -163,6 +172,121 @@ test("legacy reviews remain visible after a new review and unknown dates remain 
   });
   assert.ok(
     history(state).some((entry) => entry.detail === "Earlier preserved note"),
+  );
+});
+
+test("change log only includes retained field-level changes with their editor", () => {
+  let state = deliver(createSeed());
+  state = submit(state);
+  state = act({ ...state, staffId: "ananya" }, "EDIT_RESPONSE", {
+    expectedRevision: 0,
+    answers: createSampleAnswers({
+      participation: "On my own device",
+      support: "A little support",
+      next: "My next steps",
+    }),
+    reason: "Correct the sample transcription",
+    source: "Original sample response",
+  });
+  const entries = changeLogEntries(
+    state.people[0],
+    episode(state),
+    state.audit,
+  );
+  assert.ok(entries.length > 0);
+  assert.ok(entries.every((entry) => activityChangeDetails(entry).length > 0));
+  assert.equal(entries.find((entry) => entry.type === "response-edit").actor, "Ananya");
+});
+
+test("Mia's sample record includes an expandable compliance change log entry", () => {
+  const state = createSeed();
+  const mia = state.people.find((person) => person.name === "Mia Robinson");
+  const miaEpisode = mia.episodes.find((item) => item.id === "EP-1029-01");
+  const entry = changeLogEntries(mia, miaEpisode, state.audit).find(
+    (item) => item.id === "AUD-5-collection-correction",
+  );
+  assert.equal(entry.actor, "Ananya");
+  assert.equal(entry.role, "Data Manager");
+  assert.equal(entry.changes.length, 2);
+  assert.deepEqual(entry.changes[0], {
+    key: "A-6-everyday-life-four-weeks-channel",
+    label: "Everyday life check-in · 4 weeks · Delivery channel",
+    before: "SMS link",
+    after: "Clinic tablet",
+  });
+});
+
+test("Mia's continuous clinical history omits compliance-only changes", () => {
+  const state = createSeed();
+  const mia = state.people.find((person) => person.name === "Mia Robinson");
+  const miaEpisode = mia.episodes.find((item) => item.id === "EP-1029-01");
+  const entries = clinicalHistoryEntries(mia, miaEpisode, state.audit);
+  assert.ok(entries.length > 0);
+  assert.ok(!entries.some((entry) => entry.id === "AUD-5-collection-correction"));
+  assert.ok(entries.some((entry) => entry.title === "Group programme added"));
+});
+
+test("Zoe's assessment-rich sample also retains a compliance correction", () => {
+  const state = createSeed();
+  const zoe = state.people.find((person) => person.name === "Zoe Patel");
+  const zoeEpisode = zoe.episodes.find((item) => item.id === "EP-1027-01");
+  const entry = changeLogEntries(zoe, zoeEpisode, state.audit).find(
+    (item) => item.id === "AUD-3-collection-correction",
+  );
+  assert.equal(entry.collectionId, "A-3-current");
+  assert.equal(entry.changes.length, 2);
+  assert.equal(entry.changes[1].after, "Demo check-in v2.0");
+  assert.ok(
+    !clinicalHistoryEntries(zoe, zoeEpisode, state.audit).some(
+      (item) => item.id === entry.id,
+    ),
+  );
+});
+
+test("Mia retains an authored demo report when longitudinal evidence exists", () => {
+  const state = createSeed();
+  const mia = state.people.find((item) => item.name === "Mia Robinson");
+  const miaEpisode = mia.episodes.find((item) => item.id === "EP-1029-01");
+  assert.equal(miaEpisode.progressReport.revision, 1);
+  assert.equal(miaEpisode.progressReport.actor, "Jess Taylor");
+  assert.ok(miaEpisode.progressReport.sources.length >= 2);
+  const reportEvent = activityEntries(mia, miaEpisode, state.audit).find(
+    (item) => item.id === "E-5-progress-report-saved",
+  );
+  assert.equal(reportEvent.actionType, "SAVE_PROGRESS_REPORT");
+  assert.equal(reportEvent.changes.length, 4);
+  assert.ok(
+    changeLogEntries(mia, miaEpisode, state.audit).some(
+      (item) => item.id === "E-5-progress-report-saved",
+    ),
+  );
+  const kai = state.people.find((item) => item.name === "Kai Thompson");
+  assert.equal(kai.episodes[0].progressReport, undefined);
+});
+
+test("completed and in-flight assessment fixtures include compliance examples when meaningful", () => {
+  const state = createSeed();
+  for (const [name, episodeId, auditId, collectionId] of [
+    ["Kai Thompson", "EP-1024-01", "AUD-0-follow-up-correction", "A-0-current"],
+    [
+      "Amelia Chen",
+      "EP-1025-01",
+      "AUD-1-initial-assessment-correction",
+      "A-1-current",
+    ],
+  ]) {
+    const person = state.people.find((item) => item.name === name);
+    const personEpisode = person.episodes.find((item) => item.id === episodeId);
+    const entry = changeLogEntries(person, personEpisode, state.audit).find(
+      (item) => item.id === auditId,
+    );
+    assert.equal(entry.collectionId, collectionId);
+    assert.equal(entry.changes.length, 2);
+  }
+  assert.ok(
+    !state.audit.some(
+      (entry) => entry.personId === "YS-1026" || entry.personId === "YS-1028",
+    ),
   );
 });
 

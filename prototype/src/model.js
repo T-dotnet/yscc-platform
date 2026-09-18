@@ -644,13 +644,52 @@ export function upgradeSampleData(state) {
     ),
   );
   if (hasOldQuestionnaire) return createSeed();
-  if (state.sampleRevision < 9 || !state.sampleRevision)
+  if (state.sampleRevision < 14 || !state.sampleRevision)
     return prepareSeed(structuredClone(state));
-  if (state.intakeRevision !== 1)
+  if (state.intakeRevision !== 3)
     state = prepareIntakes(structuredClone(state));
   return state.consentRevision === 1
     ? state
     : prepareConsentRequests(structuredClone(state));
+}
+
+function addFictionalProgressReport(episode, { eventId, timestamp, content }) {
+  if (!episode || episode.progressReport) return;
+  const sources = reportSources(episode);
+  // A saved report is useful only when a comparison can be traced to more than
+  // one submitted assessment. Keep shorter fixtures intentionally lightweight.
+  if (sources.length < 2) return;
+  const changes = reportChanges(null, content).map((change) => ({
+    ...change,
+    key: `report-${change.key}`,
+    label: `Report · ${change.label}`,
+  }));
+  episode.progressReport = {
+    revision: 1,
+    content,
+    changes: reportChanges(null, content),
+    actor: "Jess Taylor",
+    actorId: "jess",
+    role: "Clinician",
+    timestamp,
+    sources,
+  };
+  episode.events ??= [];
+  if (!episode.events.some((event) => event.id === eventId)) {
+    episode.events.push({
+      id: eventId,
+      date: timestamp.slice(0, 10),
+      timestamp,
+      title: "Progress report saved",
+      detail:
+        "Fictional demo report · Jess Taylor · version 1 · initial report saved from submitted assessment evidence.",
+      actionType: "SAVE_PROGRESS_REPORT",
+      actor: "Jess Taylor",
+      actorId: "jess",
+      role: "Clinician",
+      changes,
+    });
+  }
 }
 
 function prepareSeed(state) {
@@ -671,6 +710,46 @@ function prepareSeed(state) {
     current.number = "02";
     zoe.episodes.push(previousZoeEpisode());
   }
+  const zoeReview = current?.collections.find(
+    (collection) => collection.id === "A-3-current",
+  );
+  next.audit ??= [];
+  if (
+    zoeReview &&
+    !next.audit.some((entry) => entry.id === "AUD-3-collection-correction")
+  ) {
+    next.audit.unshift({
+      id: "AUD-3-collection-correction",
+      type: "collection-field-change",
+      timestamp: "2026-09-15T11:08:00Z",
+      date: "2026-09-15",
+      personId: zoe.id,
+      episodeId: current.id,
+      collectionId: zoeReview.id,
+      title: "90-day review — collection details corrected",
+      detail:
+        "Fictional demo correction retaining the original and corrected collection details.",
+      actorId: "ananya",
+      actor: "Ananya",
+      role: "Data Manager",
+      reason: "Corrected transcription from the completed questionnaire record.",
+      source: "Completed questionnaire record · fictional demo source",
+      changes: [
+        {
+          key: `${zoeReview.id}-assistance`,
+          label: `${zoeReview.label} · Completion support`,
+          before: "Supported",
+          after: zoeReview.assistance,
+        },
+        {
+          key: `${zoeReview.id}-version`,
+          label: `${zoeReview.label} · Questionnaire version`,
+          before: "Demo check-in v1.0",
+          after: zoeReview.version,
+        },
+      ],
+    });
+  }
   const mia = next.people.find((p) => p.id === "YS-1029");
   const miaEpisode = mia?.episodes.find((e) => e.id === "EP-1029-01");
   if (miaEpisode) {
@@ -688,6 +767,154 @@ function prepareSeed(state) {
       0,
       ...additions,
     );
+    miaEpisode.servicePeriods ??= [];
+    for (const period of [
+      {
+        id: "SP-5-community-care",
+        label: "Community care",
+        start: "2026-06-15",
+        end: "2026-09-15",
+        status: "Delivered · fictional demo record",
+      },
+      {
+        id: "SP-5-group-programme",
+        label: "Group programme",
+        start: "2026-07-06",
+        end: "2026-08-28",
+        status: "Delivered · fictional demo record",
+      },
+    ]) {
+      if (!miaEpisode.servicePeriods.some((existing) => existing.id === period.id))
+        miaEpisode.servicePeriods.push(period);
+    }
+    miaEpisode.goalMilestones ??= [];
+    for (const milestone of [
+      {
+        id: "GM-5-routine-started",
+        date: "2026-06-22",
+        title: "Build a workable weekly routine",
+        status: "Started · fictional demo record",
+      },
+      {
+        id: "GM-5-routine-reviewed",
+        date: "2026-07-20",
+        title: "Build a workable weekly routine",
+        status: "Reviewed · fictional demo record",
+      },
+      {
+        id: "GM-5-routine-progressed",
+        date: "2026-08-24",
+        title: "Build a workable weekly routine",
+        status: "Progressed · fictional demo record",
+      },
+    ]) {
+      if (!miaEpisode.goalMilestones.some((existing) => existing.id === milestone.id))
+        miaEpisode.goalMilestones.push(milestone);
+    }
+    miaEpisode.events ??= [];
+    for (const event of [
+      {
+        id: "E-5-visual-care-transition",
+        date: "2026-07-06",
+        eventDate: "2026-07-06",
+        timestamp: "2026-07-06T09:00:00Z",
+        title: "Group programme added",
+        detail: "Fictional demo record of a care coordination change.",
+        actionType: "ADD_CARE_EVENT",
+        eventType: "care-transition",
+        actor: "Sample fixture",
+        role: "Clinician",
+      },
+      {
+        id: "E-5-visual-housing",
+        date: "2026-07-22",
+        eventDate: "2026-07-22",
+        timestamp: "2026-07-22T09:00:00Z",
+        title: "Temporary accommodation changed",
+        detail: "Fictional demo record of a housing change relevant to care coordination.",
+        actionType: "ADD_CARE_EVENT",
+        eventType: "housing",
+        actor: "Sample fixture",
+        role: "Clinician",
+      },
+      {
+        id: "E-5-visual-medication",
+        date: "2026-08-03",
+        eventDate: "2026-08-03",
+        timestamp: "2026-08-03T09:00:00Z",
+        title: "Medication reviewed",
+        detail: "Fictional demo record of a medication review.",
+        actionType: "ADD_CARE_EVENT",
+        eventType: "medication",
+        actor: "Sample fixture",
+        role: "Clinician",
+      },
+      {
+        id: "E-5-visual-medication-adverse",
+        date: "2026-08-17",
+        eventDate: "2026-08-17",
+        timestamp: "2026-08-17T09:00:00Z",
+        title: "Medication adverse event recorded",
+        detail: "Fictional demo record of a medication adverse event.",
+        actionType: "ADD_CARE_EVENT",
+        eventType: "medication-adverse",
+        actor: "Sample fixture",
+        role: "Clinician",
+      },
+      {
+        id: "E-5-visual-inpatient",
+        date: "2026-08-30",
+        eventDate: "2026-08-30",
+        timestamp: "2026-08-30T09:00:00Z",
+        title: "Inpatient admission recorded",
+        detail: "Fictional demo record of an inpatient admission.",
+        actionType: "ADD_CARE_EVENT",
+        eventType: "inpatient",
+        actor: "Sample fixture",
+        role: "Clinician",
+      },
+    ]) {
+      if (!miaEpisode.events.some((existing) => existing.id === event.id))
+        miaEpisode.events.push(event);
+    }
+    next.audit ??= [];
+    if (!next.audit.some((entry) => entry.id === "AUD-5-collection-correction")) {
+      const collection = miaEpisode.collections.find(
+        (item) => item.id === "A-6-everyday-life-four-weeks",
+      );
+      if (collection)
+        next.audit.unshift({
+          id: "AUD-5-collection-correction",
+          type: "collection-field-change",
+          timestamp: "2026-07-14T11:12:00Z",
+          date: "2026-07-14",
+          personId: mia.id,
+          episodeId: miaEpisode.id,
+          collectionId: collection.id,
+          title: "Everyday life check-in · 4 weeks — collection details corrected",
+          detail:
+            "Fictional demo correction retaining the original and corrected collection details.",
+          actorId: "ananya",
+          actor: "Ananya",
+          role: "Data Manager",
+          reason: "Corrected transcription from the clinic completion record.",
+          source: "Clinic completion record · fictional demo source",
+          changes: [
+            {
+              key: `${collection.id}-channel`,
+              label: `${collection.label} · Delivery channel`,
+              before: "SMS link",
+              after: collection.channel,
+            },
+            {
+              key: `${collection.id}-assistance`,
+              label: `${collection.label} · Completion support`,
+              before: "Supported",
+              after: collection.assistance,
+            },
+          ],
+        });
+    }
   }
   for (const person of next.people) {
     for (const episode of person.episodes) {
@@ -732,7 +959,100 @@ function prepareSeed(state) {
       }
     }
   }
-  next.sampleRevision = 9;
+  const additionalCorrectionFixtures = [
+    {
+      id: "AUD-0-follow-up-correction",
+      personId: "YS-1024",
+      episodeId: "EP-1024-01",
+      collectionId: "A-0-current",
+      timestamp: "2026-09-13T10:24:00Z",
+      title: "90-day review — follow-up details corrected",
+      reason: "Corrected details from the contact attempt record.",
+      source: "Contact attempt record · fictional demo source",
+      changes: (collection) => [
+        {
+          key: `${collection.id}-due`,
+          label: `${collection.label} · Due date`,
+          before: "2026-09-14",
+          after: collection.due,
+        },
+        {
+          key: `${collection.id}-response`,
+          label: `${collection.label} · Response status`,
+          before: "Not started",
+          after: collection.response,
+        },
+      ],
+    },
+    {
+      id: "AUD-1-initial-assessment-correction",
+      personId: "YS-1025",
+      episodeId: "EP-1025-01",
+      collectionId: "A-1-current",
+      timestamp: "2026-09-15T10:42:00Z",
+      title: "Initial assessment — collection details corrected",
+      reason: "Corrected transcription from the completed questionnaire record.",
+      source: "Completed questionnaire record · fictional demo source",
+      changes: (collection) => [
+        {
+          key: `${collection.id}-channel`,
+          label: `${collection.label} · Delivery channel`,
+          before: "Clinic tablet",
+          after: collection.channel,
+        },
+        {
+          key: `${collection.id}-submitted-at`,
+          label: `${collection.label} · Response date`,
+          before: "2026-09-14",
+          after: collection.submittedAt,
+        },
+      ],
+    },
+  ];
+  for (const fixture of additionalCorrectionFixtures) {
+    const person = next.people.find((item) => item.id === fixture.personId);
+    const episode = person?.episodes.find(
+      (item) => item.id === fixture.episodeId,
+    );
+    const collection = episode?.collections.find(
+      (item) => item.id === fixture.collectionId,
+    );
+    if (!collection || next.audit.some((entry) => entry.id === fixture.id))
+      continue;
+    next.audit.unshift({
+      id: fixture.id,
+      type: "collection-field-change",
+      timestamp: fixture.timestamp,
+      date: fixture.timestamp.slice(0, 10),
+      personId: person.id,
+      episodeId: episode.id,
+      collectionId: collection.id,
+      title: fixture.title,
+      detail:
+        "Fictional demo correction retaining the original and corrected collection details.",
+      actorId: "ananya",
+      actor: "Ananya",
+      role: "Data Manager",
+      reason: fixture.reason,
+      source: fixture.source,
+      changes: fixture.changes(collection),
+    });
+  }
+  addFictionalProgressReport(miaEpisode, {
+    eventId: "E-5-progress-report-saved",
+    timestamp: "2026-09-12T10:30:00Z",
+    content: {
+      summary:
+        "Fictional demo report. Nine submitted check-ins are retained for this care episode. This sample wording is not a clinical conclusion and must not be used for care decisions.",
+      changes:
+        "The evidence view retains recorded answer changes across the check-ins. Review those changes alongside delivery, review and care-event history rather than treating one response as a conclusion.",
+      interpretation:
+        "Fictional clinician note: use the longitudinal record to structure the next conversation with Mia and confirm what remains most important to her.",
+      nextSteps:
+        "At the next review, discuss the recorded changes with Mia, check whether care events affect priorities, and agree any follow-up.",
+    },
+  });
+  next.sampleRevision = 14;
   return prepareConsentRequests(prepareIntakes(next));
 }
 
@@ -774,7 +1094,22 @@ function prepareConsentRequests(next) {
 function prepareIntakes(next) {
   for (const person of next.people) {
     person.referrals ??= [];
-    if (person.intakes) continue;
+    if (person.intakes) {
+      for (const intake of person.intakes) {
+        // Earlier fictional completed fixtures predate the intake consent gate.
+        // Bring those samples forward without changing an unfinished intake.
+        if (intake.status === "Completed") intake.consentRecorded = true;
+        else intake.consentRecorded ??= false;
+        intake.consentReference ??= intake.consentRecorded
+          ? "Fictional completed-intake consent record"
+          : "";
+        if (intake.consentRecorded && person.consent !== "Withdrawn")
+          person.consent = "Recorded";
+        intake.respondentPreference ??= "Person";
+        intake.respondentName ??= "";
+      }
+      continue;
+    }
     const seedIndex = seeds.findIndex(
       (s, index) => person.id === `YS-${1024 + index}` && person.name === s[0],
     );
@@ -791,6 +1126,9 @@ function prepareIntakes(next) {
         }),
         status: "Completed",
         outcome: "Proceed",
+        consentRecorded: true,
+        consentReference: "Fictional completed-intake consent record",
+        respondentPreference: "Person",
         identityChecked: true,
         permissionChecked: true,
         supportChecked: true,
@@ -830,7 +1168,7 @@ function prepareIntakes(next) {
       person.intakes = [intake];
     }
   }
-  next.intakeRevision = 1;
+  next.intakeRevision = 3;
   return next;
 }
 

@@ -114,6 +114,12 @@ test("dashboard data keeps each Likert question, scale and timepoint explicit", 
   assert.equal(group.instrumentName, LIKERT_INSTRUMENT.name);
   assert.equal(group.likertTrends.length, 6);
   assert.equal(group.likertChanges.length, 6);
+  assert.equal(group.likertQuestions.length, 6);
+  assert.equal(group.likertScore.latest.answered, 6);
+  assert.equal(group.likertScore.latest.total, 6);
+  assert.equal(group.likertScore.baseline.answered, 6);
+  assert.ok(group.likertScore.latest.value > group.likertScore.baseline.value);
+  assert.equal(group.qualitativeQuestions.length, 0);
   assert.equal(group.qualitativeChanges.length, 0);
   assert.equal(group.responseHistory.length, 4);
   assert.equal(group.responseHistory[0].previous, null);
@@ -157,6 +163,9 @@ test("Mia's dashboard keeps Likert and qualitative series separate", () => {
   assert.equal(qualitative.responseHistory.length, 5);
   assert.equal(qualitative.likertTrends.length, 0);
   assert.equal(qualitative.likertChanges.length, 0);
+  assert.equal(qualitative.likertQuestions.length, 0);
+  assert.equal(qualitative.likertScore, null);
+  assert.ok(qualitative.qualitativeQuestions.length > 0);
   assert.ok(qualitative.qualitativeChanges.length > 0);
 });
 
@@ -166,6 +175,7 @@ test("dashboard data separates changed qualitative answers from Likert trends", 
   assert.equal(group.instrumentName, DEMO_INSTRUMENT.name);
   assert.equal(group.likertTrends.length, 0);
   assert.equal(group.likertChanges.length, 0);
+  assert.ok(group.qualitativeQuestions.length > 0);
   assert.ok(group.qualitativeChanges.length > 0);
   assert.ok(
     group.qualitativeChanges.every(
