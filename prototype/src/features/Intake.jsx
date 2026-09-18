@@ -2,8 +2,6 @@ import { useState } from "react";
 import {
   ArrowLeft,
   ClipboardList,
-  CheckCircle2,
-  LockKeyhole,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useStore } from "../store";
@@ -20,7 +18,6 @@ import {
   INTAKE_CHECKS,
   intakeReady,
   intakeActionError,
-  intakeStage,
 } from "../intake";
 import useDraft from "../useDraft";
 import { safeReturnTo } from "../workflow";
@@ -249,8 +246,6 @@ export function IntakePanel({ person, intake, navigate }) {
     [saveMessage, setSaveMessage] = useState(""),
     [due, setDue] = useState(TODAY);
   const finalised = ["Completed", "Closed incomplete"].includes(intake.status);
-  const activeStage = intakeStage(intake);
-  const intakeStages = ["Registration", "Intake & triage", "Assessment"];
   const change = (key, value) => {
     setSaveMessage("");
     setDraft((d) => ({ ...d, [key]: value }));
@@ -451,33 +446,6 @@ export function IntakePanel({ person, intake, navigate }) {
         </div>
         <Badge>{intake.status}</Badge>
       </div>
-      <ol className="intake-steps" aria-label="Intake stages">
-        {intakeStages.map((stage, index) => {
-          const current = stage === activeStage;
-          const complete = intakeStages.indexOf(activeStage) > index;
-          return (
-            <li
-              key={stage}
-              className={complete ? "complete" : current ? "current" : ""}
-              aria-current={current ? "step" : undefined}
-            >
-              <span className="intake-step-marker" aria-hidden="true">
-                {complete ? (
-                  <CheckCircle2 size={17} />
-                ) : current ? (
-                  index + 1
-                ) : (
-                  <LockKeyhole size={15} />
-                )}
-              </span>
-              <span>
-                {stage}
-                {current && <small>Current step</small>}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
       {draftError && (
         <Notice tone="amber">
           This browser cannot keep an intake draft. Keep this page open until
