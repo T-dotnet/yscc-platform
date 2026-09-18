@@ -257,6 +257,7 @@ export function questionnaireDashboardGroups(evidence) {
         ...group,
         instrumentName: group.version || "Unknown questionnaire",
         likertTrends: [],
+        likertChanges: [],
         qualitativeChanges: [],
         responseHistory: group.responseHistory.map((entry) => ({
           ...entry,
@@ -333,6 +334,11 @@ export function questionnaireDashboardGroups(evidence) {
         (question) =>
           question.responseType === "likert" &&
           question.points.filter((point) => point.value !== null).length >= 2,
+      ),
+      likertChanges: questions.filter(
+        (question) =>
+          question.responseType === "likert" &&
+          question.comparison?.change === "Changed",
       ),
       qualitativeChanges: questions.filter(
         (question) =>

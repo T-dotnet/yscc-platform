@@ -1,12 +1,16 @@
 import { ArrowRight } from "lucide-react";
 import { formatDate } from "../model";
 
-export default function QualitativeChangeCard({ questionnaire, change }) {
+export default function QualitativeChangeCard({
+  questionnaire,
+  change,
+  changeType = "Qualitative",
+}) {
   return (
     <article className="qualitative-change-card">
       <header>
         <span>{change.section?.title || "Question"}</span>
-        <strong>Qualitative change</strong>
+        <strong>{changeType} change</strong>
       </header>
       <dl className="qualitative-question-context">
         <div>

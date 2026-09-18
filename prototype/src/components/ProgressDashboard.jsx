@@ -228,13 +228,42 @@ export default function ProgressDashboard({
                   </details>
                 )}
 
-                {group.qualitativeChanges.length > 0 && (
+                {group.likertChanges.length > 0 && (
                   <details
                     className="report-accordion questionnaire-change-panel"
                     open
                   >
                     <summary>
                       <span>Likert question changes</span>
+                      <Badge>{group.likertChanges.length} changed</Badge>
+                      <ChevronDown size={18} aria-hidden="true" />
+                    </summary>
+                    <div className="panel-body">
+                      <p className="questionnaire-change-panel-copy">
+                        Changed answers between the first and latest comparable
+                        response. Wording is shown exactly as recorded.
+                      </p>
+                      <div className="qualitative-change-grid">
+                        {group.likertChanges.map((change) => (
+                          <QualitativeChangeCard
+                            key={change.id}
+                            questionnaire={questionnaire}
+                            change={change}
+                            changeType="Likert"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </details>
+                )}
+
+                {group.qualitativeChanges.length > 0 && (
+                  <details
+                    className="report-accordion questionnaire-change-panel"
+                    open
+                  >
+                    <summary>
+                      <span>Qualitative answer changes</span>
                       <Badge>{group.qualitativeChanges.length} changed</Badge>
                       <ChevronDown size={18} aria-hidden="true" />
                     </summary>

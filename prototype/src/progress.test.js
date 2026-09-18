@@ -113,6 +113,7 @@ test("dashboard data keeps each Likert question, scale and timepoint explicit", 
   );
   assert.equal(group.instrumentName, LIKERT_INSTRUMENT.name);
   assert.equal(group.likertTrends.length, 6);
+  assert.equal(group.likertChanges.length, 6);
   assert.equal(group.qualitativeChanges.length, 0);
   assert.equal(group.responseHistory.length, 4);
   assert.equal(group.responseHistory[0].previous, null);
@@ -155,6 +156,7 @@ test("Mia's dashboard keeps Likert and qualitative series separate", () => {
   );
   assert.equal(qualitative.responseHistory.length, 5);
   assert.equal(qualitative.likertTrends.length, 0);
+  assert.equal(qualitative.likertChanges.length, 0);
   assert.ok(qualitative.qualitativeChanges.length > 0);
 });
 
@@ -163,6 +165,7 @@ test("dashboard data separates changed qualitative answers from Likert trends", 
   const [group] = questionnaireDashboardGroups(reportEvidence(person, episode));
   assert.equal(group.instrumentName, DEMO_INSTRUMENT.name);
   assert.equal(group.likertTrends.length, 0);
+  assert.equal(group.likertChanges.length, 0);
   assert.ok(group.qualitativeChanges.length > 0);
   assert.ok(
     group.qualitativeChanges.every(
