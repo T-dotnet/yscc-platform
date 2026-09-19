@@ -9,8 +9,7 @@ import {
 } from "../progress";
 import { Badge, Button, Notice, Panel, TextLink } from "./UI";
 
-const countLabel = (count, noun) =>
-  `${count} ${noun}${count === 1 ? "" : "s"}`;
+const countLabel = (count, noun) => `${count} ${noun}${count === 1 ? "" : "s"}`;
 
 export default function ReviewPack({
   person,
@@ -25,7 +24,11 @@ export default function ReviewPack({
 }) {
   const progress = questionnaireProgress(person, episode, questionnaireVersion);
   const episodeProgress = patientProgress(person, episode);
-  const comparison = compareResponses(person, progress.baseline, progress.latest);
+  const comparison = compareResponses(
+    person,
+    progress.baseline,
+    progress.latest,
+  );
   const pendingReviews = episode.collections.filter(hasPendingClinicalReview);
   const incompleteCollections = episodeProgress.open;
   const events = recordedCareEvents(episode).slice(0, 3);
@@ -41,7 +44,9 @@ export default function ReviewPack({
         <header className="review-pack-heading">
           <div>
             <h3>90-day review pack</h3>
-            <p>Recorded context to prepare the next multidisciplinary review.</p>
+            <p>
+              Recorded context to prepare the next multidisciplinary review.
+            </p>
           </div>
           <Badge>Preparation</Badge>
         </header>

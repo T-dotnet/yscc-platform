@@ -110,11 +110,11 @@ export function patientProgress(person, episode, latestId) {
         (a.submittedAt || "").localeCompare(b.submittedAt || "") ||
         a.id.localeCompare(b.id),
     );
-  const latestOptions = dated.filter(
-    (c) => responseDate(c) === responseDate(dated.at(-1)),
-  );
-  const latest =
-    latestOptions.find((c) => c.id === latestId) || dated.at(-1) || null;
+  const requestedLatest = dated.find((c) => c.id === latestId) || null;
+  const latest = requestedLatest || dated.at(-1) || null;
+  const latestOptions = latest
+    ? dated.filter((c) => responseDate(c) === responseDate(latest))
+    : [];
   const earlier = latest
     ? dated.filter((c) => responseDate(c) < responseDate(latest))
     : [];

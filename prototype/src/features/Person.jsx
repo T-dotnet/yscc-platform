@@ -19,7 +19,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useStore } from "../store";
-import Progress from "./Progress";
+import RecordTwo from "./RecordTwo";
 import CareEvents from "./CareEvents";
 import ReviewPack from "../components/ReviewPack";
 import Timeline, {
@@ -112,7 +112,9 @@ export default function Person({ id, navigate, openModal }) {
     : allTabs.filter((item) => item !== "Assessment");
   const requestedTab =
     contextualView ||
-    (searchParams.get("tab") === "progress" ? "Report" : null) ||
+    (["progress", "analysis", "record 2"].includes(searchParams.get("tab"))
+      ? "Report"
+      : null) ||
     tabs.find((t) => t.toLowerCase() === searchParams.get("tab")) ||
     "Overview";
   const tab =
@@ -135,7 +137,12 @@ export default function Person({ id, navigate, openModal }) {
           : 0) || compareCollections(a, b),
   );
   const context = { personId: p.id, episodeId: e.id, collectionId: c.id };
-  const modal = (type) => openModal({ type, ...context });
+  const openReview = (collection) =>
+    navigate(`/people/${p.id}/assessment-review/${collection.id}`, {
+      scroll: false,
+    });
+  const modal = (type) =>
+    type === "review" ? openReview(c) : openModal({ type, ...context });
   const consentRequests = p.consentRequests || [];
   const eventSummary = latestCareEventsByType(e);
   const reviewed =
@@ -209,7 +216,7 @@ export default function Person({ id, navigate, openModal }) {
                 ))}
               </Select>
               <small>
-                Overview, progress, assessments and history for this period.
+                Overview, Report, assessments and history for this period.
               </small>
             </>
           ) : (
@@ -563,16 +570,7 @@ export default function Person({ id, navigate, openModal }) {
                         {col.response === "Submitted" &&
                           (!noClinicalReviewRequired(col) ||
                             collectionStatus(col) === "Completed") && (
-                            <Button
-                              onClick={() =>
-                                openModal({
-                                  type: "review",
-                                  personId: p.id,
-                                  episodeId: e.id,
-                                  collectionId: col.id,
-                                })
-                              }
-                            >
+                            <Button onClick={() => openReview(col)}>
                               {col.needsReview
                                 ? "Review updated answers"
                                 : col.review === "Reviewed" ||
@@ -650,7 +648,7 @@ export default function Person({ id, navigate, openModal }) {
           />
         )}
         {tab === "Report" && (
-          <Progress key={e.id} person={p} episode={e} openModal={openModal} />
+          <RecordTwo person={p} episode={e} navigate={navigate} />
         )}
         {tab === "Consent & respondents" && (
           <div className="stack">

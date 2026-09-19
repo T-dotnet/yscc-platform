@@ -16,6 +16,8 @@ import {
 } from "../components/UI";
 
 const PAGE_SIZE = 6;
+const HIDDEN_FROM_PEOPLE_LIST = new Set(["Oliver James", "Zoe Patel"]);
+const PEOPLE_LIST_PRIORITY = new Map([["Mia Robinson", 0]]);
 
 export default function People({ navigate, openModal }) {
   const { state } = useStore();
@@ -34,10 +36,19 @@ export default function People({ navigate, openModal }) {
     navigate(href);
   };
   const rows = peopleInEpisodes(state.people, status)
-    .filter(({ person }) =>
-      `${person.name} ${person.id}`.toLowerCase().includes(query.toLowerCase()),
+    .filter(
+      ({ person }) =>
+        !HIDDEN_FROM_PEOPLE_LIST.has(person.name) &&
+        `${person.name} ${person.id}`
+          .toLowerCase()
+          .includes(query.toLowerCase()),
     )
-    .sort(comparePeople);
+    .sort(
+      (a, b) =>
+        (PEOPLE_LIST_PRIORITY.get(a.person.name) ?? 1) -
+          (PEOPLE_LIST_PRIORITY.get(b.person.name) ?? 1) ||
+        comparePeople(a, b),
+    );
   const statusOptions = [...new Set(rows.map((row) => row.status))];
   if (
     assessmentStatus !== "All statuses" &&
@@ -89,7 +100,7 @@ export default function People({ navigate, openModal }) {
       <Panel
         className="people-panel"
         title="People at Northside Centre"
-        action={<span className="muted">{state.people.length} people</span>}
+        action={<span className="muted">{people.length} people</span>}
       >
         <div className="work-toolbar people-toolbar">
           <SearchInput value={query} onChange={setQuery} />

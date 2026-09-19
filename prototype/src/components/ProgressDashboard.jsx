@@ -23,10 +23,13 @@ export default function ProgressDashboard({
   selectedVersion,
   onSelectedVersionChange,
   details,
+  fixedVersion,
+  includeSummary = true,
 }) {
   const [likertQuestionSearch, setLikertQuestionSearch] = useState("");
   const [likertSectionFilter, setLikertSectionFilter] = useState("all");
   const [likertChangeFilter, setLikertChangeFilter] = useState("all");
+  const [likertComparisonId, setLikertComparisonId] = useState(null);
   const evidence = reportEvidence(person, episode);
   const questionnaireGroups = questionnaireDashboardGroups(evidence);
   const contextualEvents = recordedCareEvents(episode);
@@ -36,10 +39,12 @@ export default function ProgressDashboard({
     ),
   ).map(([version, name]) => ({ version, name }));
   const activeVersion = questionnaireOptions.some(
-    (option) => option.version === selectedVersion,
+    (option) => option.version === fixedVersion,
   )
-    ? selectedVersion
-    : questionnaireOptions.at(-1)?.version || "";
+    ? fixedVersion
+    : questionnaireOptions.some((option) => option.version === selectedVersion)
+      ? selectedVersion
+      : questionnaireOptions.at(-1)?.version || "";
   const visibleQuestionnaireGroups = questionnaireGroups.filter(
     (group) => group.version === activeVersion,
   );
@@ -50,39 +55,44 @@ export default function ProgressDashboard({
     setLikertQuestionSearch("");
     setLikertSectionFilter("all");
     setLikertChangeFilter("all");
+    setLikertComparisonId(null);
   }, [person.id, episode.id, activeVersion]);
   const likertQuestionCount = questionnaireGroups.reduce(
     (total, group) => total + group.likertTrends.length,
     0,
   );
   return (
-    <section className="report-dashboard" aria-label="Patient report">
-      <div className="dashboard-metrics" aria-label="Dashboard summary">
-        <article>
-          <ClipboardCheck size={18} aria-hidden="true" />
-          <strong>{evidence.responses.length}</strong>
-          <span>Submitted responses</span>
-        </article>
-        <article>
-          <CalendarDays size={18} aria-hidden="true" />
-          <strong>{questionnaireGroups.length}</strong>
-          <span>Questionnaire series</span>
-        </article>
-        <article>
-          <ChartNoAxesCombined size={18} aria-hidden="true" />
-          <strong>{likertQuestionCount}</strong>
-          <span>Likert questions charted</span>
-        </article>
-        <article>
-          <CalendarDays size={18} aria-hidden="true" />
-          <strong>{contextualEvents.length}</strong>
-          <span>Recorded contextual events</span>
-        </article>
-      </div>
+    <section className="report-dashboard" aria-label="Questionnaire analysis">
+      {includeSummary && (
+        <>
+          <div className="dashboard-metrics" aria-label="Dashboard summary">
+            <article>
+              <ClipboardCheck size={18} aria-hidden="true" />
+              <strong>{evidence.responses.length}</strong>
+              <span>Submitted responses</span>
+            </article>
+            <article>
+              <CalendarDays size={18} aria-hidden="true" />
+              <strong>{questionnaireGroups.length}</strong>
+              <span>Questionnaire series</span>
+            </article>
+            <article>
+              <ChartNoAxesCombined size={18} aria-hidden="true" />
+              <strong>{likertQuestionCount}</strong>
+              <span>Likert questions charted</span>
+            </article>
+            <article>
+              <CalendarDays size={18} aria-hidden="true" />
+              <strong>{contextualEvents.length}</strong>
+              <span>Recorded contextual events</span>
+            </article>
+          </div>
 
-      <CareContextVisuals episode={episode} />
+          <CareContextVisuals episode={episode} />
+        </>
+      )}
 
-      {questionnaireOptions.length > 0 && (
+      {!fixedVersion && questionnaireOptions.length > 0 && (
         <div className="dashboard-questionnaire-selector">
           <label className="dashboard-questionnaire-picker">
             <span>Questionnaire</span>
@@ -118,12 +128,65 @@ export default function ProgressDashboard({
                 ]),
               ),
             );
+            const latestLikertResponse = group.points.at(-1);
+            const earlierLikertResponses = group.points.slice(0, -1);
+            const selectedLikertComparison =
+              likertComparisonId === ""
+                ? null
+                : earlierLikertResponses.find(
+                    (point) => point.id === likertComparisonId,
+                  ) || null;
+            const hasLikertComparison = !!selectedLikertComparison;
+            const scoreFor = (collection) => {
+              const values = group.likertQuestions
+                .map((question) => {
+                  const point = question.points.find(
+                    (item) => item.id === collection?.id,
+                  );
+                  const optionCount = question.scale?.options.length || 0;
+                  if (!point || point.value === null || optionCount < 2)
+                    return null;
+                  return ((point.value - 1) / (optionCount - 1)) * 100;
+                })
+                .filter((value) => value !== null);
+              if (!values.length) return null;
+              return {
+                value: Math.round(
+                  values.reduce((sum, value) => sum + value, 0) / values.length,
+                ),
+                answered: values.length,
+                total: group.likertQuestions.length,
+              };
+            };
+            const latestLikertScore = scoreFor(latestLikertResponse);
+            const comparisonLikertScore = scoreFor(selectedLikertComparison);
+            const comparisonForTrend = (trend) => {
+              if (!hasLikertComparison) return null;
+              const before = trend.points.find(
+                (point) => point.id === selectedLikertComparison.id,
+              );
+              const after = trend.points.find(
+                (point) => point.id === latestLikertResponse?.id,
+              );
+              if (
+                !before ||
+                !after ||
+                before.value === null ||
+                after.value === null
+              )
+                return { change: "Not comparable" };
+              return {
+                change: before.value === after.value ? "Unchanged" : "Changed",
+              };
+            };
             const visibleLikertTrends = group.likertTrends.filter((trend) => {
-              const change = trend.comparison?.change || "Not comparable";
+              const change =
+                comparisonForTrend(trend)?.change || "Not comparable";
               return (
                 (likertSectionFilter === "all" ||
                   trend.section?.id === likertSectionFilter) &&
-                (likertChangeFilter === "all" ||
+                (!hasLikertComparison ||
+                  likertChangeFilter === "all" ||
                   change.toLowerCase() === likertChangeFilter) &&
                 `${trend.question} ${trend.section?.title || ""}`
                   .toLowerCase()
@@ -168,27 +231,59 @@ export default function ProgressDashboard({
                         metric={
                           <div
                             className="report-evidence-metric score"
-                            aria-label={`Overall Likert score ${group.likertScore?.latest.value} out of 100`}
+                            aria-label={`Overall Likert score ${latestLikertScore?.value} out of 100`}
                           >
-                            <strong>{group.likertScore?.latest.value}</strong>
+                            <strong>{latestLikertScore?.value}</strong>
                             <span>/100</span>
                             <small>Latest response</small>
-                            {group.likertScore?.change !== null && (
-                              <span className="report-evidence-change">
-                                {group.likertScore.change >= 0 ? "+" : ""}
-                                {group.likertScore.change} points since baseline
-                              </span>
-                            )}
+                            {hasLikertComparison &&
+                              comparisonLikertScore &&
+                              latestLikertScore && (
+                                <span className="report-evidence-change">
+                                  {latestLikertScore.value -
+                                    comparisonLikertScore.value >=
+                                  0
+                                    ? "+"
+                                    : ""}
+                                  {latestLikertScore.value -
+                                    comparisonLikertScore.value}{" "}
+                                  points since{" "}
+                                  {formatDate(
+                                    responseDate(selectedLikertComparison),
+                                  )}
+                                </span>
+                              )}
                           </div>
                         }
                       >
-                        Based on {group.likertScore?.latest.answered} of{" "}
-                        {group.likertScore?.latest.total} scored questions in
-                        the latest response.
+                        Based on {latestLikertScore?.answered} of{" "}
+                        {latestLikertScore?.total} scored questions in the
+                        latest response.
                       </ReportEvidenceCard>
                       {group.likertTrends.length > 0 && (
                         <>
                           <div className="answer-tools comparison-tools">
+                            {earlierLikertResponses.length > 0 && (
+                              <label className="progress-compare-control">
+                                <span>Compare latest with</span>
+                                <Select
+                                  label="Compare latest with"
+                                  value={selectedLikertComparison?.id || ""}
+                                  onChange={(event) => {
+                                    setLikertComparisonId(event.target.value);
+                                    setLikertChangeFilter("all");
+                                  }}
+                                >
+                                  <option value="">None</option>
+                                  {earlierLikertResponses.map((point) => (
+                                    <option key={point.id} value={point.id}>
+                                      {point.label} ·{" "}
+                                      {formatDate(responseDate(point))}
+                                    </option>
+                                  ))}
+                                </Select>
+                              </label>
+                            )}
                             <label>
                               Find a question
                               <input
@@ -216,19 +311,21 @@ export default function ProgressDashboard({
                                 ))}
                               </select>
                             </label>
-                            <label>
-                              Change
-                              <select
-                                value={likertChangeFilter}
-                                onChange={(event) =>
-                                  setLikertChangeFilter(event.target.value)
-                                }
-                              >
-                                <option value="all">All questions</option>
-                                <option value="changed">Changed</option>
-                                <option value="unchanged">Unchanged</option>
-                              </select>
-                            </label>
+                            {hasLikertComparison && (
+                              <label>
+                                Change
+                                <select
+                                  value={likertChangeFilter}
+                                  onChange={(event) =>
+                                    setLikertChangeFilter(event.target.value)
+                                  }
+                                >
+                                  <option value="all">All questions</option>
+                                  <option value="changed">Changed</option>
+                                  <option value="unchanged">Unchanged</option>
+                                </select>
+                              </label>
+                            )}
                           </div>
                           <div className="likert-results-header">
                             <p className="muted">
@@ -242,15 +339,38 @@ export default function ProgressDashboard({
                                   Each chart tracks one question across
                                   submitted responses.
                                 </p>
-                                {contextualEvents.length > 0 && (
-                                  <p className="likert-context-key">
+                                <ul
+                                  className="likert-chart-key"
+                                  aria-label="Chart point key"
+                                >
+                                  <li className="selected">
                                     <span aria-hidden="true" />
-                                    Contextual events appear on the date they
-                                    were recorded. They show timing only and do
-                                    not imply that an event caused a response to
-                                    change.
-                                  </p>
-                                )}
+                                    Selected assessment ·{" "}
+                                    {formatDate(
+                                      responseDate(latestLikertResponse),
+                                    )}
+                                  </li>
+                                  {selectedLikertComparison && (
+                                    <li className="comparison">
+                                      <span aria-hidden="true" />
+                                      Compared response ·{" "}
+                                      {formatDate(
+                                        responseDate(selectedLikertComparison),
+                                      )}
+                                    </li>
+                                  )}
+                                  <li className="other">
+                                    <span aria-hidden="true" />
+                                    Other submitted responses
+                                  </li>
+                                  {contextualEvents.length > 0 && (
+                                    <li className="context-event">
+                                      <span aria-hidden="true" />
+                                      Context events mark recorded dates only —
+                                      timing, not cause.
+                                    </li>
+                                  )}
+                                </ul>
                               </div>
                             </details>
                           </div>
@@ -258,7 +378,11 @@ export default function ProgressDashboard({
                             {visibleLikertTrends.map((trend) => (
                               <LikertTrendCard
                                 key={trend.id}
-                                trend={trend}
+                                trend={{
+                                  ...trend,
+                                  comparison: comparisonForTrend(trend),
+                                }}
+                                comparisonPointId={selectedLikertComparison?.id}
                                 events={contextualEvents}
                               />
                             ))}

@@ -7,6 +7,7 @@ import Forms from "./components/Forms";
 import Worklist from "./features/Worklist";
 import People from "./features/People";
 import Person from "./features/Person";
+import AssessmentReviewRecord from "./features/AssessmentReviewRecord";
 import { Quality, Administration, Help } from "./features/Operations";
 import Questionnaire from "./features/Questionnaire";
 import ConsentRequest from "./features/ConsentRequest";
@@ -74,11 +75,20 @@ export default function App() {
       />
     );
   const shared = { navigate, openModal: setModal };
+  const assessmentReviewMatch = path.match(
+    /^\/people\/([^/]+)\/assessment-review\/([^/]+)$/,
+  );
   let page =
     path === "/" ? (
       <Worklist {...shared} />
     ) : path === "/people" ? (
       <People {...shared} />
+    ) : assessmentReviewMatch ? (
+      <AssessmentReviewRecord
+        personId={assessmentReviewMatch[1]}
+        collectionId={assessmentReviewMatch[2]}
+        navigate={navigate}
+      />
     ) : path.startsWith("/people/") ? (
       <Person key={path} id={path.split("/")[2]} {...shared} />
     ) : path === "/quality" ? (

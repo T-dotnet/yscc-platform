@@ -78,7 +78,7 @@ test("older mock data is replaced once with the refreshed branching scenarios", 
   const updated = upgradeSampleData(old);
   assert.deepEqual(old, before);
   assert.equal(updated.people[0].name, "Kai Thompson");
-  assert.equal(updated.sampleRevision, 14);
+  assert.equal(updated.sampleRevision, 15);
   assert.equal(
     updated.audit.some((item) => item.id === "old-edit"),
     false,
@@ -122,7 +122,10 @@ test("a care event retains its factual summary, source and recording dates", () 
   assert.equal(event.eventDate, TODAY);
   assert.equal(event.title, "Temporary accommodation ended");
   assert.equal(event.fields.source, "Treating clinician");
-  assert.equal(event.fields.impact, "Confirm a safe route for the next review.");
+  assert.equal(
+    event.fields.impact,
+    "Confirm a safe route for the next review.",
+  );
   assert.equal(event.actor, "Jess Taylor");
   assert.ok(event.timestamp);
   assert.deepEqual(
@@ -184,7 +187,10 @@ test("a correction is appended without changing the original care event", () => 
   const [correction, retainedOriginal] = corrected.people[0].episodes[0].events;
   assert.equal(correction.actionType, "CORRECT_CARE_EVENT");
   assert.equal(correction.correctedEventId, original.id);
-  assert.equal(correction.correctionReason, "The follow-up arrangement was omitted.");
+  assert.equal(
+    correction.correctionReason,
+    "The follow-up arrangement was omitted.",
+  );
   assert.equal(retainedOriginal.id, original.id);
   assert.equal(retainedOriginal.title, "Temporary accommodation ended");
 });
@@ -226,9 +232,7 @@ test("supported tablet completion does not create a clinical review task", () =>
   });
   assert.equal(collection(next).review, "Not required");
   assert.equal(
-    getTasks(next).some(
-      (task) => task.collection?.id === collection(next).id,
-    ),
+    getTasks(next).some((task) => task.collection?.id === collection(next).id),
     false,
   );
 });
@@ -581,7 +585,7 @@ test("revision four mock data gains longitudinal Likert responses once", () => {
     (person) => person.name === "Mia Robinson",
   );
   assert.deepEqual(saved, before);
-  assert.equal(migrated.sampleRevision, 14);
+  assert.equal(migrated.sampleRevision, 15);
   assert.equal(
     migratedMia.episodes[0].collections.filter(
       (collection) => collection.version === LIKERT_INSTRUMENT.version,

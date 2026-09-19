@@ -21,8 +21,9 @@ export default function QuestionnaireEvidence({
   episode,
   openModal,
   questionnaireVersion,
+  initialLatestId = null,
 }) {
-  const [latestId, setLatestId] = useState(null);
+  const [latestId, setLatestId] = useState(initialLatestId);
   const [earlierId, setEarlierId] = useState(null);
   const [questionSearch, setQuestionSearch] = useState("");
   const [sectionFilter, setSectionFilter] = useState("all");
@@ -33,15 +34,19 @@ export default function QuestionnaireEvidence({
     setQuestionSearch("");
     setSectionFilter("all");
     setChangesOnly(false);
-  }, [person.id, episode.id, questionnaireVersion]);
+  }, [person.id, episode.id, questionnaireVersion, initialLatestId]);
   const progress = questionnaireProgress(
     person,
     episode,
     questionnaireVersion,
     latestId,
   );
-  const { latest, earlier, baseline, undated } = progress;
-  const selected = earlier.find((c) => c.id === earlierId) || baseline;
+  const { latest, earlier, undated } = progress;
+  const selected =
+    earlierId === ""
+      ? null
+      : earlier.find((c) => c.id === earlierId) || null;
+  const hasComparison = !!selected;
   const comparison = compareResponses(person, selected, latest);
   const instrument = getInstrument(latest?.version);
   const qualitativeQuestions =
@@ -94,11 +99,13 @@ export default function QuestionnaireEvidence({
       <details className="report-accordion questionnaire-comparison-panel" open>
         <summary>
           <span>Questionnaire comparison and details</span>
-          {latest && !comparison.reason && <Badge>{changeCountLabel}</Badge>}
+          {latest && hasComparison && !comparison.reason && (
+            <Badge>{changeCountLabel}</Badge>
+          )}
           <ChevronDown size={18} aria-hidden="true" />
         </summary>
         <div className="panel-body progress-comparison">
-          {latest && comparison.reason && (
+          {latest && hasComparison && comparison.reason && (
             <div className="report-accordion-action">
               <TextLink onClick={() => show("review", latest)}>
                 View latest response
@@ -112,6 +119,7 @@ export default function QuestionnaireEvidence({
                   variant="qualitative"
                   title="Overall signal"
                   metric={
+                    hasComparison &&
                     !comparison.reason &&
                     qualitativeChanged > 0 &&
                     qualitativeSignalRow ? (
@@ -125,15 +133,17 @@ export default function QuestionnaireEvidence({
                     ) : null
                   }
                 >
-                  {comparison.reason ? (
+                  {!hasComparison || comparison.reason ? (
                     <>
                       <strong className="report-evidence-signal">
                         Latest response recorded
                       </strong>
                       <span className="report-evidence-detail">
                         {qualitativeResponsesRecorded} of{" "}
-                        {qualitativeQuestions.length} responses recorded. A
-                        second submitted response is needed to compare change.
+                        {qualitativeQuestions.length} responses recorded.
+                        {hasComparison &&
+                          comparison.reason &&
+                          " A second submitted response is needed to compare change."}
                       </span>
                     </>
                   ) : qualitativeChanged > 0 ? (
@@ -183,7 +193,32 @@ export default function QuestionnaireEvidence({
                   response to view above.
                 </Notice>
               )}
-              {comparison.reason ? (
+              {earlier.length > 0 && (
+                <div className="answer-tools comparison-tools comparison-picker-only">
+                  <label className="progress-compare-control">
+                    <span>Compare latest with</span>
+                    <Select
+                      label="Compare latest with"
+                      value={selected?.id || ""}
+                      onChange={(event) => setEarlierId(event.target.value)}
+                    >
+                      <option value="">None</option>
+                      {earlier.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.label} · {dateLabel(c)}
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                </div>
+              )}
+              {!hasComparison ? (
+                <SubmittedAnswers
+                  key={latest.id}
+                  person={person}
+                  collection={latest}
+                />
+              ) : comparison.reason ? (
                 <>
                   <Notice>{comparison.reason}</Notice>
                   <SubmittedAnswers
@@ -200,22 +235,6 @@ export default function QuestionnaireEvidence({
               ) : (
                 <>
                   <div className="answer-tools comparison-tools">
-                    {earlier.length > 0 && (
-                      <label className="progress-compare-control">
-                        <span>Compare latest with</span>
-                        <Select
-                          label="Compare latest with"
-                          value={selected?.id || ""}
-                          onChange={(event) => setEarlierId(event.target.value)}
-                        >
-                          {earlier.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.label} · {dateLabel(c)}
-                            </option>
-                          ))}
-                        </Select>
-                      </label>
-                    )}
                     <label>
                       Find a question
                       <input

@@ -53,12 +53,18 @@ function lineSegments(points, scaleLength) {
   return segments;
 }
 
-export default function LikertTrendCard({ trend, events = [] }) {
+export default function LikertTrendCard({
+  trend,
+  events = [],
+  comparisonPointId,
+}) {
   const titleId = useId();
   const descriptionId = useId();
   const options = trend.scale.options;
-  const first = trend.points[0];
   const latest = trend.points.at(-1);
+  const comparisonPoint = comparisonPointId
+    ? trend.points.find((point) => point.id === comparisonPointId)
+    : null;
   const change = trend.comparison?.change;
   const changeLabel =
     change === "Changed"
@@ -89,16 +95,24 @@ export default function LikertTrendCard({ trend, events = [] }) {
         </div>
       </header>
       <div
-        className="likert-change-summary"
-        aria-label="First and latest answer"
+        className={`likert-change-summary${
+          comparisonPoint ? " has-comparison" : " selected-only"
+        }`}
+        aria-label="Selected answers"
       >
-        <div>
-          <span>{formatDate(first.date)}</span>
-          <strong>{first.answer}</strong>
-        </div>
-        <ArrowRight size={18} aria-hidden="true" />
-        <div>
-          <span>{formatDate(latest.date)}</span>
+        {comparisonPoint && (
+          <>
+            <div className="likert-summary-comparison">
+              <span>
+                Compared response · {formatDate(comparisonPoint.date)}
+              </span>
+              <strong>{comparisonPoint.answer}</strong>
+            </div>
+            <ArrowRight size={18} aria-hidden="true" />
+          </>
+        )}
+        <div className="likert-summary-selected">
+          <span>Selected assessment · {formatDate(latest.date)}</span>
           <strong>{latest.answer}</strong>
         </div>
       </div>
@@ -152,10 +166,20 @@ export default function LikertTrendCard({ trend, events = [] }) {
               point.value === null ? null : (
                 <circle
                   key={point.id}
-                  className="likert-series-point"
+                  className={`likert-series-point${
+                    point.id === latest.id
+                      ? " selected-assessment"
+                      : point.id === comparisonPoint?.id
+                        ? " compared-assessment"
+                        : ""
+                  }`}
                   cx={chartX(index, trend.points.length)}
                   cy={chartY(point.value, options.length)}
-                  r="5"
+                  r={
+                    point.id === latest.id || point.id === comparisonPoint?.id
+                      ? "7"
+                      : "5"
+                  }
                 />
               ),
             )}
@@ -187,12 +211,25 @@ export default function LikertTrendCard({ trend, events = [] }) {
           className="likert-point-values"
           style={{ "--likert-point-count": trend.points.length }}
         >
-          {trend.points.map((point) => (
-            <li key={point.id}>
-              <time dateTime={point.date}>{formatDate(point.date)}</time>
-              <strong>{point.answer}</strong>
-            </li>
-          ))}
+          {trend.points.map((point) => {
+            const pointRole =
+              point.id === latest.id
+                ? "selected"
+                : point.id === comparisonPoint?.id
+                  ? "comparison"
+                  : "";
+            return (
+              <li className={pointRole} key={point.id}>
+                {pointRole && (
+                  <small>
+                    {pointRole === "selected" ? "Selected" : "Compared"}
+                  </small>
+                )}
+                <time dateTime={point.date}>{formatDate(point.date)}</time>
+                <strong>{point.answer}</strong>
+              </li>
+            );
+          })}
         </ol>
       </figure>
     </article>

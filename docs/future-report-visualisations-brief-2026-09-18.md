@@ -104,7 +104,9 @@ A separate overall score trend may be considered only when all of the following 
 3. missing answers and changed versions have an explicit, honest handling rule; and
 4. the display has an accessible text alternative containing the score, date, scale and any missingness.
 
-Until then, do not add a K10-style overall line, severity band or red/amber/green clinical interpretation. Existing question-level trend charts remain the faithful fallback.
+Until then, do not add a K10-style overall line, severity band or red/amber/green clinical interpretation to general person records. Existing question-level trend charts remain the faithful fallback.
+
+The separate fictional full-report fixture (Jordan Ellis, YS-1034) illustrates a raw K10 total line for design review only. It pins the ABS National Health Survey four-week, 1–5 ten-item sum; incomplete, undated, draft or incompatible responses are omitted. It shows every dated total in text, without thresholds, diagnosis or treatment-effect claims. This fixture does not approve K10 collection, scoring or interpretation for the service.
 
 ## 3. Context status history
 

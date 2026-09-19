@@ -13,7 +13,7 @@ export default function Progress({ person, episode, openModal }) {
     <div className="stack patient-progress">
       <div className="section-toolbar report-toolbar">
         <div>
-          <h2>Report</h2>
+          <h2>Analysis</h2>
           <p>
             {latestResponseDate
               ? `Latest response ${formatDate(latestResponseDate)}`

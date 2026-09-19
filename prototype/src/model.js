@@ -29,6 +29,7 @@ import {
   reportSources,
 } from "./report.js";
 import { careEventContent, careEventError } from "./careEvents.js";
+import { K10_SCORING_METHOD } from "./k10.js";
 
 export const TODAY = "2026-09-15";
 export const VERSION = DEMO_INSTRUMENT.version;
@@ -378,7 +379,8 @@ function longitudinalLikertCollections(person, idPrefix = "A-5-life-care") {
       assignment: "Fulfilled",
       response: "Submitted",
       review: "Reviewed",
-      reviewNote: "Fictional longitudinal response reviewed for this workspace.",
+      reviewNote:
+        "Fictional longitudinal response reviewed for this workspace.",
       reviewActor: "Jess Taylor",
       reviewDate: point.reviewDate,
       assessmentProgress: "Completed",
@@ -405,9 +407,12 @@ function longitudinalLikertCollections(person, idPrefix = "A-5-life-care") {
   });
 }
 
-function longitudinalQualitativeCollections(person) {
+function longitudinalQualitativeCollections(
+  person,
+  idPrefix = "A-6-everyday-life",
+) {
   return longitudinalQualitativePoints.map((point) => {
-    const id = `A-6-everyday-life-${point.key}`;
+    const id = `${idPrefix}-${point.key}`;
     const attemptId = `${id}-sample-session`;
     return {
       id,
@@ -417,7 +422,8 @@ function longitudinalQualitativeCollections(person) {
       assignment: "Fulfilled",
       response: "Submitted",
       review: "Reviewed",
-      reviewNote: "Sample qualitative response reviewed during the care period.",
+      reviewNote:
+        "Sample qualitative response reviewed during the care period.",
       reviewActor: "Jess Taylor",
       reviewDate: point.reviewDate,
       assessmentProgress: "Completed",
@@ -442,6 +448,163 @@ function longitudinalQualitativeCollections(person) {
       channel: "Clinic tablet",
     };
   });
+}
+
+function createMockFullReportPerson() {
+  const id = "YS-1034";
+  const episodeId = "EP-1034-01";
+  const person = {
+    id,
+    name: "Jordan Ellis",
+    dob: "2008-02-12",
+    pronouns: "They/them",
+    owner: "Jess Taylor",
+    consent: "Recorded",
+    contact: "Suitable",
+    family: null,
+    fixtureLabel: "Fictional full-report example",
+    episodes: [],
+    intakes: [
+      {
+        ...newIntake({
+          id: `IN-${episodeId}`,
+          owner: "Jess Taylor",
+          today: TODAY,
+          actor: "Sample fixture",
+          timestamp: "2026-06-15T09:00:00Z",
+          episodeId,
+        }),
+        status: "Completed",
+        outcome: "Proceed",
+        consentRecorded: true,
+        consentReference: "Fictional completed-intake consent record",
+        identityChecked: true,
+        permissionChecked: true,
+        supportChecked: true,
+        triageChecked: true,
+        checkEvidence:
+          "Fictional full-report fixture; no real clinical decision.",
+        decisionBy: "Jess Taylor",
+        decisionAt: "2026-06-15T09:00:00Z",
+        assessmentOwner: "Jess Taylor",
+      },
+    ],
+  };
+  person.episodes = [
+    {
+      id: episodeId,
+      number: "01",
+      status: "Active",
+      start: "2026-06-15",
+      disposition: "Admitted",
+      collections: [
+        ...longitudinalLikertCollections(person, "A-7-life-care"),
+        ...longitudinalQualitativeCollections(person, "A-7-everyday-life"),
+      ],
+      servicePeriods: [
+        {
+          id: "SP-7-community",
+          label: "Community care",
+          start: "2026-06-15",
+          end: "2026-09-15",
+          status: "Delivered · fictional demo record",
+        },
+        {
+          id: "SP-7-group",
+          label: "Group programme",
+          start: "2026-07-06",
+          end: "2026-08-28",
+          status: "Delivered · fictional demo record",
+        },
+      ],
+      medicationCourses: [
+        {
+          id: "MC-7-a",
+          label: "Medication course A",
+          start: "2026-06-28",
+          end: "2026-07-27",
+          status: "Start and end recorded · fictional demo record",
+          source: "Fictional medication log",
+          recordedBy: "Jess Taylor",
+        },
+        {
+          id: "MC-7-b",
+          label: "Medication course B",
+          start: "2026-08-22",
+          end: "2026-09-12",
+          status: "Start and end recorded · fictional demo record",
+          source: "Fictional medication log",
+          recordedBy: "Jess Taylor",
+        },
+      ],
+      k10Responses: [
+        ["2026-06-16", [4, 3, 4, 3, 3, 3, 4, 3, 3, 3]],
+        ["2026-07-14", [3, 3, 3, 3, 3, 2, 3, 3, 3, 3]],
+        ["2026-08-11", [3, 2, 3, 2, 3, 2, 3, 3, 2, 3]],
+        ["2026-09-08", [3, 3, 3, 2, 3, 2, 3, 2, 3, 3]],
+      ].map(([date, answers]) => ({
+        id: `K10-7-${date}`,
+        date,
+        response: "Submitted",
+        scoringMethod: K10_SCORING_METHOD,
+        answers,
+        respondentName: person.name,
+        recorderName: person.name,
+        review: "Reviewed · fictional demo record",
+        source: "Fictional ten-item K10 response",
+      })),
+      goalMilestones: [
+        {
+          id: "GM-7-started",
+          date: "2026-06-22",
+          title: "Build a workable weekly routine",
+          status: "Started · fictional demo record",
+        },
+        {
+          id: "GM-7-reviewed",
+          date: "2026-07-20",
+          title: "Build a workable weekly routine",
+          status: "Reviewed · fictional demo record",
+        },
+        {
+          id: "GM-7-progressed",
+          date: "2026-08-24",
+          title: "Build a workable weekly routine",
+          status: "Progressed · fictional demo record",
+        },
+      ],
+      events: [
+        ["start", "2026-06-15", "Care episode started", "care-transition"],
+        ["group", "2026-07-06", "Group programme added", "care-transition"],
+        ["housing", "2026-07-22", "Temporary accommodation changed", "housing"],
+        ["med-review", "2026-08-03", "Medication reviewed", "medication"],
+        [
+          "med-adverse",
+          "2026-08-17",
+          "Medication adverse event recorded",
+          "medication-adverse",
+        ],
+        [
+          "inpatient",
+          "2026-08-30",
+          "Inpatient admission recorded",
+          "inpatient",
+        ],
+      ].map(([key, date, title, eventType]) => ({
+        id: `E-7-${key}`,
+        date,
+        eventDate: date,
+        timestamp: `${date}T09:00:00Z`,
+        title,
+        detail: `Fictional demo record of ${title.toLowerCase()}.`,
+        actionType: "ADD_CARE_EVENT",
+        eventType,
+        actor: "Sample fixture",
+        role: "Clinician",
+      })),
+    },
+  ];
+  return person;
 }
 
 function createMockIntakePerson() {
@@ -573,7 +736,8 @@ function createMockIntakeAssessmentPerson() {
             timestamp: "2026-09-10T09:00:00",
             actor: "Sample fixture",
             title: "Intake completed · Proceed",
-            detail: "Fictional intake outcome recorded before assessment planning.",
+            detail:
+              "Fictional intake outcome recorded before assessment planning.",
           },
         ],
       },
@@ -644,7 +808,7 @@ export function upgradeSampleData(state) {
     ),
   );
   if (hasOldQuestionnaire) return createSeed();
-  if (state.sampleRevision < 14 || !state.sampleRevision)
+  if (state.sampleRevision < 15 || !state.sampleRevision)
     return prepareSeed(structuredClone(state));
   if (state.intakeRevision !== 3)
     state = prepareIntakes(structuredClone(state));
@@ -699,6 +863,7 @@ function prepareSeed(state) {
     createMockIntakePerson(),
     createMockIntakeOutcomePerson(),
     createMockIntakeAssessmentPerson(),
+    createMockFullReportPerson(),
   ]) {
     if (!next.people.some((person) => person.id === fixture.id))
       next.people.push(fixture);
@@ -732,7 +897,8 @@ function prepareSeed(state) {
       actorId: "ananya",
       actor: "Ananya",
       role: "Data Manager",
-      reason: "Corrected transcription from the completed questionnaire record.",
+      reason:
+        "Corrected transcription from the completed questionnaire record.",
       source: "Completed questionnaire record · fictional demo source",
       changes: [
         {
@@ -784,7 +950,9 @@ function prepareSeed(state) {
         status: "Delivered · fictional demo record",
       },
     ]) {
-      if (!miaEpisode.servicePeriods.some((existing) => existing.id === period.id))
+      if (
+        !miaEpisode.servicePeriods.some((existing) => existing.id === period.id)
+      )
         miaEpisode.servicePeriods.push(period);
     }
     miaEpisode.goalMilestones ??= [];
@@ -808,7 +976,11 @@ function prepareSeed(state) {
         status: "Progressed · fictional demo record",
       },
     ]) {
-      if (!miaEpisode.goalMilestones.some((existing) => existing.id === milestone.id))
+      if (
+        !miaEpisode.goalMilestones.some(
+          (existing) => existing.id === milestone.id,
+        )
+      )
         miaEpisode.goalMilestones.push(milestone);
     }
     miaEpisode.events ??= [];
@@ -831,7 +1003,8 @@ function prepareSeed(state) {
         eventDate: "2026-07-22",
         timestamp: "2026-07-22T09:00:00Z",
         title: "Temporary accommodation changed",
-        detail: "Fictional demo record of a housing change relevant to care coordination.",
+        detail:
+          "Fictional demo record of a housing change relevant to care coordination.",
         actionType: "ADD_CARE_EVENT",
         eventType: "housing",
         actor: "Sample fixture",
@@ -878,7 +1051,9 @@ function prepareSeed(state) {
         miaEpisode.events.push(event);
     }
     next.audit ??= [];
-    if (!next.audit.some((entry) => entry.id === "AUD-5-collection-correction")) {
+    if (
+      !next.audit.some((entry) => entry.id === "AUD-5-collection-correction")
+    ) {
       const collection = miaEpisode.collections.find(
         (item) => item.id === "A-6-everyday-life-four-weeks",
       );
@@ -891,7 +1066,8 @@ function prepareSeed(state) {
           personId: mia.id,
           episodeId: miaEpisode.id,
           collectionId: collection.id,
-          title: "Everyday life check-in · 4 weeks — collection details corrected",
+          title:
+            "Everyday life check-in · 4 weeks — collection details corrected",
           detail:
             "Fictional demo correction retaining the original and corrected collection details.",
           actorId: "ananya",
@@ -991,7 +1167,8 @@ function prepareSeed(state) {
       collectionId: "A-1-current",
       timestamp: "2026-09-15T10:42:00Z",
       title: "Initial assessment — collection details corrected",
-      reason: "Corrected transcription from the completed questionnaire record.",
+      reason:
+        "Corrected transcription from the completed questionnaire record.",
       source: "Completed questionnaire record · fictional demo source",
       changes: (collection) => [
         {
@@ -1052,7 +1229,7 @@ function prepareSeed(state) {
         "At the next review, discuss the recorded changes with Mia, check whether care events affect priorities, and agree any follow-up.",
     },
   });
-  next.sampleRevision = 14;
+  next.sampleRevision = 15;
   return prepareConsentRequests(prepareIntakes(next));
 }
 
@@ -1178,98 +1355,98 @@ export function createSeed() {
     terminologyRevision: 1,
     people: [
       ...seeds.map((s, i) => ({
-      id: `YS-${1024 + i}`,
-      name: s[0],
-      dob: s[1],
-      pronouns: s[2],
-      owner: "Jess Taylor",
-      consent: "Recorded",
-      contact: "Suitable",
-      consentRequests: [
-        {
-          id: `CR-${1024 + i}-assessment`,
-          consentId: "assessment-participation",
-          title: "Assessment participation",
-          version: "Consent v1.0",
-          scope: "This care episode",
-          status: "Accepted",
-          channel: "SMS link",
-          sentAt: "2026-06-15",
-          decidedAt: "2026-06-15",
-          decisionMaker: s[0],
-          history: [
-            { status: "Sent", at: "2026-06-15", actor: "Sample fixture" },
-            { status: "Accepted", at: "2026-06-15", actor: s[0] },
-          ],
-        },
-      ],
-      family: i === 0 ? "Deb Thompson" : null,
-      episodes: [
-        {
-          id: `EP-${1024 + i}-01`,
-          number: "01",
-          status: "Active",
-          start: s[3] === "90-day review" ? "2026-06-15" : "2026-09-08",
-          disposition: i === 0 ? "Admitted" : "Undecided",
-          collections: [
-            ...(s[3] === "90-day review"
-              ? [
-                  {
-                    id: `A-${i}-baseline`,
-                    label: "Initial assessment",
-                    due: "2026-06-15",
-                    version: VERSION,
-                    assignment: "Fulfilled",
-                    response: "Submitted",
-                    review: "Reviewed",
-                    reviewNote: "Sample baseline review recorded.",
-                    reviewDate: "2026-06-20",
-                    answers: sampleAnswersFor(i, "baseline"),
-                    attempts: [],
-                    respondent: "Person",
-                    recorder: "Person",
-                    assistance: "Independent",
-                    channel: "Clinic tablet",
-                  },
-                ]
-              : []),
-            {
-              id: `A-${i}-current`,
-              label: s[3],
-              due: s[4],
-              version: VERSION,
-              assignment: s[5] === "Submitted" ? "Fulfilled" : "Active",
-              response: s[5],
-              review: "Pending",
-              link: s[6],
-              attempts: ["Expired", "Active"].includes(s[6])
+        id: `YS-${1024 + i}`,
+        name: s[0],
+        dob: s[1],
+        pronouns: s[2],
+        owner: "Jess Taylor",
+        consent: "Recorded",
+        contact: "Suitable",
+        consentRequests: [
+          {
+            id: `CR-${1024 + i}-assessment`,
+            consentId: "assessment-participation",
+            title: "Assessment participation",
+            version: "Consent v1.0",
+            scope: "This care episode",
+            status: "Accepted",
+            channel: "SMS link",
+            sentAt: "2026-06-15",
+            decidedAt: "2026-06-15",
+            decisionMaker: s[0],
+            history: [
+              { status: "Sent", at: "2026-06-15", actor: "Sample fixture" },
+              { status: "Accepted", at: "2026-06-15", actor: s[0] },
+            ],
+          },
+        ],
+        family: i === 0 ? "Deb Thompson" : null,
+        episodes: [
+          {
+            id: `EP-${1024 + i}-01`,
+            number: "01",
+            status: "Active",
+            start: s[3] === "90-day review" ? "2026-06-15" : "2026-09-08",
+            disposition: i === 0 ? "Admitted" : "Undecided",
+            collections: [
+              ...(s[3] === "90-day review"
                 ? [
                     {
-                      id: `D-${i}`,
-                      date: i === 4 ? "2026-09-09" : "2026-09-05",
-                      channel: "SMS link",
-                      status:
-                        s[6] === "Expired" ? "Link expired" : "Sent (sample)",
+                      id: `A-${i}-baseline`,
+                      label: "Initial assessment",
+                      due: "2026-06-15",
+                      version: VERSION,
+                      assignment: "Fulfilled",
+                      response: "Submitted",
+                      review: "Reviewed",
+                      reviewNote: "Sample baseline review recorded.",
+                      reviewDate: "2026-06-20",
+                      answers: sampleAnswersFor(i, "baseline"),
+                      attempts: [],
+                      respondent: "Person",
+                      recorder: "Person",
+                      assistance: "Independent",
+                      channel: "Clinic tablet",
                     },
                   ]
-                : [],
-              answers: s[5] === "Submitted" ? sampleAnswersFor(i) : [],
-              respondent: "Person",
-              recorder: "Person",
-              assistance: "Independent",
-              channel: "SMS link",
-            },
-          ],
-          events: [
-            {
-              id: `E-${i}`,
-              date: s[3] === "90-day review" ? "2026-06-15" : "2026-09-08",
-              title: "Care episode started",
-              detail: "Initial assessment · baseline collection planned",
-            },
-          ],
-        },
-      ],
+                : []),
+              {
+                id: `A-${i}-current`,
+                label: s[3],
+                due: s[4],
+                version: VERSION,
+                assignment: s[5] === "Submitted" ? "Fulfilled" : "Active",
+                response: s[5],
+                review: "Pending",
+                link: s[6],
+                attempts: ["Expired", "Active"].includes(s[6])
+                  ? [
+                      {
+                        id: `D-${i}`,
+                        date: i === 4 ? "2026-09-09" : "2026-09-05",
+                        channel: "SMS link",
+                        status:
+                          s[6] === "Expired" ? "Link expired" : "Sent (sample)",
+                      },
+                    ]
+                  : [],
+                answers: s[5] === "Submitted" ? sampleAnswersFor(i) : [],
+                respondent: "Person",
+                recorder: "Person",
+                assistance: "Independent",
+                channel: "SMS link",
+              },
+            ],
+            events: [
+              {
+                id: `E-${i}`,
+                date: s[3] === "90-day review" ? "2026-06-15" : "2026-09-08",
+                title: "Care episode started",
+                detail: "Initial assessment · baseline collection planned",
+              },
+            ],
+          },
+        ],
       })),
       createMockIntakePerson(),
       createMockIntakeOutcomePerson(),
