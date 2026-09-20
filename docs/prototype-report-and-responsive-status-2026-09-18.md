@@ -1,10 +1,10 @@
-# Prototype report and responsive implementation status
+# Superseded prototype report and responsive implementation status
 
-18 September 2026 · Factual local-prototype record · Not an approved clinical, privacy, accessibility or production specification
+18 September 2026 · Historical local-prototype record · Superseded by [the 19 September longitudinal Report status](prototype-longitudinal-report-status-2026-09-19.md)
 
 ## Purpose and scope
 
-This note records the Report behaviours currently implemented in the local YSCC prototype. It is a companion to the proposed requirements and visualisation briefs: it describes what the fictional, browser-local demonstration currently renders, rather than converting that behaviour into approved product, clinical or data-governance policy.
+This note records the earlier questionnaire-dashboard Report implementation. It is retained as a historical record only. The local prototype has since moved to a selected-episode longitudinal Report; use [the current status note](prototype-longitudinal-report-status-2026-09-19.md) for present behaviour.
 
 It covers the Report dashboard, care-context cards, questionnaire evidence and the responsive refinements completed on 18 September. It does not alter the dated stakeholder discussion questions or executive documents, which remain records of their original review context.
 

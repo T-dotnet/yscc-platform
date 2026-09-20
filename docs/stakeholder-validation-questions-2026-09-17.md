@@ -1,6 +1,6 @@
 # YSCC stakeholder discussion questions
 
-Version 0.1 · 17 September 2026 · Early direction-setting discussion
+Version 0.2 · 19 September 2026 · Early direction-setting discussion, updated for the local longitudinal Report
 
 ## Why we are asking
 
@@ -43,6 +43,9 @@ The current direction assumes that support is a journey rather than a single vis
 4. What context must stay with every answer: questionnaire/version, respondent, date, source, care episode or review state?
 5. What action should be possible after reading the report, such as recording a review, planning follow-up, adding an event or requesting a correction?
 6. Which information belongs in the report, and which should remain in the assessment or history record?
+7. The local prototype now starts Report with a selected-episode care timeline. Which record types are useful there, and which must stay out until their source, permissions and definitions are approved?
+8. When a timeline shows a care period, medication course, event, goal or K10 raw value, what detail and provenance must be available before staff can use it safely?
+9. Which future visualisations should be treated only as design experiments until their data model, clinical meaning and access rules are agreed?
 
 ## Priorities and safeguards
 
@@ -50,4 +53,4 @@ The current direction assumes that support is a journey rather than a single vis
 2. What information is too sensitive to show broadly, and what permissions or approvals are needed?
 3. What evidence would give you confidence that the service is understandable, safe and useful?
 
-These questions are for early alignment. They do not establish clinical policy, access rules or final terminology.
+The current prototype includes a fictional timeline and a fixture-only set of visual experiments. They are prompts for this discussion, not evidence of clinical validity, a governed data model, a reporting policy or a production commitment. These questions are for early alignment. They do not establish clinical policy, access rules or final terminology.

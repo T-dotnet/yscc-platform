@@ -1,6 +1,6 @@
 # YSCC Platform - Requirements and logic
 
-Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
+Executive edition 1.6 | 19 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/05-requirements-and-logic-executive.pdf) | [Detailed original](../05-requirements-and-logic.md) | [Executive index](README.md)
 
@@ -46,7 +46,7 @@ An executive view of 46 detailed requirements. This summary does not replace the
 
 ### Scope stays explicit
 
-The local prototype demonstrates intake, collection, consent decisions, review-required/not-required states, correction, referral and the Progress report with sample data. Operational rules and wider scope remain proposed.
+The local prototype demonstrates intake, collection, consent decisions, review-required/not-required states, correction, referral and a selected-episode longitudinal Report with fictional data. Operational rules and wider scope remain proposed.
 
 ### APPROVAL STANDARD
 

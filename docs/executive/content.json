@@ -1,6 +1,6 @@
 {
-  "version": "Executive edition 1.5",
-  "date": "16 September 2026",
+  "version": "Executive edition 1.6",
+  "date": "19 September 2026",
   "status": "Working proposal; aligned to the current local prototype",
   "documents": [
     {
@@ -16,7 +16,7 @@
           "blocks": [
             {
               "type": "statement",
-              "text": "A local prototype now demonstrates sample intake, collection, consent requests, policy-dependent review, follow-up, correction and a questionnaire-based Progress report."
+              "text": "A local prototype now demonstrates sample intake, collection, consent requests, policy-dependent review, follow-up, correction and a selected-episode longitudinal Report."
             },
             {
               "type": "path",
@@ -60,7 +60,7 @@
           ],
           "decision": {
             "title": "LEADERSHIP TAKEAWAY",
-            "text": "Use the local prototype to test the care-collection and Progress-report foundation, and approve consent, review and wider capabilities separately. It is not production authorisation."
+            "text": "Use the local prototype to test the care-collection and longitudinal-Report foundation. Timeline markers and fixture-only visual experiments are not production authorisation."
           },
           "basis": "Detailed brief 01, sections 1-6. S1/S2 and CMDCS persona draft (CP1)."
         },
@@ -156,7 +156,7 @@
                   "name": "Jess / treating clinician",
                   "job": "Collect, interpret and act on the right information.",
                   "pain": "Duplicate entry, fragmented context and ambiguous status.",
-                  "response": "An episode-centred plan, eligible channels, policy-dependent review and a traceable Progress view.",
+                  "response": "An episode-centred plan, eligible channels, policy-dependent review and a traceable longitudinal record.",
                   "gain": "Less avoidable coordination effort and clearer clinical context."
                 }
               ]
@@ -164,7 +164,7 @@
             {
               "type": "note",
               "title": "Scope distinction",
-              "body": "The staff Progress dashboard is current prototype direction. Kai's personal dashboard and Jess's full ongoing-care record remain candidate capabilities with separate access and phase decisions."
+              "body": "The staff longitudinal timeline is current prototype evidence. Kai's personal dashboard and Jess's full governed ongoing-care record remain candidate capabilities with separate access and phase decisions."
             }
           ],
           "decision": {
@@ -567,7 +567,7 @@
             {
               "type": "note",
               "title": "Scope stays explicit",
-              "body": "The local prototype demonstrates intake, collection, consent decisions, review-required/not-required states, correction, referral and the Progress report with sample data. Operational rules and wider scope remain proposed."
+              "body": "The local prototype demonstrates intake, collection, consent decisions, review-required/not-required states, correction, referral and a selected-episode longitudinal Report with fictional data. Operational rules and wider scope remain proposed."
             }
           ],
           "decision": {
@@ -724,7 +724,7 @@
                 [
                   "03",
                   "Prototype",
-                  "Exercise the implemented local intake, consent, collection, policy-dependent review, correction, referral and Progress-report tasks."
+                  "Exercise the implemented local intake, consent, collection, policy-dependent review, correction, referral and longitudinal-Report tasks."
                 ],
                 [
                   "04",
@@ -1950,7 +1950,7 @@
             ],
             [
               "Report",
-              "Progress dashboard, clinician narrative, annotations and questionnaire details."
+              "Selected-episode care timeline and source detail; the Jordan fixture includes visual experiments only."
             ],
             [
               "Consent & respondents",
@@ -2081,7 +2081,7 @@
               "items": [
                 {"tag": "HIERARCHY", "title": "Context to task to summary", "body": "Show location, purpose, status and next action before dense evidence."},
                 {"tag": "CONTENT", "title": "One term, one meaning", "body": "Use sentence case, specific verbs and approved participant language."},
-                {"tag": "REPORT", "title": "Question-level evidence", "body": "Separate selector, charts and qualitative Previous to New changes; do not infer clinical meaning."},
+                {"tag": "REPORT", "title": "Dated evidence", "body": "Use factual timeline records with source detail; do not infer clinical meaning from timing, a raw score or a fixture visual."},
                 {"tag": "EVENTS", "title": "Timing is not causality", "body": "Use distinct accessible markers and describe events as contextual records."},
                 {"tag": "DISCLOSURE", "title": "Details without hiding risk", "body": "Use accessible accordions for secondary evidence, never for errors or required actions."},
                 {"tag": "RECOVERY", "title": "Explain the next safe step", "body": "Design empty, blocked, error, draft, submitted and unavailable states."}

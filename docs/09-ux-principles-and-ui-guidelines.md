@@ -132,12 +132,12 @@ Do not put a selector in the same visual container as the summary it controls if
 
 ### 5.5 Report and longitudinal evidence
 
-- Lead with a compact summary: latest response date, submitted responses, questionnaire series, Likert questions charted and recorded contextual events. When source data exists, follow it with a clearly labelled care-context block: **Risk and status history** must distinguish a factual dated event from **Not recorded**, and **Goals and functioning** must show dated structured milestones rather than an inferred trajectory.
-- Place the questionnaire/version selector in a separate, clearly labelled area below the summary and care-context block. The selected questionnaire name should be a heading, not buried in a control label.
-- Scope all content below the selector to the selected questionnaire/version and identify respondent and care-period date range.
-- Use one chart per comparable Likert question. Show response dates and authored ordinal labels. If a prototype displays a normalised average of valid Likert positions, identify its method, version and exclusions; never present it as an approved clinical score, threshold or interpretation.
-- Keep **Questionnaire comparison and details** as the answer-level evidence surface for non-Likert questions. It must retain the question, prior/latest dated values and comparison limits, rather than substituting an interpreted status.
-- If events appear on charts, use a distinct marker style and an accessible event label/tooltip. A marker communicates timing only; it does not establish influence.
+- Lead the current Report with the selected care episode's labelled date range and a shared **Care timeline**. Offer clear All, Care, Context and conditional K10 filters; do not hide the available tracks in a colour-only legend.
+- Use a bar only for a record with a factual start and end date. Use a point or marker for a one-date record. The selected item must expose its date, type, factual description, source status and available provenance; provide a browseable list alongside the spatial plot.
+- A K10 raw total requires a complete, dated, compatible response, its named scoring method and an accessible value/date alternative. Never add thresholds, diagnosis, severity labels, causal inference or treatment-effect language without the approved instrument-specific contract.
+- If events appear on a timeline, use a distinct marker style and accessible label. A marker communicates timing only; it does not establish influence.
+- Clearly label fixture-only visual experiments and never promote their simulated symptoms, risk states, outcome trajectories, activity ratings, programme periods or medication changes as governed data or a production feature.
+- The earlier questionnaire dashboard, normalised Likert display and answer-level **Questionnaire comparison and details** are not current Report behaviour. Future question-level comparison must keep the question, compatible versions, respondent, dates and comparison limits visible rather than substituting an interpreted status.
 - Keep clinician notes, narrative, response history and annotations in their approved destinations. A hidden module must not be silently treated as unavailable data.
 - Use a table only when side-by-side comparison improves a decision. Wrap question text, keep column headings visible, and put actions such as **View latest response** or **View earlier response** in the relevant response cell. At narrow widths, retain those headings semantically and show each dated answer with a visible label rather than leaving a compressed or horizontally clipped table.
 

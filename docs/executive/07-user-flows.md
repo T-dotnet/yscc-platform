@@ -1,6 +1,6 @@
 # YSCC Platform - User flows
 
-Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
+Executive edition 1.6 | 19 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/07-user-flows-executive.pdf) | [Detailed original](../07-user-flows.md) | [Executive index](README.md)
 

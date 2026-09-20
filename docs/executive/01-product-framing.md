@@ -1,6 +1,6 @@
 # YSCC Platform - Product framing
 
-Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
+Executive edition 1.6 | 19 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/01-product-framing-executive.pdf) | [Detailed original](../01-product-framing.md) | [Executive index](README.md)
 
@@ -8,7 +8,7 @@ Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the cur
 
 YSCC can connect assessment, participation and follow-up, then build towards a wider learning system.
 
-A local prototype now demonstrates sample intake, collection, consent requests, policy-dependent review, follow-up, correction and a questionnaire-based Progress report.
+A local prototype now demonstrates sample intake, collection, consent requests, policy-dependent review, follow-up, correction and a selected-episode longitudinal Report.
 
 ### Care delivery
 
@@ -42,7 +42,7 @@ Not an autonomous clinical decision-maker, an assumed EMR replacement or an unre
 
 ### LEADERSHIP TAKEAWAY
 
-Use the local prototype to test the care-collection and Progress-report foundation, and approve consent, review and wider capabilities separately. It is not production authorisation.
+Use the local prototype to test the care-collection and longitudinal-Report foundation. Timeline markers and fixture-only visual experiments are not production authorisation.
 
 Basis: Detailed brief 01, sections 1-6. S1/S2 and CMDCS persona draft (CP1).
 

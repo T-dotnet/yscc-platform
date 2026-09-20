@@ -1,6 +1,6 @@
 # YSCC Platform - Value Proposition Canvas
 
-Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
+Executive edition 1.6 | 19 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/02-value-proposition-canvas-executive.pdf) | [Detailed original](../02-value-proposition-canvas.md) | [Executive index](README.md)
 
@@ -34,13 +34,13 @@ A simpler contribution process is valuable only when it remains understandable, 
 
 **Pain:** Duplicate entry, fragmented context and ambiguous status.
 
-**Response:** An episode-centred plan, eligible channels, policy-dependent review and a traceable Progress view.
+**Response:** An episode-centred plan, eligible channels, policy-dependent review and a traceable longitudinal record.
 
 **Gain:** Less avoidable coordination effort and clearer clinical context.
 
 ### Scope distinction
 
-The staff Progress dashboard is current prototype direction. Kai's personal dashboard and Jess's full ongoing-care record remain candidate capabilities with separate access and phase decisions.
+The staff longitudinal timeline is current prototype evidence. Kai's personal dashboard and Jess's full governed ongoing-care record remain candidate capabilities with separate access and phase decisions.
 
 ### TEST THE VALUE
 

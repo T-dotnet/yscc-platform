@@ -1,6 +1,6 @@
 # YSCC Platform - UX strategy
 
-Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
+Executive edition 1.6 | 19 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/06-ux-strategy-executive.pdf) | [Detailed original](../06-ux-strategy.md) | [Executive index](README.md)
 
@@ -60,7 +60,7 @@ Progress through evidence gates rather than treating visual polish as launch rea
 
 - 02 - Structure - Test labels, record relationships, navigation and high-risk rules.
 
-- 03 - Prototype - Exercise the implemented local intake, consent, collection, policy-dependent review, correction, referral and Progress-report tasks.
+- 03 - Prototype - Exercise the implemented local intake, consent, collection, policy-dependent review, correction, referral and longitudinal-Report tasks.
 
 - 04 - Specify and implement - Replace sample policy with approved content/rules; build traceable tests.
 

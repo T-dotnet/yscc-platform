@@ -1,6 +1,6 @@
 # YSCC Platform - Information architecture
 
-Executive edition 1.5 | 16 September 2026 | Working proposal; aligned to the current local prototype
+Executive edition 1.6 | 19 September 2026 | Working proposal; aligned to the current local prototype
 
 [Visual PDF](../../output/pdf/executive/08-information-architecture-executive.pdf) | [Detailed original](../08-information-architecture.md) | [Executive index](README.md)
 
@@ -32,7 +32,7 @@ People > Person > Selected care episode
 
 - **Events:** Dated care-period changes and milestones, such as medication, service or significant life events.
 
-- **Report:** Progress dashboard, clinician narrative, annotations and questionnaire details.
+- **Report:** Selected-episode care timeline and source detail; the Jordan fixture includes visual experiments only.
 
 - **Consent & respondents:** Versioned purpose requests, decisions/history, relationship, authority and visibility.
 

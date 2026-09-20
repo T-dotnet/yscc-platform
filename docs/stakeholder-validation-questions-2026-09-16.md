@@ -45,6 +45,9 @@ Use this short set with clinical, assessment, operations, product/UX, privacy/da
 6. Should the page lead with a summary, then a questionnaire/version selector, question-level Likert charts and qualitative Previous → New cards? What hierarchy is clearest?
 7. Should questionnaire comparison and details, response history, notes, narrative, review and annotations live here or in Assessment/History? Who may view or edit each?
 8. Should events be shown as chart markers? If so, which types, labels, filters, links and accessibility treatment are required?
+9. The local prototype now uses a selected-episode care timeline with fictional care periods, medication courses, events, goals, risk-related events and conditional K10 raw totals. Which of these record types have an approved source and purpose, and which remain design experiments only?
+10. What provenance and accessible detail must a selected timeline item expose? When should a record be a dated point rather than a duration bar?
+11. What must prevent timeline proximity, a raw K10 total or a visual trend from being read as causality, severity, diagnosis, treatment effect or a clinical recommendation?
 
 ## 4. Cross-cutting decisions
 

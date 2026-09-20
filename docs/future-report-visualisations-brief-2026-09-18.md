@@ -12,18 +12,18 @@ The visualisation work should help a clinician prepare for a review by answering
 
 It must not imply that a questionnaire response, event or line direction proves clinical improvement, deterioration, causality, risk level or treatment effectiveness.
 
-### Implemented prototype baseline — 18 September 2026
+### Implemented prototype baseline — 19 September 2026
 
-The local prototype now has a deliberately limited Report implementation to validate the reading path. It shows a sample **Care coordination context** block with Risk and status history and Goals and functioning before the questionnaire selector; a Question-level Likert accordion; and an open **Questionnaire comparison and details** accordion for selected instruments with non-Likert questions. Risk categories show dated recorded events or **Not recorded**, which is not a finding of no concern. Goals are dated structured milestones, not a functioning score.
+The local prototype now renders a selected-episode **Care timeline** with All, Care, Context and conditional K10 filters. It uses dated fictional care periods, medication courses, events, goals, risk-related events and complete compatible K10 responses. Selecting a point or bar exposes local source detail, and an accessible record list offers a non-spatial alternative. The fixture record Jordan Ellis also contains hard-coded longitudinal visual experiments; these are design-review material, not a data contract or approved reporting feature.
 
-The Likert accordion currently includes an on-screen **Overall questionnaire score** calculated by normalising valid Likert positions to 0–100 and averaging them within the selected version. It excludes qualitative answers and is a prototype-only descriptive calculation, not an approved clinical score, threshold or interpretation. This implementation must not be taken as approval of the label, calculation, data contract or future score display. The [implementation status](prototype-report-and-responsive-status-2026-09-18.md) records the exact local behaviour, including responsive reflow for care-context cards, Likert cards and the answer comparison.
+The earlier questionnaire dashboard, normalised Likert aggregate and answer comparison are not current Report behaviour. A raw K10 total is displayed only for a complete dated response with a named scoring method and without thresholds, diagnosis, severity band or treatment-effect claim. The [current implementation status](prototype-longitudinal-report-status-2026-09-19.md) records the exact local behaviour.
 
 ## Existing product decisions to preserve
 
 - A care episode is the actual course of care. A 90-day review and its responses happen within that episode; they do not create another episode.
 - Keep the report heading and purpose as **Report**. Do not reintroduce a Care journey or Review preparation section into Report.
-- Keep repeated Likert answers as question-level trends. The prototype's current normalised aggregate is descriptive only; do not treat it as an approved clinical score or extend it into a clinical score display without the approvals in [Scored instruments such as K10](#scored-instruments-such-as-k10).
-- **Questionnaire comparison and details** remains the detailed response-comparison surface. It should continue to show its change count and open by default.
+- Treat current timeline/K10 behaviour as fictional prototype evidence, not an approved clinical display. Do not extend it into a score, severity or treatment-effect display without the approvals in [Scored instruments such as K10](#scored-instruments-such-as-k10).
+- Any future question-level comparison needs an explicit, compatible response contract; it is not currently rendered in Report.
 - The review pack stays on Overview and uses progressive disclosure in a modal.
 - Care events are factual context only. Their timing must not be shown as evidence that they caused a response change.
 - Every displayed data point must preserve inspectable provenance: questionnaire and version, respondent and role, recorder where relevant, response date, selected episode, and review state.
@@ -179,14 +179,7 @@ Start with the evidence most likely to be discussed. Reveal filters, all lanes, 
 
 ### Report
 
-Report remains the evidence-inspection surface:
-
-- the prototype-only Care coordination context block when its sample event/goal data exists;
-- `Likert changes over time` for repeat-answer trends;
-- `Questionnaire comparison and details` for direct answer comparison and provenance; and
-- response/detail views for source evidence.
-
-Do not generalise the current compact cards into a full care timeline here unless testing shows clinicians cannot otherwise connect the Report's evidence to its documented time context. The review pack remains the proposed home for a fuller chronological preparation view.
+Report currently renders the selected-episode Care timeline and source detail. It may show factual care periods, medication courses, events, goals, risk-related events and complete compatible K10 responses, but no timeline item establishes clinical meaning or causal connection. The existing fixture-only visual experiments must not be generalised into a production design. Assessment and History remain the source/detail views; question-level charts and comparison are future work pending an explicit data and interaction contract.
 
 ## Data and provenance contract
 
