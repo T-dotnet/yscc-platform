@@ -11,6 +11,8 @@ import {
   CalendarClock,
   Filter,
   ChevronDown,
+  ArrowRight,
+  FileCheck2,
 } from "lucide-react";
 import { useStore } from "../store";
 import { currentStaff, formatDate, TODAY } from "../model";
