@@ -29,7 +29,18 @@ import {
   reportSources,
 } from "./report.js";
 import { careEventContent, careEventError } from "./careEvents.js";
+import {
+  clinicalRecordContent,
+  clinicalRecordError,
+} from "./clinicalRecords.js";
+import {
+  appointmentContent,
+  appointmentError,
+  appointmentOutcomeContent,
+  appointmentOutcomeError,
+} from "./appointments.js";
 import { K10_SCORING_METHOD } from "./k10.js";
+import { QUALITY_STATUSES, getQualityIssues, validISODate } from "./dataQuality.js";
 
 export const TODAY = "2026-09-15";
 export const VERSION = DEMO_INSTRUMENT.version;
@@ -62,6 +73,32 @@ export const DEMO_STAFF = [
   { id: "jess", name: "Jess Taylor", role: "Clinician" },
   { id: "ananya", name: "Ananya", role: "Data Manager" },
 ];
+export const practitionerServiceOptions = (people = []) => {
+  const existingContacts = people.flatMap((person) => [
+    ...(person.referrals ?? []).map((referral) => referral.destination),
+    ...(person.episodes ?? []).flatMap((episode) => [
+      ...(episode.appointments ?? []).map(
+        (appointment) => appointment.practitionerService,
+      ),
+      ...(episode.servicePeriods ?? []).map(
+        (period) => period.label || period.setting,
+      ),
+    ]),
+  ]);
+  const localCareTeam = [
+    ...DEMO_STAFF.filter((staff) => staff.role === "Clinician").map(
+      (staff) => `${staff.name} · Northside Centre`,
+    ),
+    "Northside Centre",
+  ];
+  return [
+    ...new Map(
+      [...localCareTeam, ...existingContacts]
+        .filter((value) => value?.trim())
+        .map((value) => [value.trim().toLocaleLowerCase(), value.trim()]),
+    ).values(),
+  ].toSorted((a, b) => a.localeCompare(b));
+};
 export const currentStaff = (state) =>
   DEMO_STAFF.find((staff) => staff.id === (state.staffId ?? "jess"));
 export const canEditResponses = (state) =>
@@ -450,6 +487,144 @@ function longitudinalQualitativeCollections(
   });
 }
 
+// These are deterministic fictional visualisation fixtures. The category and
+// change fields are deliberately supplied alongside the score; the prototype
+// does not calculate a clinical category or significance from a total.
+function outcomeMeasureFixtures() {
+  const source = {
+    baseline: "A-7-life-care-starting-point",
+    fourWeeks: "A-7-life-care-four-weeks",
+    eightWeeks: "A-7-life-care-eight-weeks",
+    twelveWeeks: "A-7-life-care-twelve-weeks",
+  };
+  const record = (id, date, value, category, context, sourceCollectionId, change, extra = {}) => ({
+    id,
+    date,
+    value,
+    status: "Complete",
+    category,
+    context,
+    recordedBy: "Jess Taylor",
+    notes: "Fictional outcome-measure fixture for report visualisation review.",
+    sourceCollectionId,
+    change,
+    ...extra,
+  });
+
+  return [
+    {
+      key: "k10-plus",
+      scoreRange: [10, 50],
+      severityBands: [
+        { label: "Low distress", from: 10, to: 19, tone: "low" },
+        { label: "Moderate distress", from: 20, to: 29, tone: "moderate" },
+        { label: "High distress", from: 30, to: 50, tone: "high" },
+      ],
+      records: [
+        record("OM-7-k10-plus-baseline", "2026-06-16", 32, "High distress", "Admission", source.baseline, { label: "Baseline score" }),
+        record("OM-7-k10-plus-review", "2026-08-11", 26, "Moderate distress", "Review", source.eightWeeks, { direction: "improved", label: "Improved", clinicallySignificant: true }),
+        record("OM-7-k10-plus-latest", "2026-09-08", 22, "Moderate distress", "Review", source.twelveWeeks, { direction: "improved", label: "Improved", clinicallySignificant: true }),
+      ],
+    },
+    {
+      key: "k5",
+      scoreRange: [5, 25],
+      severityBands: [
+        { label: "Low distress", from: 5, to: 9, tone: "low" },
+        { label: "Moderate distress", from: 10, to: 14, tone: "moderate" },
+        { label: "High distress", from: 15, to: 25, tone: "high" },
+      ],
+      records: [
+        record("OM-7-k5-baseline", "2026-06-16", 11, "Moderate distress", "Admission", source.baseline, { label: "Baseline score" }),
+        record("OM-7-k5-review", "2026-08-11", 14, "Moderate distress", "Review", source.eightWeeks, { direction: "deteriorated", label: "Deteriorated" }),
+        record("OM-7-k5-latest", "2026-09-08", 18, "High distress", "Review", source.twelveWeeks, { direction: "deteriorated", label: "Deteriorated", clinicallySignificant: true }),
+      ],
+    },
+    {
+      key: "sdq",
+      scoreRange: [0, 40],
+      severityBands: [
+        { label: "Low difficulties", from: 0, to: 13, tone: "low" },
+        { label: "Moderate difficulties", from: 14, to: 19, tone: "moderate" },
+        { label: "High difficulties", from: 20, to: 40, tone: "high" },
+      ],
+      records: [
+        record("OM-7-sdq-baseline", "2026-06-18", 17, "Moderate difficulties", "Admission", source.baseline, { label: "Baseline score" }),
+        record("OM-7-sdq-review", "2026-08-13", 14, "Moderate difficulties", "Review", source.eightWeeks, { direction: "improved", label: "Improved" }),
+        record("OM-7-sdq-latest", "2026-09-09", 12, "Low difficulties", "Review", source.twelveWeeks, { direction: "improved", label: "Improved" }),
+      ],
+    },
+    {
+      key: "sidas",
+      scoreRange: [0, 50],
+      severityBands: [
+        { label: "Lower range", from: 0, to: 9, tone: "low" },
+        { label: "Middle range", from: 10, to: 19, tone: "moderate" },
+        { label: "Higher range", from: 20, to: 50, tone: "high" },
+      ],
+      records: [
+        record("OM-7-sidas-baseline", "2026-06-20", 8, "Lower range", "Admission", source.baseline, { label: "Baseline score" }),
+        record("OM-7-sidas-review", "2026-08-13", 6, "Lower range", "Review", source.eightWeeks, { direction: "improved", label: "Improved" }),
+        record("OM-7-sidas-latest", "2026-09-10", 4, "Lower range", "Review", source.twelveWeeks, { direction: "improved", label: "Improved" }),
+      ],
+    },
+    {
+      key: "who-5",
+      scoreRange: [0, 100],
+      severityBands: [
+        { label: "Lower wellbeing", from: 0, to: 32, tone: "high" },
+        { label: "Moderate wellbeing", from: 33, to: 64, tone: "moderate" },
+        { label: "Higher wellbeing", from: 65, to: 100, tone: "low" },
+      ],
+      records: [
+        record("OM-7-who5-baseline", "2026-06-16", 36, "Moderate wellbeing", "Admission", source.baseline, { label: "Baseline score" }),
+        record("OM-7-who5-review", "2026-08-11", 48, "Moderate wellbeing", "Review", source.eightWeeks, { direction: "improved", label: "Improved" }),
+        record("OM-7-who5-latest", "2026-09-08", 56, "Moderate wellbeing", "Review", source.twelveWeeks, { direction: "improved", label: "Improved", clinicallySignificant: true }),
+      ],
+    },
+    {
+      key: "iar-dst",
+      records: [
+        {
+          id: "OM-7-iar-dst-baseline",
+          date: "2026-06-17",
+          value: null,
+          status: "Recorded missing",
+          context: "Admission",
+          recordedBy: "Jess Taylor",
+          notes: "Fictional missing-data fixture. The IAR-DST scoring contract is not configured.",
+          sourceCollectionId: source.baseline,
+          change: { label: "No score available" },
+        },
+        {
+          id: "OM-7-iar-dst-review",
+          date: "2026-08-11",
+          value: null,
+          status: "Incomplete — follow-up required",
+          context: "Review",
+          recordedBy: "Jess Taylor",
+          notes: "Fictional incomplete assessment. Follow-up is required before a score can be shown.",
+          sourceCollectionId: source.eightWeeks,
+          change: { label: "Awaiting completion" },
+        },
+        {
+          id: "OM-7-iar-dst-latest",
+          date: "2026-09-10",
+          value: null,
+          status: "Incomplete — follow-up required",
+          dueState: "Overdue",
+          dueDate: "2026-09-10",
+          context: "Review",
+          recordedBy: "Jess Taylor",
+          notes: "Fictional incomplete assessment. Follow-up is required before a score can be shown.",
+          sourceCollectionId: source.twelveWeeks,
+          change: { label: "Awaiting completion" },
+        },
+      ],
+    },
+  ];
+}
+
 function createMockFullReportPerson() {
   const id = "YS-1034";
   const episodeId = "EP-1034-01";
@@ -517,6 +692,100 @@ function createMockFullReportPerson() {
           status: "Delivered · fictional demo record",
         },
       ],
+      appointments: [
+        {
+          id: "APT-7-overdue-plan",
+          appointmentType: "Care review",
+          plannedDate: "2026-09-10",
+          plannedTime: "10:00",
+          plannedDurationMinutes: 45,
+          practitionerService: "Jess Taylor · Northside Centre",
+          location: "Northside Centre",
+          deliveryMode: "In person",
+          attendance: "Planned",
+          notes: "Confirm attendance or record the outcome.",
+          timestamp: "2026-09-04T09:20:00Z",
+          actor: "Sample fixture",
+          role: "Clinician",
+        },
+        {
+          id: "APT-7-upcoming-plan",
+          appointmentType: "Care review",
+          plannedDate: "2026-09-23",
+          plannedTime: "15:30",
+          plannedDurationMinutes: 60,
+          practitionerService: "Northside Centre",
+          location: "Northside Centre",
+          deliveryMode: "Video",
+          attendance: "Planned",
+          notes: "Planned review of current support goals.",
+          timestamp: "2026-09-12T10:00:00Z",
+          actor: "Sample fixture",
+          role: "Clinician",
+        },
+        {
+          id: "APT-7-attended",
+          appointmentType: "Care review",
+          plannedDate: "2026-09-12",
+          plannedTime: "14:00",
+          plannedDurationMinutes: 60,
+          practitionerService: "Jess Taylor · Northside Centre",
+          location: "Northside Centre",
+          deliveryMode: "Phone",
+          attendance: "Attended",
+          actualDate: "2026-09-12",
+          actualTime: "14:08",
+          actualDurationMinutes: 48,
+          notes: "Fictional completed contact.",
+          outcomeNotes: "Next planned review retained.",
+          outcomeRecordedAt: "2026-09-12T15:00:00Z",
+          outcomeRecordedBy: "Sample fixture",
+          clinicalSummary: {
+            sessionObjective: "Review current support goals and agreed follow-up.",
+            notePreview: "Fictional contact completed; next review remains planned.",
+            riskIndicator: "Low · review recorded",
+            outcomeMeasures: ["WHO-5", "IAR-DST"],
+            tasks: ["Confirm preferred follow-up method"],
+            nextAppointment: "23 Sep 2026 · 15:30 · Telehealth",
+          },
+          timestamp: "2026-09-08T10:00:00Z",
+          actor: "Sample fixture",
+          role: "Clinician",
+        },
+        {
+          id: "APT-7-cancelled",
+          appointmentType: "Community support contact",
+          plannedDate: "2026-09-09",
+          plannedTime: "11:30",
+          plannedDurationMinutes: 30,
+          practitionerService: "Community care",
+          deliveryMode: "Outreach or community",
+          attendance: "Cancelled",
+          outcomeNotes: "Fictional cancellation; follow-up remains planned.",
+          outcomeRecordedAt: "2026-09-08T16:00:00Z",
+          outcomeRecordedBy: "Sample fixture",
+          timestamp: "2026-09-03T09:00:00Z",
+          actor: "Sample fixture",
+          role: "Clinician",
+        },
+        {
+          id: "APT-7-dna",
+          appointmentType: "Group programme contact",
+          plannedDate: "2026-09-05",
+          plannedTime: "09:15",
+          plannedDurationMinutes: 45,
+          practitionerService: "Group programme",
+          deliveryMode: "Other",
+          attendance: "Did not attend",
+          outcomeNotes: "Fictional non-attendance recorded; check preferred contact method.",
+          outcomeRecordedAt: "2026-09-05T10:30:00Z",
+          outcomeRecordedBy: "Sample fixture",
+          timestamp: "2026-08-29T11:00:00Z",
+          actor: "Sample fixture",
+          role: "Clinician",
+        },
+      ],
+      reportOutcomeMeasures: outcomeMeasureFixtures(),
       medicationCourses: [
         {
           id: "MC-7-a",
@@ -808,13 +1077,16 @@ export function upgradeSampleData(state) {
     ),
   );
   if (hasOldQuestionnaire) return createSeed();
-  if (state.sampleRevision < 15 || !state.sampleRevision)
-    return prepareSeed(structuredClone(state));
+  if (state.sampleRevision < 19 || !state.sampleRevision)
+    return prepareQualityState(prepareSeed(structuredClone(state)));
   if (state.intakeRevision !== 3)
     state = prepareIntakes(structuredClone(state));
-  return state.consentRevision === 1
+  state = state.consentRevision === 1
     ? state
     : prepareConsentRequests(structuredClone(state));
+  return state.qualityRevision === 1
+    ? state
+    : prepareQualityState(structuredClone(state));
 }
 
 function addFictionalProgressReport(episode, { eventId, timestamp, content }) {
@@ -867,6 +1139,27 @@ function prepareSeed(state) {
   ]) {
     if (!next.people.some((person) => person.id === fixture.id))
       next.people.push(fixture);
+  }
+  const jordan = next.people.find((person) => person.id === "YS-1034");
+  const jordanEpisode = jordan?.episodes.find((episode) => episode.id === "EP-1034-01");
+  const jordanFixture = createMockFullReportPerson();
+  const jordanFixtureAppointments = jordanFixture.episodes[0].appointments;
+  const jordanFixtureMeasures = jordanFixture.episodes[0].reportOutcomeMeasures;
+  if (jordanEpisode) {
+    jordanEpisode.appointments ??= [];
+    for (const appointment of jordanFixtureAppointments) {
+      const existing = jordanEpisode.appointments.find(
+        (item) => item.id === appointment.id,
+      );
+      if (!existing) {
+        jordanEpisode.appointments.push(appointment);
+      } else {
+        for (const [key, value] of Object.entries(appointment)) {
+          if (existing[key] == null) existing[key] = value;
+        }
+      }
+    }
+    jordanEpisode.reportOutcomeMeasures = structuredClone(jordanFixtureMeasures);
   }
   const zoe = next.people.find((p) => p.id === "YS-1027");
   const current = zoe?.episodes.find((e) => e.id === "EP-1027-01");
@@ -1229,7 +1522,7 @@ function prepareSeed(state) {
         "At the next review, discuss the recorded changes with Mia, check whether care events affect priorities, and agree any follow-up.",
     },
   });
-  next.sampleRevision = 15;
+  next.sampleRevision = 19;
   return prepareConsentRequests(prepareIntakes(next));
 }
 
@@ -1265,6 +1558,70 @@ function prepareConsentRequests(next) {
     ];
   }
   next.consentRevision = 1;
+  return next;
+}
+
+function prepareQualityState(next) {
+  next.qualityIssueWorkflow ??= {};
+  next.issues = (next.issues ?? []).map((issue) => {
+    const rules = {
+      "DQ-001": {
+        ruleKey: "demographic-reference-dob",
+        severity: "High",
+        type: "Inconsistent demographic information",
+        workflow: "Person details",
+        blocking: true,
+        dueDate: "2026-09-17",
+      },
+      "DQ-002": {
+        ruleKey: "contact-suitability",
+        severity: "Medium",
+        type: "Inconsistent demographic information",
+        workflow: "Person details",
+        blocking: false,
+        dueDate: "2026-09-18",
+      },
+    };
+    const rule = rules[issue.id] || {};
+    const detectedAt = issue.detectedAt || "2026-09-15T09:00:00Z";
+    return {
+      ...issue,
+      ...rule,
+      organisation: issue.organisation || "Northside Centre",
+      submissionPeriod: issue.submissionPeriod || "Sep 2026",
+      description: issue.description || issue.detail,
+      remediation:
+        issue.remediation ||
+        issue.nextStep ||
+        "Check a verified source, then record the outcome and next action.",
+      detectedAt,
+      lastUpdated: issue.lastUpdated || detectedAt,
+      history:
+        issue.history || [
+          {
+            id: `H-${issue.id}-detected`,
+            timestamp: detectedAt,
+            actor: "Quality rule set",
+            title: "Issue detected",
+            detail: issue.detail,
+            status: issue.status || "Open",
+          },
+        ],
+    };
+  });
+  const kai = next.people.find((person) => person.id === "YS-1024");
+  if (kai && !kai.demographicReference)
+    kai.demographicReference = {
+      dob: "2009-04-19",
+      source: "the fictional referral record",
+    };
+  const oliver = next.people.find((person) => person.id === "YS-1028");
+  if (oliver && !oliver.contactReference)
+    oliver.contactReference = {
+      status: "Not confirmed",
+      source: "the fictional referral record",
+    };
+  next.qualityRevision = 1;
   return next;
 }
 
@@ -1350,7 +1707,7 @@ function prepareIntakes(next) {
 }
 
 export function createSeed() {
-  return prepareSeed({
+  return prepareQualityState(prepareSeed({
     schema: 1,
     terminologyRevision: 1,
     people: [
@@ -1362,6 +1719,22 @@ export function createSeed() {
         owner: "Jess Taylor",
         consent: "Recorded",
         contact: "Suitable",
+        ...(i === 0
+          ? {
+              demographicReference: {
+                dob: "2009-04-19",
+                source: "the fictional referral record",
+              },
+            }
+          : {}),
+        ...(i === 4
+          ? {
+              contactReference: {
+                status: "Not confirmed",
+                source: "the fictional referral record",
+              },
+            }
+          : {}),
         consentRequests: [
           {
             id: `CR-${1024 + i}-assessment`,
@@ -1458,7 +1831,13 @@ export function createSeed() {
         personId: "YS-1024",
         title: "Confirm date of birth",
         field: "dob",
+        ruleKey: "demographic-reference-dob",
         status: "Open",
+        severity: "High",
+        type: "Inconsistent demographic information",
+        workflow: "Person details",
+        dueDate: "2026-09-17",
+        blocking: true,
         detail:
           "The referral and person record contain different dates. Check a verified source before making a correction.",
       },
@@ -1467,13 +1846,20 @@ export function createSeed() {
         personId: "YS-1028",
         title: "Review contact suitability",
         field: "contact",
+        ruleKey: "contact-suitability",
         status: "Open",
+        severity: "Medium",
+        type: "Inconsistent demographic information",
+        workflow: "Person details",
+        dueDate: "2026-09-18",
+        blocking: false,
         detail:
           "Confirm the current contact arrangement with the care team before further invitations.",
       },
     ],
+    qualityIssueWorkflow: {},
     audit: [],
-  });
+  }));
 }
 
 export function collectionStatus(c) {
@@ -1610,6 +1996,33 @@ export function reducer(state, action) {
     });
   };
   switch (action.type) {
+    case "ADD_APPOINTMENT": {
+      if (e?.status !== "Active" || appointmentError(e, action, TODAY))
+        return state;
+      const appointment = {
+        id: uid(),
+        ...appointmentContent(action),
+        timestamp: recordedAt,
+        actor: staff?.name || "Not recorded",
+        actorId: staff?.id || null,
+        role: staff?.role || null,
+      };
+      e.appointments ??= [];
+      e.appointments.unshift(appointment);
+      break;
+    }
+    case "RECORD_APPOINTMENT_OUTCOME": {
+      const appointment = e?.appointments?.find(
+        (item) => item.id === action.appointmentId,
+      );
+      if (appointmentOutcomeError(e, appointment, action, TODAY)) return state;
+      Object.assign(appointment, appointmentOutcomeContent(action), {
+        outcomeRecordedAt: recordedAt,
+        outcomeRecordedBy: staff?.name || "Not recorded",
+        outcomeRecordedById: staff?.id || null,
+      });
+      break;
+    }
     case "ADD_CARE_EVENT": {
       if (careEventError(e, action, TODAY)) return state;
       const content = careEventContent(action);
@@ -1630,6 +2043,28 @@ export function reducer(state, action) {
         actorId: staff?.id || null,
         role: staff?.role || null,
       });
+      break;
+    }
+    case "ADD_CLINICAL_RECORD": {
+      if (e?.status !== "Active" || clinicalRecordError(e, action, TODAY))
+        return state;
+      const content = clinicalRecordContent(action);
+      const record = {
+        id: uid(),
+        recordDate: action.recordDate,
+        timestamp: recordedAt,
+        title: content.title,
+        detail: content.detail,
+        recordType: action.recordType,
+        fields: content.fields,
+        personId: p.id,
+        episodeId: e.id,
+        actor: staff?.name || "Not recorded",
+        actorId: staff?.id || null,
+        role: staff?.role || null,
+      };
+      e.clinicalRecords ??= [];
+      e.clinicalRecords.unshift(record);
       break;
     }
     case "CORRECT_CARE_EVENT": {
@@ -2164,7 +2599,16 @@ export function reducer(state, action) {
         ],
       });
       break;
-    case "EPISODE":
+    case "EPISODE": {
+      const unresolvedReferrals = (p?.referrals ?? []).filter(
+        (referral) =>
+          referral.episodeId === e?.id &&
+          ![
+            "Resolved handover",
+            "Resolved alternative",
+            "Cancelled with plan",
+          ].includes(referral.handover),
+      );
       if (
         !e ||
         e.status !== "Active" ||
@@ -2172,8 +2616,107 @@ export function reducer(state, action) {
         !action.reason?.trim()
       )
         return state;
+      if (
+        action.status === "Closed" &&
+        (![
+          "Planned care completed",
+          "Transferred or handed over",
+          "Care ended early",
+          "Other or not yet classified",
+        ].includes(action.closureCategory) ||
+          !["Not applicable", "Planned", "Confirmed"].includes(
+            action.handoverStatus,
+          ) ||
+          ![
+            "Not required or not applicable",
+            "Complete",
+            "Outstanding",
+            "Recorded missing",
+          ].includes(action.finalMeasureStatus) ||
+          !/^\d{4}-\d{2}-\d{2}$/.test(action.end || "") ||
+          !Number.isFinite(new Date(`${action.end}T12:00:00`).getTime()) ||
+          new Date(`${action.end}T12:00:00`).toISOString().slice(0, 10) !==
+            action.end ||
+          action.end < e.start ||
+          action.end > TODAY ||
+          (["Planned", "Confirmed"].includes(action.handoverStatus) &&
+            !action.handoverDestination?.trim()) ||
+          (action.handoverStatus === "Confirmed" &&
+            (!action.receivingResponsiblePerson?.trim() ||
+              !action.handoverConfirmationReference?.trim() ||
+              !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(
+                action.handoverConfirmedAt || "",
+              ) ||
+              !Number.isFinite(Date.parse(action.handoverConfirmedAt)) ||
+              action.handoverConfirmedAt.slice(0, 10) < e.start ||
+              action.handoverConfirmedAt.slice(0, 10) > TODAY)) ||
+          (unresolvedReferrals.length > 0 &&
+            (action.unresolvedReferralRule !== "Reconciliation task required" ||
+              !action.referralReconciliationOwner?.trim() ||
+              !action.referralReconciliationAction?.trim() ||
+              !/^\d{4}-\d{2}-\d{2}$/.test(
+                action.referralReconciliationDue || "",
+              ) ||
+              !Number.isFinite(Date.parse(action.referralReconciliationDue)) ||
+              action.referralReconciliationDue < TODAY)))
+      )
+        return state;
       e.status = action.status;
-      if (action.status === "Closed") e.end = TODAY;
+      if (action.status === "Closed") {
+        e.end = action.end;
+        e.closureCategory = action.closureCategory;
+        e.handoverStatus = action.handoverStatus;
+        e.handoverDestination = action.handoverDestination?.trim() || null;
+        e.receivingResponsibility =
+          action.handoverStatus === "Confirmed" ? "Confirmed" : "Not confirmed";
+        e.receivingResponsiblePerson =
+          action.receivingResponsiblePerson?.trim() || null;
+        e.handoverConfirmedAt = action.handoverConfirmedAt || null;
+        e.handoverConfirmationReference =
+          action.handoverConfirmationReference?.trim() || null;
+        e.finalMeasureStatus = action.finalMeasureStatus;
+        e.referralReconciliation = unresolvedReferrals.length
+          ? {
+              status: "Required",
+              count: unresolvedReferrals.length,
+              owner: action.referralReconciliationOwner.trim(),
+              due: action.referralReconciliationDue,
+              action: action.referralReconciliationAction.trim(),
+            }
+          : null;
+        e.referralReconciliationStatus = unresolvedReferrals.length
+          ? "Required"
+          : null;
+        e.referralReconciliationOwner = unresolvedReferrals.length
+          ? action.referralReconciliationOwner.trim()
+          : null;
+        e.referralReconciliationDue = unresolvedReferrals.length
+          ? action.referralReconciliationDue
+          : null;
+        for (const referral of unresolvedReferrals) {
+          referral.owner = action.referralReconciliationOwner.trim();
+          referral.nextAction = action.referralReconciliationAction.trim();
+          referral.reviewDate = action.referralReconciliationDue;
+          referral.closureReconciliation = {
+            owner: referral.owner,
+            due: referral.reviewDate,
+            action: referral.nextAction,
+          };
+          referral.revision += 1;
+          referral.history.unshift({
+            id: uid(),
+            timestamp: recordedAt,
+            actor: staff?.name || "Not recorded",
+            title: "Closure reconciliation assigned",
+            detail: `Care period closed; referral remains open. ${referral.nextAction}`,
+            occurredAt: null,
+            system: "YSCC care-period closure",
+            externalOwner: referral.externalOwner || "",
+            nextAction: referral.nextAction,
+            reviewDate: referral.reviewDate,
+          });
+        }
+      }
       e.reason = action.reason;
       e.nextCareStep = action.nextCareStep?.trim() || null;
       e.nextCareOwner = action.nextCareOwner?.trim() || p.owner || null;
@@ -2184,10 +2727,76 @@ export function reducer(state, action) {
         }
       });
       event(
-        `Care episode ${action.status.toLowerCase()}`,
-        `${action.reason} · Next care step: ${e.nextCareStep || "Not recorded"} · Owner: ${e.nextCareOwner || "Not assigned"} · outstanding collections ${action.status === "Paused" ? "paused" : "cancelled"}; links revoked`,
+        `Care period ${action.status.toLowerCase()}`,
+        `${action.reason} · ${
+          action.status === "Closed"
+            ? `Closure: ${e.closureCategory}; handover: ${e.handoverStatus}${e.handoverDestination ? ` (${e.handoverDestination})` : ""}${e.receivingResponsiblePerson ? ` · receiving responsibility: ${e.receivingResponsiblePerson}` : ""}; final measures: ${e.finalMeasureStatus}${e.referralReconciliation ? ` · ${e.referralReconciliation.count} unresolved referral${e.referralReconciliation.count === 1 ? "" : "s"} assigned for reconciliation` : ""} · `
+            : ""
+        }Next care step: ${e.nextCareStep || "Not recorded"} · Owner: ${e.nextCareOwner || "Not assigned"} · outstanding collections ${action.status === "Paused" ? "paused" : "cancelled"}; links revoked`,
       );
       break;
+    }
+    case "UPDATE_QUALITY_ISSUE": {
+      const issue = getQualityIssues(state, TODAY).find(
+        (item) => item.id === action.issueId && item.personId === action.personId,
+      );
+      const problem = qualityWorkflowError(state, action);
+      if (!issue || problem) return state;
+      const timestamp = recordedAt;
+      const prior = {
+        status: issue.status,
+        owner: issue.owner,
+        dueDate: issue.dueDate || null,
+      };
+      const update = {
+        status: action.status,
+        owner: action.owner,
+        dueDate: action.dueDate || null,
+        lastUpdated: timestamp,
+      };
+      const history = [
+        {
+          id: uid(),
+          timestamp,
+          actor: staff?.name || "Staff member",
+          actorId: staff?.id || null,
+          role: staff?.role || null,
+          title: "Issue workflow updated",
+          detail: action.comment.trim(),
+          ...update,
+        },
+        ...(issue.history || []),
+      ];
+      const stored = { ...update, history };
+      const manual = next.issues.find((item) => item.id === action.issueId);
+      if (manual) Object.assign(manual, stored);
+      else {
+        next.qualityIssueWorkflow ??= {};
+        next.qualityIssueWorkflow[action.issueId] = stored;
+      }
+      next.audit.unshift({
+        id: uid(),
+        type: "data-quality-workflow",
+        date: timestamp.slice(0, 10),
+        timestamp,
+        personId: action.personId,
+        title: `${issue.title} · workflow updated`,
+        detail: action.comment.trim(),
+        actor: staff?.name || "Staff member",
+        actorId: staff?.id || null,
+        role: staff?.role || null,
+        changes: [
+          ["status", "Issue status"],
+          ["owner", "Assigned owner"],
+          ["dueDate", "Due date"],
+        ].flatMap(([key, label]) =>
+          prior[key] === stored[key]
+            ? []
+            : [{ key: `quality-${action.issueId}-${key}`, label, before: prior[key], after: stored[key] }],
+        ),
+      });
+      break;
+    }
     case "RESOLVE_ISSUE":
     case "CORRECT": {
       const resolution =
@@ -2198,12 +2807,39 @@ export function reducer(state, action) {
       const prior = p[issue.field];
       if (resolution === "Corrected value")
         p[issue.field] = action.value.trim();
-      issue.status = resolution === "Needs investigation" ? "Open" : "Resolved";
+      issue.status =
+        resolution === "Needs investigation" ? "Open" : "Resolved";
       issue.outcome = resolution;
       issue.reason = action.reason.trim();
       issue.owner = currentStaff(state)?.name || p.owner;
+      issue.lastUpdated = recordedAt;
+      issue.resolvedAt = resolution === "Needs investigation" ? null : recordedAt;
+      issue.resolvedBy =
+        resolution === "Needs investigation"
+          ? null
+          : currentStaff(state)?.name || "Staff member";
       issue.nextStep =
         resolution === "Needs investigation" ? action.nextStep.trim() : null;
+      issue.history = [
+        {
+          id: uid(),
+          timestamp: recordedAt,
+          actor: currentStaff(state)?.name || "Staff member",
+          actorId: staff?.id || null,
+          role: staff?.role || null,
+          title:
+            resolution === "Needs investigation"
+              ? "Investigation recorded"
+              : "Issue resolved",
+          detail: action.reason.trim(),
+          status: issue.status,
+          owner: issue.owner,
+          dueDate: issue.dueDate || null,
+          source: action.source.trim(),
+          resolution,
+        },
+        ...(issue.history || []),
+      ];
       if (
         resolution === "Corrected value" &&
         issue.field === "contact" &&
@@ -2265,8 +2901,8 @@ export function qualityResolutionError(state, action) {
   const issue = state.issues.find(
     (i) => i.id === action.issueId && i.personId === action.personId,
   );
-  if (!person || !issue || issue.status !== "Open")
-    return "This issue is no longer open for this person.";
+  if (!person || !issue || ["Resolved", "Closed"].includes(issue.status))
+    return "This issue is already resolved or closed for this person.";
   if (
     !["Confirmed unchanged", "Corrected value", "Needs investigation"].includes(
       action.resolution,
@@ -2294,6 +2930,28 @@ export function qualityResolutionError(state, action) {
     )
       return "Enter a valid date of birth on or before the sample date.";
   }
+  return null;
+}
+
+export function qualityWorkflowError(state, action) {
+  const issue = getQualityIssues(state, TODAY).find(
+    (item) => item.id === action.issueId && item.personId === action.personId,
+  );
+  if (!issue) return "This issue is no longer available. Reopen the queue and try again.";
+  if (!QUALITY_STATUSES.includes(action.status)) return "Choose a valid issue status.";
+  if (!DEMO_STAFF.some((staff) => staff.name === action.owner))
+    return "Assign the issue to a responsible user.";
+  if (action.dueDate && !validISODate(action.dueDate))
+    return "Enter a valid due date or leave it blank.";
+  if (!action.comment?.trim())
+    return "Add a comment explaining the assignment, status or next step.";
+  if (action.status === "Resolved" && issue.status !== "Resolved")
+    return "Correct the underlying data before marking an issue resolved.";
+  if (
+    action.status === "Closed" &&
+    !["Resolved", "Closed"].includes(issue.status)
+  )
+    return "An issue can only be closed after it has been resolved.";
   return null;
 }
 

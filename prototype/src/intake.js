@@ -290,9 +290,13 @@ export function intakeActionError(state, action, staff) {
     }
     if (
       f.kind === "Handover confirmed" &&
-      (r.decision !== "Accepted" || !text(f.externalOwner))
+      (r.decision !== "Accepted" ||
+        r.receipt !== "Acknowledged received" ||
+        !text(f.externalOwner) ||
+        f.receivingResponsibility !== "Confirmed")
     )
-      return "Record acceptance and the receiving owner before confirming handover.";
+      return "Record receipt, acceptance, the receiving owner and their confirmed responsibility before confirming handover.";
+    if (!text(f.owner)) return "Assign the YSCC follow-up owner.";
     if (
       [
         "Handover confirmed",
@@ -531,6 +535,10 @@ export function applyIntakeAction(
       decision: "Pending",
       handover: "Open",
       externalOwner: "",
+      receivingResponsibility: "Not confirmed",
+      handoverConfirmedAt: null,
+      handoverEvidence: null,
+      closureReconciliation: null,
       attempts: [],
       history: [
         history("Referral prepared", "Draft saved; no external message sent."),
@@ -567,10 +575,16 @@ export function applyIntakeAction(
       r.decision = f.kind;
     if (f.kind === "Accepted")
       r.handover = "Awaiting acknowledgement of responsibility";
-    if (f.kind === "Handover confirmed") r.handover = "Resolved handover";
+    if (f.kind === "Handover confirmed") {
+      r.handover = "Resolved handover";
+      r.receivingResponsibility = "Confirmed";
+      r.handoverConfirmedAt = f.occurredAt;
+      r.handoverEvidence = f.evidence.trim();
+    }
     if (f.kind === "Alternative plan") r.handover = "Resolved alternative";
     if (f.kind === "Cancelled with plan") r.handover = "Cancelled with plan";
     if (text(f.externalOwner)) r.externalOwner = f.externalOwner.trim();
+    r.owner = f.owner.trim();
     r.nextAction = f.nextAction.trim();
     r.reviewDate = f.reviewDate;
     r.revision += 1;

@@ -181,7 +181,8 @@ export function ClinicalHistory({
     <div className="clinical-history">
       <p className="history-intro">
         All assessment assignments in this care episode, including their stage,
-        delivery method, start, completion and recorded clinical events.
+        delivery method, start, completion, appointments and recorded clinical
+        events and structured care records.
       </p>
       <div className="history-view-switcher">
         <Tabs
@@ -260,11 +261,11 @@ export function ClinicalHistory({
               })}
             </ol>
             <section className="episode-history-events" aria-labelledby="episode-events-heading">
-              <h3 id="episode-events-heading">Care episode events</h3>
+              <h3 id="episode-events-heading">Care-period activity</h3>
               <EventList
                 entries={careEvents}
                 person={person}
-                label="Care episode events"
+                label="Care-period activity"
               />
             </section>
           </>

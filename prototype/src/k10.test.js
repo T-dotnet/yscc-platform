@@ -16,16 +16,36 @@ test("fictional full-report person has independent dated courses, goals and repr
   assert.equal(episode.medicationCourses.length, 2);
   assert.equal(episode.goalMilestones.length, 3);
   assert.deepEqual(
+    episode.reportOutcomeMeasures.map((measure) => measure.key),
+    ["k10-plus", "k5", "sdq", "sidas", "who-5", "iar-dst"],
+  );
+  assert.ok(
+    episode.reportOutcomeMeasures.every((measure) => measure.records.length === 3),
+  );
+  assert.ok(
+    episode.reportOutcomeMeasures.some((measure) =>
+      measure.records.some(
+        (record) => record.status === "Incomplete — follow-up required",
+      ),
+    ),
+  );
+  assert.deepEqual(
     k10Series(episode).points.map((point) => point.total),
     [33, 29, 26, 27],
   );
   assert.equal(k10Series(mia.episodes[0]).points.length, 0);
   const saved = structuredClone(state);
   saved.sampleRevision = 14;
+  saved.people.find((person) => person.id === jordan.id).episodes[0].reportOutcomeMeasures = [];
   const upgraded = upgradeSampleData(saved);
   assert.equal(
     upgraded.people.filter((person) => person.id === jordan.id).length,
     1,
+  );
+  assert.equal(
+    upgraded.people.find((person) => person.id === jordan.id).episodes[0]
+      .reportOutcomeMeasures.length,
+    6,
   );
   assert.equal(upgradeSampleData(upgraded), upgraded);
 });

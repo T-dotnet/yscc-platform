@@ -125,7 +125,7 @@ test("submitted evidence remains reviewable after participation changes; complet
   person.consent = "Withdrawn";
   assert.equal(step().primary.label, "Review responses");
   collection.review = "Reviewed";
-  assert.equal(step().primary.label, "View recorded review");
+  assert.equal(step().primary.label, "View clinical review");
   assert.equal(step().primary.modal, "review");
   collection.needsReview = true;
   assert.equal(step().primary.label, "Review updated answers");
@@ -147,7 +147,7 @@ test("calculating recommendations is read-only and preserves exact historical co
   const prior = episode.collections[0];
   const step = overviewNextStep(person, episode, prior, currentStaff(state));
   assert.match(step.dueText, /Due 15 Jun 2026/);
-  assert.equal(step.primary.label, "View recorded review");
+  assert.equal(step.primary.label, "View clinical review");
   assert.deepEqual(state, before);
 });
 

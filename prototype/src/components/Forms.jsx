@@ -20,11 +20,13 @@ import {
   currentStaff,
   reducer,
   qualityResolutionError,
+  qualityWorkflowError,
   formatTimestamp,
   displayPersonName,
   displayFamilyName,
   CONSENT_LIBRARY,
 } from "../model";
+import { QUALITY_STATUSES, getQualityIssues } from "../dataQuality";
 import { DEMO_INSTRUMENT, INSTRUMENTS, getInstrument } from "../instruments";
 import {
   Modal,
@@ -44,6 +46,9 @@ import EditResponses from "./EditResponses";
 import ReviewResponses from "./ReviewResponses";
 import ClinicianQuestionnaire from "./ClinicianQuestionnaire";
 import CareEventForm from "./CareEventForm";
+import AppointmentForm from "./AppointmentForm";
+import AppointmentOutcomeForm from "./AppointmentOutcomeForm";
+import ClinicalRecordForm from "./ClinicalRecordForm";
 const formValues = (e) => Object.fromEntries(new FormData(e.currentTarget));
 export default function Forms({
   modal,
@@ -73,6 +78,7 @@ export default function Forms({
   const [formError, setFormError] = useState("");
   const [collectionConfirmed, setCollectionConfirmed] = useState(false);
   const [collectionAttempted, setCollectionAttempted] = useState(false);
+  const [handoverStatus, setHandoverStatus] = useState("Not applicable");
   const [resolution, setResolution] = useState("Confirmed unchanged");
   const [collectionType, setCollectionType] = useState("Follow-up review");
   const [instrumentVersion, setInstrumentVersion] = useState(
@@ -88,6 +94,13 @@ export default function Forms({
   const p = state.people.find((p) => p.id === modal.personId),
     e = p?.episodes.find((e) => e.id === modal.episodeId),
     c = e?.collections.find((c) => c.id === modal.collectionId);
+  const unresolvedReferrals = (p?.referrals ?? []).filter(
+    (referral) =>
+      referral.episodeId === e?.id &&
+      !["Resolved handover", "Resolved alternative", "Cancelled with plan"].includes(
+        referral.handover,
+      ),
+  );
   const save = (action, message) => {
     const fullAction = { ...modal, ...action };
     if (reducer(state, fullAction) === state) {
@@ -148,6 +161,46 @@ export default function Forms({
         onSave={(action) => save(action, "Event added to the timeline.")}
       />
     );
+  if (modal.type === "clinical-record")
+    return (
+      <ClinicalRecordForm
+        episode={e}
+        error={formError}
+        onClose={onClose}
+        onSave={(action) =>
+          save(action, "Structured care record added to this care period.")
+        }
+      />
+    );
+  if (modal.type === "appointment")
+    return (
+      <AppointmentForm
+        episode={e}
+        people={state.people}
+        error={formError}
+        onClose={onClose}
+        onSave={(action) =>
+          save(action, "Appointment or service contact added to this care period.")
+        }
+      />
+    );
+  if (modal.type === "appointment-outcome") {
+    const appointment = e?.appointments?.find(
+      (item) => item.id === modal.appointmentId,
+    );
+    if (!appointment) return null;
+    return (
+      <AppointmentOutcomeForm
+        episode={e}
+        appointment={appointment}
+        error={formError}
+        onClose={onClose}
+        onSave={(action) =>
+          save(action, "Appointment or service contact outcome recorded.")
+        }
+      />
+    );
+  }
   if (modal.type === "correct-care-event") {
     const event = e?.events?.find((item) => item.id === modal.eventId);
     if (!event) return null;
@@ -1030,8 +1083,8 @@ export default function Forms({
   if (modal.type === "episode")
     return (
       <Modal
-        title="Episode actions"
-        subtitle={`${displayPersonName(p)} · Care episode ${e.number}`}
+        title="Care period actions"
+        subtitle={`${displayPersonName(p)} · Care period ${e.number}`}
         onClose={onClose}
       >
         <ValidatedForm
@@ -1039,7 +1092,7 @@ export default function Forms({
             ev.preventDefault();
             save(
               { type: "EPISODE", status: episodeAction, ...formValues(ev) },
-              `Care episode ${episodeAction.toLowerCase()}. Outstanding collections reconciled.`,
+              `Care period ${episodeAction.toLowerCase()}. Outstanding collections reconciled.`,
             );
           }}
         >
@@ -1049,8 +1102,8 @@ export default function Forms({
                 value={episodeAction}
                 onChange={(ev) => setEpisodeAction(ev.target.value)}
               >
-                <option value="Paused">Pause care episode</option>
-                <option value="Closed">Close care episode</option>
+                <option value="Paused">Pause care period</option>
+                <option value="Closed">Close care period</option>
               </select>
             </Field>
             <Field label="Reason for this decision">
@@ -1061,6 +1114,122 @@ export default function Forms({
                 placeholder="Explain why this period of care is being paused or closed…"
               />
             </Field>
+            {episodeAction === "Closed" && (
+              <>
+                <Notice>
+                  Prototype closure record only. Closure categories and
+                  final-measure rules must be confirmed before PMHC-MDS use.
+                </Notice>
+                <Field label="Actual care end date">
+                  <input
+                    name="end"
+                    type="date"
+                    min={e.start}
+                    max={TODAY}
+                    defaultValue={TODAY}
+                    required
+                  />
+                </Field>
+                <Field label="Closure category">
+                  <select name="closureCategory" required defaultValue="">
+                    <option value="" disabled>
+                      Choose a category
+                    </option>
+                    <option>Planned care completed</option>
+                    <option>Transferred or handed over</option>
+                    <option>Care ended early</option>
+                    <option>Other or not yet classified</option>
+                  </select>
+                </Field>
+                <Field label="Handover status">
+                  <select
+                    name="handoverStatus"
+                    value={handoverStatus}
+                    onChange={(ev) => setHandoverStatus(ev.target.value)}
+                  >
+                    <option>Not applicable</option>
+                    <option>Planned</option>
+                    <option>Confirmed</option>
+                  </select>
+                </Field>
+                {handoverStatus !== "Not applicable" && (
+                  <Field label="Receiving service or destination">
+                    <input
+                      name="handoverDestination"
+                      required
+                      placeholder="Record the agreed receiving service or destination…"
+                    />
+                  </Field>
+                )}
+                {handoverStatus === "Confirmed" && (
+                  <>
+                    <Field label="Receiving responsible person or team">
+                      <input
+                        name="receivingResponsiblePerson"
+                        required
+                        placeholder="Record who accepted responsibility at the receiving service…"
+                      />
+                    </Field>
+                    <Field label="Handover confirmation date and time">
+                      <input
+                        name="handoverConfirmedAt"
+                        type="datetime-local"
+                        max={`${TODAY}T23:59`}
+                        required
+                      />
+                    </Field>
+                    <Field label="Handover confirmation evidence or reference">
+                      <textarea
+                        name="handoverConfirmationReference"
+                        rows={2}
+                        required
+                        placeholder="Record the agreed channel, reference and what was confirmed…"
+                      />
+                    </Field>
+                  </>
+                )}
+                <Field label="Final outcome-measure status">
+                  <select name="finalMeasureStatus" required defaultValue="">
+                    <option value="" disabled>
+                      Choose a status
+                    </option>
+                    <option>Not required or not applicable</option>
+                    <option>Complete</option>
+                    <option>Outstanding</option>
+                    <option>Recorded missing</option>
+                  </select>
+                </Field>
+                {unresolvedReferrals.length > 0 && (
+                  <>
+                    <Notice tone="amber">
+                      {unresolvedReferrals.length} onward referral{unresolvedReferrals.length === 1 ? " remains" : "s remain"} unresolved. Closure does not cancel it: assign an owned reconciliation task.
+                    </Notice>
+                    <Field label="Unresolved-referral rule">
+                      <select name="unresolvedReferralRule" defaultValue="">
+                        <option value="" disabled>Choose rule</option>
+                        <option value="Reconciliation task required">
+                          Reconciliation task required
+                        </option>
+                      </select>
+                    </Field>
+                    <Field label="Referral reconciliation owner">
+                      <StaffPicker name="referralReconciliationOwner" defaultValue={p.owner} required />
+                    </Field>
+                    <Field label="Referral reconciliation due date">
+                      <input name="referralReconciliationDue" type="date" min={TODAY} required />
+                    </Field>
+                    <Field label="Referral reconciliation action">
+                      <textarea
+                        name="referralReconciliationAction"
+                        rows={2}
+                        required
+                        placeholder="Record what must be verified, by whom and through which agreed channel…"
+                      />
+                    </Field>
+                  </>
+                )}
+              </>
+            )}
             <Field label="Next care step">
               <textarea
                 name="nextCareStep"
@@ -1102,7 +1271,7 @@ export default function Forms({
             </label>
           </div>
           {footer(
-            episodeAction === "Paused" ? "Pause episode" : "Close episode",
+            episodeAction === "Paused" ? "Pause care period" : "Close care period",
             e.status !== "Active",
           )}
         </ValidatedForm>
@@ -1110,6 +1279,7 @@ export default function Forms({
     );
   if (modal.type === "correct") {
     const issue = state.issues.find((i) => i.id === modal.issueId);
+    if (!issue || !p) return null;
     return (
       <Modal
         title="Review data quality issue"
@@ -1218,6 +1388,163 @@ export default function Forms({
       </Modal>
     );
   }
+  if (modal.type === "quality-issue") {
+    const issue = getQualityIssues(state, TODAY).find(
+      (item) => item.id === modal.issueId && item.personId === modal.personId,
+    );
+    const canCorrect = state.issues.some(
+      (item) => item.id === issue?.id && item.field,
+    );
+    const workflowPath = {
+      Intake: "?tab=intake",
+      Referrals: "?tab=referrals",
+      Appointments: "?tab=appointments",
+      "Consent & respondents": "?tab=consent%20%26%20respondents",
+    }[issue?.workflow] || "";
+    if (!issue || !p) return null;
+    return (
+      <Modal
+        title="Manage data quality issue"
+        subtitle={`${displayPersonName(p)} · ${issue.id}`}
+        onClose={onClose}
+        wide
+      >
+        <ValidatedForm
+          onSubmit={(event) => {
+            event.preventDefault();
+            const action = {
+              type: "UPDATE_QUALITY_ISSUE",
+              personId: p.id,
+              issueId: issue.id,
+              ...formValues(event),
+            };
+            const problem = qualityWorkflowError(state, action);
+            if (problem) return setFormError(problem);
+            save(action, "Issue assignment and history updated.");
+          }}
+        >
+          <div className="form-body quality-issue-dialog">
+            <div className="quality-issue-summary">
+              <div>
+                <span className="quality-issue-label">{issue.type}</span>
+                <h3>{issue.title}</h3>
+              </div>
+              <Badge>{issue.severity}</Badge>
+            </div>
+            <p>{issue.description}</p>
+            <Notice>
+              <strong>What to do:</strong> {issue.remediation}
+            </Notice>
+            <dl className="quality-issue-facts">
+              <div>
+                <dt>Workflow</dt>
+                <dd>{issue.workflow}</dd>
+              </div>
+              <div>
+                <dt>Detected</dt>
+                <dd>{formatTimestamp(issue.detectedAt)}</dd>
+              </div>
+              <div>
+                <dt>Last updated</dt>
+                <dd>{formatTimestamp(issue.lastUpdated)}</dd>
+              </div>
+              {issue.resolvedAt && (
+                <div>
+                  <dt>Resolved</dt>
+                  <dd>
+                    {formatTimestamp(issue.resolvedAt)} · {issue.resolvedBy}
+                  </dd>
+                </div>
+              )}
+            </dl>
+            <div className="form-grid">
+              <Field label="Assigned owner">
+                <StaffPicker
+                  name="owner"
+                  defaultValue={issue.owner}
+                  required
+                />
+              </Field>
+              <Field label="Status">
+                <select name="status" defaultValue={issue.status}>
+                  {QUALITY_STATUSES.map((status) => (
+                    <option key={status}>{status}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Due date (optional)">
+                <input name="dueDate" type="date" defaultValue={issue.dueDate || ""} />
+              </Field>
+            </div>
+            <Field
+              label="Comment"
+              hint="Explain the status, assignment or information needed."
+            >
+              <textarea
+                name="comment"
+                rows={3}
+                required
+                placeholder="For example, requested a verified referral copy from the intake team."
+              />
+            </Field>
+            <Notice tone="amber">
+              A workflow status does not resolve a detected data problem. Correct
+              the underlying record before selecting Resolved.
+            </Notice>
+            <div className="quality-issue-history">
+              <h3>History</h3>
+              {issue.history?.length ? (
+                <ol>
+                  {issue.history.map((entry) => (
+                    <li key={entry.id}>
+                      <strong>{entry.title}</strong>
+                      <p>{entry.detail}</p>
+                      <small>
+                        {formatTimestamp(entry.timestamp)} · {entry.actor}
+                        {entry.status ? ` · ${entry.status}` : ""}
+                      </small>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="muted">No workflow updates have been recorded.</p>
+              )}
+            </div>
+          </div>
+          <div className="modal-footer quality-issue-footer">
+            {formError && (
+              <p className="field-error form-save-error" role="alert">
+                {formError}
+              </p>
+            )}
+            <Button type="button" onClick={() => navigate(`/people/${p.id}${workflowPath}`)}>
+              Open {issue.workflow}
+            </Button>
+            {canCorrect && !["Resolved", "Closed"].includes(issue.status) && (
+              <Button
+                type="button"
+                onClick={() =>
+                  openModal({
+                    type: "correct",
+                    personId: p.id,
+                    issueId: issue.id,
+                  })
+                }
+              >
+                Correct source field
+              </Button>
+            )}
+            <Button type="button" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary">
+              Save workflow update
+            </Button>
+          </div>
+        </ValidatedForm>
+      </Modal>
+    );
+  }
   const content = {
     about: [
       "About this workspace",
@@ -1236,6 +1563,22 @@ export default function Forms({
           The scenario date is 15 September 2026. Use Administration to reset
           the sample workspace.
         </p>
+      </>,
+    ],
+    "submission-readiness": [
+      "Sample submission hand-off",
+      "All current blocking checks are resolved.",
+      <>
+        <p>
+          This prototype would allow a submission package to be prepared at this
+          point. The package, VPN hand-off, receipt, acceptance outcome and safe
+          retry workflow are not connected.
+        </p>
+        <Notice>
+          The readiness decision is based on the visible sample rule set. It is
+          not evidence of compliance with the current PMHC-MDS specification or
+          approval to submit real data.
+        </Notice>
       </>,
     ],
     scope: [

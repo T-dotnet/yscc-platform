@@ -92,6 +92,7 @@ const referralEvent = (s, kind, fields = {}) =>
       system: "External sample system",
       evidence: "Fictional reference 123",
       nextAction: "Check the next step",
+      owner: "Jess Taylor",
       reviewDate: TODAY,
       permissionReference: "Demo permission",
       permittedInformation: "Agreed referral summary",
@@ -236,17 +237,47 @@ test("AC-26/27: external sending failures, retries, receipt, decision and handov
     episodeId: person(s).episodes[0].id,
     status: "Closed",
     reason: "Transfer",
+    end: TODAY,
+    closureCategory: "Transferred or handed over",
+    handoverStatus: "Confirmed",
+    handoverDestination: "Sample receiving service",
+    receivingResponsiblePerson: "Receiving service team",
+    handoverConfirmedAt: "2026-09-15T11:00",
+    handoverConfirmationReference: "Sample receiving service confirmation",
+    finalMeasureStatus: "Outstanding",
     nextCareStep: "Referral remains owned",
     nextCareOwner: "Jess Taylor",
+    unresolvedReferralRule: "Reconciliation task required",
+    referralReconciliationOwner: "Jess Taylor",
+    referralReconciliationDue: TODAY,
+    referralReconciliationAction: "Verify receiving-service responsibility through the agreed channel",
   });
   assert.ok(
     ownedTasks(getTasks(s), s, "me").some((t) => t.kind === "referral"),
   );
+  assert.equal(
+    person(s).episodes[0].referralReconciliation.status,
+    "Required",
+  );
+  assert.equal(
+    person(s).referrals[0].closureReconciliation.owner,
+    "Jess Taylor",
+  );
+  assert.equal(
+    person(s).referrals[0].history[0].title,
+    "Closure reconciliation assigned",
+  );
   s = referralEvent(s, "Handover confirmed", {
     externalOwner: "Receiving service team",
+    receivingResponsibility: "Confirmed",
     plan: "Receiving team confirmed responsibility and the next contact",
   });
   assert.equal(getTasks(s).filter((t) => t.kind === "referral").length, 0);
+  assert.equal(person(s).referrals[0].receivingResponsibility, "Confirmed");
+  assert.equal(
+    person(s).referrals[0].handoverConfirmedAt,
+    "2026-09-15T11:00",
+  );
   assert.equal(
     person(s).referrals[0].history[0].system,
     "External sample system",

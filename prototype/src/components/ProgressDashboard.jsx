@@ -260,30 +260,32 @@ export default function ProgressDashboard({
                         {latestLikertScore?.total} scored questions in the
                         latest response.
                       </ReportEvidenceCard>
-                      {group.likertTrends.length > 0 && (
+                      {earlierLikertResponses.length > 0 && (
+                        <div className="answer-tools comparison-tools">
+                          <label className="progress-compare-control">
+                            <span>Compare latest with</span>
+                            <Select
+                              label="Compare latest with"
+                              value={selectedLikertComparison?.id || ""}
+                              onChange={(event) => {
+                                setLikertComparisonId(event.target.value);
+                                setLikertChangeFilter("all");
+                              }}
+                            >
+                              <option value="">None</option>
+                              {earlierLikertResponses.map((point) => (
+                                <option key={point.id} value={point.id}>
+                                  {point.label} ·{" "}
+                                  {formatDate(responseDate(point))}
+                                </option>
+                              ))}
+                            </Select>
+                          </label>
+                        </div>
+                      )}
+                      {hasLikertComparison && group.likertTrends.length > 0 && (
                         <>
                           <div className="answer-tools comparison-tools">
-                            {earlierLikertResponses.length > 0 && (
-                              <label className="progress-compare-control">
-                                <span>Compare latest with</span>
-                                <Select
-                                  label="Compare latest with"
-                                  value={selectedLikertComparison?.id || ""}
-                                  onChange={(event) => {
-                                    setLikertComparisonId(event.target.value);
-                                    setLikertChangeFilter("all");
-                                  }}
-                                >
-                                  <option value="">None</option>
-                                  {earlierLikertResponses.map((point) => (
-                                    <option key={point.id} value={point.id}>
-                                      {point.label} ·{" "}
-                                      {formatDate(responseDate(point))}
-                                    </option>
-                                  ))}
-                                </Select>
-                              </label>
-                            )}
                             <label>
                               Find a question
                               <input
@@ -311,21 +313,19 @@ export default function ProgressDashboard({
                                 ))}
                               </select>
                             </label>
-                            {hasLikertComparison && (
-                              <label>
-                                Change
-                                <select
-                                  value={likertChangeFilter}
-                                  onChange={(event) =>
-                                    setLikertChangeFilter(event.target.value)
-                                  }
-                                >
-                                  <option value="all">All questions</option>
-                                  <option value="changed">Changed</option>
-                                  <option value="unchanged">Unchanged</option>
-                                </select>
-                              </label>
-                            )}
+                            <label>
+                              Change
+                              <select
+                                value={likertChangeFilter}
+                                onChange={(event) =>
+                                  setLikertChangeFilter(event.target.value)
+                                }
+                              >
+                                <option value="all">All questions</option>
+                                <option value="changed">Changed</option>
+                                <option value="unchanged">Unchanged</option>
+                              </select>
+                            </label>
                           </div>
                           <div className="likert-results-header">
                             <p className="muted">

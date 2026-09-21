@@ -1,7 +1,8 @@
 import useQueueView from "../useQueueView";
-import { Plus, ChevronRight } from "lucide-react";
+import { Plus, ChevronRight, CircleAlert } from "lucide-react";
 import { useStore } from "../store";
-import { age, formatDate } from "../model";
+import { age, formatDate, TODAY } from "../model";
+import { getQualityIssues, recordCompleteness } from "../dataQuality";
 import { comparePeople, peopleInEpisodes } from "../people";
 import {
   PageHeading,
@@ -16,7 +17,12 @@ import {
 } from "../components/UI";
 
 const PAGE_SIZE = 6;
-const HIDDEN_FROM_PEOPLE_LIST = new Set(["Oliver James", "Zoe Patel"]);
+const HIDDEN_FROM_PEOPLE_LIST = new Set([
+  "Oliver James",
+  "Zoe Patel",
+  "Jordan Lee",
+  "Noah Williams",
+]);
 const PEOPLE_LIST_PRIORITY = new Map([["Mia Robinson", 0]]);
 
 export default function People({ navigate, openModal }) {
@@ -67,6 +73,7 @@ export default function People({ navigate, openModal }) {
   );
   const pageStart = (page - 1) * PAGE_SIZE;
   const visiblePeople = people.slice(pageStart, pageStart + PAGE_SIZE);
+  const qualityIssues = getQualityIssues(state, TODAY);
   const showingFrom = people.length ? pageStart + 1 : 0;
   const showingTo = Math.min(pageStart + PAGE_SIZE, people.length);
   const personHref = ({ person, episode, collection }) => {
@@ -140,6 +147,7 @@ export default function People({ navigate, openModal }) {
                 <th>Person</th>
                 <th>Status</th>
                 <th>Next / latest assessment</th>
+                <th>Required data</th>
                 <th>Care owner</th>
                 <th>Episode</th>
                 <th>
@@ -151,6 +159,12 @@ export default function People({ navigate, openModal }) {
               {visiblePeople.map((row) => {
                 const { person: p, episode } = row;
                 const href = personHref(row);
+                const completeness = recordCompleteness(p, TODAY);
+                const validationIssue = qualityIssues.find(
+                  (issue) =>
+                    issue.personId === p.id &&
+                    !["Resolved", "Closed"].includes(issue.status),
+                );
                 return (
                   <tr key={p.id} onClick={() => open(href)}>
                     <td className="people-identity">
@@ -190,6 +204,54 @@ export default function People({ navigate, openModal }) {
                       >
                         {row.detail}
                       </small>
+                    </td>
+                    <td className="people-completeness" data-label="Required data">
+                      <div className="people-completeness-summary">
+                        <strong>{completeness.requiredPercentage}%</strong>
+                        <span
+                          className="people-completeness-bar"
+                          role="progressbar"
+                          aria-label={`${completeness.requiredPercentage}% of required data complete`}
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                          aria-valuenow={completeness.requiredPercentage}
+                        >
+                          <span
+                            style={{ width: `${completeness.requiredPercentage}%` }}
+                          />
+                        </span>
+                        {validationIssue && (
+                          <span className="people-validation-indicator">
+                            <button
+                              type="button"
+                              className="people-validation-trigger"
+                              aria-label={`Validation issue: ${validationIssue.description}`}
+                              aria-describedby={`validation-${p.id}`}
+                              onClick={(event) => event.stopPropagation()}
+                            >
+                              <CircleAlert size={17} aria-hidden="true" />
+                            </button>
+                            <span
+                              id={`validation-${p.id}`}
+                              className="people-validation-tooltip"
+                              role="tooltip"
+                            >
+                              <strong>{validationIssue.title}</strong>
+                              <span>{validationIssue.description}</span>
+                              <a
+                                href="/quality"
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  open("/quality");
+                                }}
+                              >
+                                Manage data quality issue
+                              </a>
+                            </span>
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="people-owner" data-label="Care owner">
                       {episode?.owner || p.owner || "Unassigned"}

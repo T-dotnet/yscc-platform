@@ -9,6 +9,7 @@ import {
   TODAY,
   upgradeSampleData,
   responseEditError,
+  qualityWorkflowError,
   clinicalReviewStatus,
   collectionActor,
   personEventText,
@@ -78,7 +79,7 @@ test("older mock data is replaced once with the refreshed branching scenarios", 
   const updated = upgradeSampleData(old);
   assert.deepEqual(old, before);
   assert.equal(updated.people[0].name, "Kai Thompson");
-  assert.equal(updated.sampleRevision, 15);
+  assert.equal(updated.sampleRevision, 19);
   assert.equal(
     updated.audit.some((item) => item.id === "old-edit"),
     false,
@@ -308,9 +309,34 @@ test("episode closure cancels outstanding work and preserves historical response
     type: "EPISODE",
     status: "Closed",
     reason: "Sample handover completed",
+    end: "2026-09-12",
+    closureCategory: "Transferred or handed over",
+    handoverStatus: "Confirmed",
+    handoverDestination: "Sample receiving service",
+    receivingResponsiblePerson: "Sample receiving team",
+    handoverConfirmedAt: "2026-09-12T11:00",
+    handoverConfirmationReference: "Sample handover confirmation",
+    finalMeasureStatus: "Recorded missing",
   });
   assert.equal(collection(closed).assignment, "Cancelled");
-  assert.equal(closed.people[0].episodes[0].end, TODAY);
+  assert.equal(closed.people[0].episodes[0].end, "2026-09-12");
+  assert.equal(
+    closed.people[0].episodes[0].closureCategory,
+    "Transferred or handed over",
+  );
+  assert.equal(closed.people[0].episodes[0].handoverStatus, "Confirmed");
+  assert.equal(
+    closed.people[0].episodes[0].handoverDestination,
+    "Sample receiving service",
+  );
+  assert.equal(
+    closed.people[0].episodes[0].receivingResponsiblePerson,
+    "Sample receiving team",
+  );
+  assert.equal(
+    closed.people[0].episodes[0].finalMeasureStatus,
+    "Recorded missing",
+  );
   assert.equal(collection(closed).link, "Revoked");
   assert.deepEqual(
     closed.people[0].episodes[0].collections[0],
@@ -321,6 +347,35 @@ test("episode closure cancels outstanding work and preserves historical response
     false,
   );
   assert.deepEqual(submit(closed), closed);
+});
+test("care-period closure rejects incomplete or invalid structured closure details", () => {
+  const state = createSeed();
+  const action = {
+    ...ctx,
+    type: "EPISODE",
+    status: "Closed",
+    reason: "Sample decision",
+    end: TODAY,
+    closureCategory: "Transferred or handed over",
+    handoverStatus: "Confirmed",
+    handoverDestination: "Sample receiving service",
+    receivingResponsiblePerson: "Sample receiving team",
+    handoverConfirmedAt: "2026-09-15T11:00",
+    handoverConfirmationReference: "Sample handover confirmation",
+    finalMeasureStatus: "Complete",
+  };
+  assert.notEqual(reducer(state, action), state);
+  assert.equal(reducer(state, { ...action, closureCategory: "" }), state);
+  assert.equal(reducer(state, { ...action, end: "2025-01-01" }), state);
+  assert.equal(reducer(state, { ...action, end: "2026-02-31" }), state);
+  assert.equal(reducer(state, { ...action, handoverDestination: "" }), state);
+  assert.equal(reducer(state, { ...action, receivingResponsiblePerson: "" }), state);
+  assert.equal(reducer(state, { ...action, handoverConfirmedAt: "" }), state);
+  assert.equal(
+    reducer(state, { ...action, handoverConfirmationReference: "" }),
+    state,
+  );
+  assert.equal(reducer(state, { ...action, finalMeasureStatus: "" }), state);
 });
 test("correction retains provenance and does not reopen any collection", () => {
   const seed = submit(deliver(createSeed()));
@@ -336,6 +391,29 @@ test("correction retains provenance and does not reopen any collection", () => {
   assert.equal(corrected.issues[0].status, "Resolved");
   assert.match(corrected.audit[0].detail, /2009-04-18 → 2009-04-19/);
   assert.deepEqual(corrected.people[0].episodes, seed.people[0].episodes);
+});
+test("data-quality workflow assigns ownership, retains a comment and audits status progression", () => {
+  const seed = createSeed();
+  const action = {
+    type: "UPDATE_QUALITY_ISSUE",
+    personId: "YS-1024",
+    issueId: "DQ-001",
+    owner: "Ananya",
+    status: "In Progress",
+    dueDate: "2026-09-17",
+    comment: "Requested the verified referral record for comparison.",
+  };
+  assert.equal(qualityWorkflowError(seed, action), null);
+  const next = reducer(seed, action);
+  const issue = next.issues.find((item) => item.id === "DQ-001");
+  assert.equal(issue.status, "In Progress");
+  assert.equal(issue.owner, "Ananya");
+  assert.match(issue.history[0].detail, /verified referral/);
+  assert.equal(next.audit[0].type, "data-quality-workflow");
+  assert.match(
+    qualityWorkflowError(seed, { ...action, status: "Resolved" }),
+    /Correct the underlying data/,
+  );
 });
 test("unknown participation and inappropriate family roles block collection", () => {
   const seed = createSeed();
@@ -585,7 +663,7 @@ test("revision four mock data gains longitudinal Likert responses once", () => {
     (person) => person.name === "Mia Robinson",
   );
   assert.deepEqual(saved, before);
-  assert.equal(migrated.sampleRevision, 15);
+  assert.equal(migrated.sampleRevision, 19);
   assert.equal(
     migratedMia.episodes[0].collections.filter(
       (collection) => collection.version === LIKERT_INSTRUMENT.version,

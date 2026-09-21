@@ -65,7 +65,7 @@ export function overviewNextStep(person, episode, collection, staff) {
       return step(
         "Clinical review recorded",
         `The response and review are saved. ${episode.owner || person.owner || "The care team"} owns the next care decision; assessment completion remains separate.`,
-        { label: "View recorded review", modal: "review" },
+        { label: "View clinical review", modal: "review" },
       );
     const clinician = staff?.role === "Clinician";
     return step(

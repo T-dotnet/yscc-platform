@@ -11,6 +11,8 @@ import AssessmentReviewRecord from "./features/AssessmentReviewRecord";
 import { Quality, Administration, Help } from "./features/Operations";
 import Questionnaire from "./features/Questionnaire";
 import ConsentRequest from "./features/ConsentRequest";
+import { getQualityIssues } from "./dataQuality";
+import { TODAY } from "./model";
 import { Empty, Button } from "./components/UI";
 export default function App() {
   const path = usePathname(),
@@ -75,6 +77,9 @@ export default function App() {
       />
     );
   const shared = { navigate, openModal: setModal };
+  const qualityCount = getQualityIssues(state, TODAY).filter(
+    (issue) => !["Resolved", "Closed"].includes(issue.status),
+  ).length;
   const assessmentReviewMatch = path.match(
     /^\/people\/([^/]+)\/assessment-review\/([^/]+)$/,
   );
@@ -107,7 +112,7 @@ export default function App() {
       <Shell
         path={path}
         {...shared}
-        qualityCount={state.issues.filter((i) => i.status === "Open").length}
+        qualityCount={qualityCount}
         storageError={storageError}
       >
         {page}

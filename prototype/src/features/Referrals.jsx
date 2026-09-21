@@ -95,13 +95,37 @@ export default function Referrals({ person, intake, episode, openModal }) {
             </div>
             <dl className="metadata">
               <div>
-                <dt>YSCC owner</dt>
+                <dt>YSCC follow-up owner</dt>
                 <dd>{r.owner}</dd>
               </div>
               <div>
-                <dt>External owner</dt>
+                <dt>Receiving service responsibility</dt>
+                <dd>{r.receivingResponsibility || "Not confirmed"}</dd>
+              </div>
+              <div>
+                <dt>Receiving responsible person / team</dt>
                 <dd>{r.externalOwner || "Not confirmed"}</dd>
               </div>
+              {r.handoverConfirmedAt && (
+                <div>
+                  <dt>Handover confirmed</dt>
+                  <dd>{formatTimestamp(r.handoverConfirmedAt)}</dd>
+                </div>
+              )}
+              {r.handoverEvidence && (
+                <div>
+                  <dt>Confirmation evidence</dt>
+                  <dd>{r.handoverEvidence}</dd>
+                </div>
+              )}
+              {r.closureReconciliation && (
+                <div>
+                  <dt>Closure reconciliation</dt>
+                  <dd>
+                    {r.closureReconciliation.action} · {r.closureReconciliation.owner} · due {formatDate(r.closureReconciliation.due)}
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt>Next action</dt>
                 <dd>{r.nextAction}</dd>
@@ -284,6 +308,16 @@ export function ReferralForm({ modal, onClose, notify }) {
                   required={kind === "Handover confirmed"}
                 />
               </Field>
+              {kind === "Handover confirmed" && (
+                <Field label="Receiving-service responsibility">
+                  <select name="receivingResponsibility" defaultValue="">
+                    <option value="" disabled>Choose confirmation</option>
+                    <option value="Confirmed">
+                      Receiving service has confirmed responsibility
+                    </option>
+                  </select>
+                </Field>
+              )}
               {resolving && (
                 <Field label="Agreed next-care arrangement / alternative plan">
                   <textarea name="plan" rows={2} required />
@@ -327,6 +361,11 @@ export function ReferralForm({ modal, onClose, notify }) {
               required
             />
           </Field>
+          {!creating && (
+            <Field label="YSCC follow-up owner">
+              <StaffPicker name="owner" defaultValue={referral.owner} required />
+            </Field>
+          )}
           <Field label={resolving ? "Plan review date" : "Follow-up date"}>
             <input
               name="reviewDate"

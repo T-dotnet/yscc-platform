@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createSeed, reducer } from "./model.js";
+import { createSeed, reducer, TODAY } from "./model.js";
 import { createSampleAnswers } from "./sampleQuestionnaires.js";
 import {
   activityEntries,
@@ -295,6 +295,10 @@ test("care closure and participation changes retain effects on every affected co
   const closed = act(state, "EPISODE", {
     status: "Closed",
     reason: "Sample care completed",
+    end: TODAY,
+    closureCategory: "Planned care completed",
+    handoverStatus: "Not applicable",
+    finalMeasureStatus: "Complete",
     nextCareStep: "Agreed next contact",
   });
   assert.ok(

@@ -341,7 +341,15 @@ function K10MeasureLane({
   );
 }
 
-function SharedTimeline({ person, episode, timeline, onOpenSource, undated }) {
+function SharedTimeline({
+  person,
+  episode,
+  timeline,
+  onOpenSource,
+  undated,
+  isVisible = true,
+  onToggle,
+}) {
   const allLanes = reportLanes(timeline);
   const k10Points = k10Series(episode).points;
   const k10Entries =
@@ -383,7 +391,7 @@ function SharedTimeline({ person, episode, timeline, onOpenSource, undated }) {
 
   return (
     <section
-      className="longitudinal-panel longitudinal-report-card"
+      className={`longitudinal-panel longitudinal-report-card${isVisible ? "" : " report-section-collapsed"}`}
       aria-labelledby="longitudinal-timeline-heading"
     >
       <header className="longitudinal-card-header">
@@ -395,26 +403,40 @@ function SharedTimeline({ person, episode, timeline, onOpenSource, undated }) {
               : "Care episode timeline"}
           </p>
         </div>
-        <div
-          className="longitudinal-filter"
-          role="group"
-          aria-label="Show timeline tracks"
-        >
-          {filters.map(([id, label, accessibleLabel]) => (
+        <div className="longitudinal-card-actions">
+          {onToggle && (
             <button
               type="button"
-              key={id}
-              className={activeGroup === id ? "selected" : ""}
-              aria-label={accessibleLabel}
-              aria-pressed={activeGroup === id}
-              onClick={() => setActiveGroup(id)}
+              className="report-section-toggle"
+              aria-expanded={isVisible}
+              onClick={onToggle}
             >
-              {label}
+              {isVisible ? "Hide" : "Show"}
             </button>
-          ))}
+          )}
+          {isVisible && (
+            <div
+              className="longitudinal-filter"
+              role="group"
+              aria-label="Show timeline tracks"
+            >
+              {filters.map(([id, label, accessibleLabel]) => (
+                <button
+                  type="button"
+                  key={id}
+                  className={activeGroup === id ? "selected" : ""}
+                  aria-label={accessibleLabel}
+                  aria-pressed={activeGroup === id}
+                  onClick={() => setActiveGroup(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </header>
-      {visibleEntries.length ? (
+      {isVisible && (visibleEntries.length ? (
         <>
           <div
             className="longitudinal-scroll"
@@ -564,13 +586,13 @@ function SharedTimeline({ person, episode, timeline, onOpenSource, undated }) {
         <p className="longitudinal-empty">
           No dated records are available for this care episode.
         </p>
-      )}
-      <p className="longitudinal-caveat">
+      ))}
+      {isVisible && <p className="longitudinal-caveat">
         Markers show when records were made or events were recorded. Their
         proximity does not show that one caused a change in an answer or
         outcome.
-      </p>
-      {undated > 0 && (
+      </p>}
+      {isVisible && undated > 0 && (
         <p className="longitudinal-caveat">
           {undated} submitted response{undated === 1 ? " has" : "s have"} no
           valid submission date and cannot appear on this timeline.
@@ -787,7 +809,7 @@ function CareAndMedicationChart({ timeline }) {
   );
 }
 
-export function CareTimeline({ person, episode, navigate }) {
+export function CareTimeline({ person, episode, navigate, isVisible, onToggle }) {
   const timeline = careTimelineData(episode);
   const evidence = reportEvidence(person, episode);
 
@@ -810,6 +832,8 @@ export function CareTimeline({ person, episode, navigate }) {
       timeline={timeline}
       onOpenSource={openSource}
       undated={evidence.undated.length}
+      isVisible={isVisible}
+      onToggle={onToggle}
     />
   );
 }

@@ -21,6 +21,7 @@ import {
 import { useStore } from "../store";
 import RecordTwo from "./RecordTwo";
 import CareEvents from "./CareEvents";
+import Appointments from "./Appointments";
 import ReviewPack from "../components/ReviewPack";
 import Timeline, {
   ChangeLog,
@@ -36,7 +37,9 @@ import {
   formatTimestamp,
   currentStaff,
   noClinicalReviewRequired,
+  TODAY,
 } from "../model";
+import { recordCompleteness } from "../dataQuality";
 import {
   Button,
   Avatar,
@@ -60,6 +63,7 @@ export default function Person({ id, navigate, openModal }) {
   const allTabs = [
     "Overview",
     "Assessment",
+    "Appointments",
     "Events",
     "Report",
     "Consent & respondents",
@@ -149,6 +153,7 @@ export default function Person({ id, navigate, openModal }) {
     c.response === "Submitted" &&
     (noClinicalReviewRequired(c) ||
       (c.review === "Reviewed" && !c.needsReview));
+  const completeness = recordCompleteness(p, TODAY);
   return (
     <>
       <button className="back-link" onClick={() => navigate(returnTo)}>
@@ -171,6 +176,16 @@ export default function Person({ id, navigate, openModal }) {
           </p>
         </div>
         <div className="actions">
+          <button
+            className={`record-completeness ${
+              completeness.mandatoryComplete ? "complete" : "incomplete"
+            }`}
+            onClick={() => navigate("/quality")}
+            aria-label={`Open data quality. ${completeness.requiredPercentage}% of required fields complete.`}
+          >
+            <strong>{completeness.requiredPercentage}%</strong>
+            <span>required data complete</span>
+          </button>
           <Button
             variant="primary"
             disabled={e.status !== "Active" || !canAssess(p, e)}
@@ -182,7 +197,7 @@ export default function Person({ id, navigate, openModal }) {
             disabled={e.status === "Closed"}
             onClick={() => modal("episode")}
           >
-            Episode actions
+            Care period actions
             <ChevronDown size={16} />
           </Button>
         </div>
@@ -637,6 +652,14 @@ export default function Person({ id, navigate, openModal }) {
               before live use.
             </Notice>
           </div>
+        )}
+        {tab === "Appointments" && (
+          <Appointments
+            episode={e}
+            openModal={(appointmentModal) =>
+              openModal({ ...appointmentModal, personId: p.id })
+            }
+          />
         )}
         {tab === "Events" && (
           <CareEvents

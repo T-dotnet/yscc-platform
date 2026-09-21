@@ -1,18 +1,24 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { INSTRUMENTS } from "../instruments";
 import {
   BookOpen,
   SlidersHorizontal,
   MessageSquare,
-  ArrowRight,
   RotateCcw,
   ShieldCheck,
   Users,
   ClipboardList,
   CalendarClock,
+  Filter,
+  ChevronDown,
 } from "lucide-react";
 import { useStore } from "../store";
-import { displayPersonName, currentStaff } from "../model";
+import { currentStaff, formatDate, TODAY } from "../model";
+import {
+  QUALITY_SEVERITIES,
+  QUALITY_STATUSES,
+  getQualityIssues,
+} from "../dataQuality";
 import {
   PageHeading,
   Panel,
@@ -21,105 +27,223 @@ import {
   Avatar,
   Notice,
   Empty,
-  Tabs,
+  Select,
 } from "../components/UI";
+
+const EMPTY_FILTERS = {
+  organisation: "All organisations",
+  clinician: "All clinicians",
+  status: "All statuses",
+  severity: "All severities",
+  submissionPeriod: "All submission periods",
+};
+
 export function Quality({ openModal, navigate }) {
   const { state } = useStore();
-  const [filter, setFilter] = useState("Open");
-  const issues = state.issues.filter((i) => i.status === filter);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const issues = useMemo(() => getQualityIssues(state, TODAY), [state]);
+  const unresolved = issues.filter(
+    (issue) => !["Resolved", "Closed"].includes(issue.status),
+  );
+  const visibleIssues = issues.filter(
+    (issue) =>
+      (filters.organisation === "All organisations" ||
+        issue.organisation === filters.organisation) &&
+      (filters.clinician === "All clinicians" ||
+        issue.owner === filters.clinician) &&
+      (filters.status === "All statuses" || issue.status === filters.status) &&
+      (filters.severity === "All severities" ||
+        issue.severity === filters.severity) &&
+      (filters.submissionPeriod === "All submission periods" ||
+        issue.submissionPeriod === filters.submissionPeriod),
+  );
+  const filterOptions = {
+    organisations: [...new Set(issues.map((issue) => issue.organisation))],
+    clinicians: [...new Set(issues.map((issue) => issue.owner))],
+    periods: [...new Set(issues.map((issue) => issue.submissionPeriod))],
+  };
+  const hasFilters = Object.entries(filters).some(
+    ([key, value]) => value !== EMPTY_FILTERS[key],
+  );
+  const setFilter = (key, value) =>
+    setFilters((current) => ({ ...current, [key]: value }));
   return (
     <>
       <PageHeading
         title="Data quality"
-        subtitle="Resolve the detail. Preserve the history."
+        subtitle="Continuously check completeness, resolve the source, and retain the evidence."
+        meta="Sample PMHC-MDS rule set · Northside Centre · 15 September 2026"
       />
-      <Tabs
-        id="quality"
-        label="Issue status"
-        className="standalone-tabs"
-        value={filter}
-        onChange={setFilter}
-        items={["Open", "Resolved"].map((value) => ({
-          value,
-          count: state.issues.filter((i) => i.status === value).length,
-        }))}
-      />
-      <div
-        role="tabpanel"
-        id="quality-panel"
-        aria-labelledby={`quality-tab-${filter === "Open" ? 0 : 1}`}
+      <Panel
+        title="Validation issue queue"
+        action={<Badge>{unresolved.length} unresolved</Badge>}
+        className="quality-queue"
       >
-        <div className="stack">
-          {issues.length ? (
-            issues.map((i) => {
-              const p = state.people.find((p) => p.id === i.personId);
-              return (
-                <Panel
-                  title={i.title}
-                  action={<Badge>{i.outcome || i.status}</Badge>}
-                  key={i.id}
+        <details
+          className={`care-timeline-filters quality-filters${hasFilters ? " has-active-filters" : ""}`}
+          open={filtersOpen}
+          onToggle={(event) => setFiltersOpen(event.currentTarget.open)}
+        >
+          <summary
+            className="care-timeline-filter-heading"
+            aria-label="Show validation issue filters"
+          >
+            <div>
+              <Filter size={18} aria-hidden="true" />
+              <span className="sr-only">Filter validation issues</span>
+            </div>
+            <span aria-live="polite">
+              Showing {visibleIssues.length} of {issues.length} issues
+            </span>
+            <ChevronDown
+              className="care-timeline-filter-chevron"
+              size={18}
+              aria-hidden="true"
+            />
+          </summary>
+          <div className="care-timeline-filter-body">
+            <div className="care-timeline-filter-fields quality-filter-fields">
+              <Select
+                label="Organisation filter"
+                value={filters.organisation}
+                onChange={(event) =>
+                  setFilter("organisation", event.target.value)
+                }
+              >
+                <option>All organisations</option>
+                {filterOptions.organisations.map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </Select>
+              <Select
+                label="Clinician filter"
+                value={filters.clinician}
+                onChange={(event) => setFilter("clinician", event.target.value)}
+              >
+                <option>All clinicians</option>
+                {filterOptions.clinicians.map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </Select>
+              <Select
+                label="Status filter"
+                value={filters.status}
+                onChange={(event) => setFilter("status", event.target.value)}
+              >
+                <option>All statuses</option>
+                {QUALITY_STATUSES.map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </Select>
+              <Select
+                label="Severity filter"
+                value={filters.severity}
+                onChange={(event) => setFilter("severity", event.target.value)}
+              >
+                <option>All severities</option>
+                {QUALITY_SEVERITIES.map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </Select>
+              <Select
+                label="Submission period filter"
+                value={filters.submissionPeriod}
+                onChange={(event) =>
+                  setFilter("submissionPeriod", event.target.value)
+                }
+              >
+                <option>All submission periods</option>
+                {filterOptions.periods.map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </Select>
+              {hasFilters && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setFilters(EMPTY_FILTERS)}
                 >
-                  <div className="panel-body">
-                    <div className="quality-context">
-                      <Avatar name={p.name} />
-                      <div>
+                  Clear filters
+                </Button>
+              )}
+            </div>
+          </div>
+        </details>
+        {visibleIssues.length ? (
+          <div className="table-scroll quality-table-scroll">
+            <table
+              className="quality-table"
+              aria-label="Validation issue queue"
+            >
+              <thead>
+                <tr>
+                  <th>Severity</th>
+                  <th>Client</th>
+                  <th>Issue</th>
+                  <th>Owner</th>
+                  <th>Status</th>
+                  <th>Due</th>
+                  <th>
+                    <span className="sr-only">Manage issue</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleIssues.map((issue) => {
+                  const person = state.people.find(
+                    (item) => item.id === issue.personId,
+                  );
+                  return (
+                    <tr key={issue.id}>
+                      <td data-label="Severity">
+                        <Badge>{issue.severity}</Badge>
+                      </td>
+                      <td data-label="Client">
                         <button
                           className="name-link"
-                          onClick={() => navigate(`/people/${p.id}`)}
+                          onClick={() => navigate(`/people/${person.id}`)}
                         >
-                          {displayPersonName(p)}
+                          {person.name}
                         </button>
-                        <small>
-                          {p.id} · {i.id}
-                        </small>
-                      </div>
-                      <span className="muted">Owner: {i.owner || p.owner}</span>
-                    </div>
-                    <p>{i.detail}</p>
-                    {i.nextStep && (
-                      <p>
-                        <strong>Next investigation step:</strong> {i.nextStep}
-                      </p>
-                    )}
-                    <div className="actions">
-                      {i.status === "Open" && (
+                        <small>{person.id}</small>
+                      </td>
+                      <td data-label="Issue" className="quality-issue-cell">
+                        <strong>{issue.type}</strong>
+                        <span>{issue.description}</span>
+                      </td>
+                      <td data-label="Owner">{issue.owner}</td>
+                      <td data-label="Status">
+                        <Badge>{issue.status}</Badge>
+                      </td>
+                      <td data-label="Due">
+                        {issue.dueDate ? formatDate(issue.dueDate) : "Not set"}
+                      </td>
+                      <td className="quality-manage-cell">
                         <Button
-                          variant="primary"
+                          aria-label={`Manage ${issue.type} for ${person.name}`}
                           onClick={() =>
                             openModal({
-                              type: "correct",
-                              personId: p.id,
-                              issueId: i.id,
+                              type: "quality-issue",
+                              personId: person.id,
+                              issueId: issue.id,
                             })
                           }
                         >
-                          Review issue
+                          Manage
                         </Button>
-                      )}
-                      <Button onClick={() => navigate(`/people/${p.id}`)}>
-                        Open person record
-                        <ArrowRight size={17} />
-                      </Button>
-                    </div>
-                  </div>
-                </Panel>
-              );
-            })
-          ) : (
-            <Empty
-              title={
-                filter === "Open"
-                  ? "All sample issues resolved"
-                  : "No resolved issues yet"
-              }
-            >
-              {filter === "Open"
-                ? "Corrections and source references are retained below."
-                : "A verified correction will appear here after it is saved."}
-            </Empty>
-          )}
-        </div>
-      </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <Empty title="No validation issues match these filters">
+            Change a filter to see another part of the queue.
+          </Empty>
+        )}
+      </Panel>
     </>
   );
 }

@@ -4,6 +4,15 @@ import {
   questionnaireState,
 } from "./instruments.js";
 import { reportChanges } from "./report.js";
+import {
+  appointmentChanges,
+  appointmentSummary,
+  appointmentTitle,
+} from "./appointments.js";
+import {
+  clinicalRecordChanges,
+  clinicalRecordDetails,
+} from "./clinicalRecords.js";
 
 export function recordFieldChanges(before, after, fields) {
   return fields.flatMap(([key, label]) => {
@@ -18,6 +27,17 @@ export function careChanges(before, after) {
     ["status", "Care status"],
     ["end", "Care end date"],
     ["reason", "Care decision reason"],
+    ["closureCategory", "Closure category"],
+    ["handoverStatus", "Handover status"],
+    ["handoverDestination", "Handover destination"],
+    ["receivingResponsibility", "Receiving responsibility status"],
+    ["receivingResponsiblePerson", "Receiving service responsibility"],
+    ["handoverConfirmedAt", "Handover confirmation date"],
+    ["handoverConfirmationReference", "Handover confirmation reference"],
+    ["referralReconciliationStatus", "Referral reconciliation status"],
+    ["referralReconciliationOwner", "Referral reconciliation owner"],
+    ["referralReconciliationDue", "Referral reconciliation due date"],
+    ["finalMeasureStatus", "Final measure status"],
     ["nextCareStep", "Next care step"],
     ["nextCareOwner", "Next care owner"],
   ]);
@@ -173,6 +193,30 @@ export function activityEntries(person, episode, audit = []) {
       });
     }
   }
+  for (const appointment of episode.appointments ?? []) {
+    entries.push({
+      ...appointment,
+      id: `appointment-${appointment.id}`,
+      type: "appointment",
+      date: appointment.actualDate || appointment.plannedDate,
+      title: appointmentTitle(appointment),
+      detail: appointmentSummary(appointment),
+      scope: "Appointment or service contact",
+      changes: appointmentChanges(appointment),
+    });
+  }
+  for (const record of episode.clinicalRecords ?? []) {
+    entries.push({
+      ...record,
+      id: `clinical-record-${record.id}`,
+      type: "clinical-record",
+      date: record.recordDate,
+      scope: "Structured care record",
+      detail: record.detail,
+      changes: clinicalRecordChanges(record),
+      recordDetails: clinicalRecordDetails(record),
+    });
+  }
   entries.push(
     ...scopedAudit.map((entry) => ({
       ...entry,
@@ -248,5 +292,10 @@ export function changeLogEntries(person, episode, audit = []) {
 }
 
 export function clinicalHistoryEntries(person, episode, audit = []) {
-  return activityEntries(person, episode, audit).filter((entry) => !entry.type);
+  return activityEntries(person, episode, audit).filter(
+    (entry) =>
+      !entry.type ||
+      entry.type === "appointment" ||
+      entry.type === "clinical-record",
+  );
 }
